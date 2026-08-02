@@ -1,6 +1,6 @@
 /* ==========================================================================
    Laksanasoft Mobile App - Dedicated Smartphone Application Engine
-   Shares 100% Backend API & Features with Main Web Application
+   Includes Device Hardware/Browser Back Button Navigation (Undo/PopState)
    ========================================================================== */
 
 (function () {
@@ -29,6 +29,9 @@
     latestReceipt: null,
     qrisTimerSeconds: 899
   };
+
+  // Tab Stack History for Device Back Button Handling
+  const navigationStack = ['home'];
 
   // Property Normalizers
   function normalizeInvoice(inv) {
@@ -155,8 +158,10 @@
     }, 3500);
   }
 
-  // Router
-  function switchMobileTab(tabName) {
+  // --- ROUTER WITH DEVICE BACK BUTTON SUPPORT ---
+  function switchMobileTab(tabName, pushToHistory = true) {
+    if (store.currentTab === tabName && pushToHistory) return;
+
     store.currentTab = tabName;
 
     document.querySelectorAll('.mobile-tab-content').forEach(el => el.classList.add('hidden'));
@@ -168,13 +173,58 @@
     const activeBtn = document.getElementById(`nav-btn-${tabName}`);
     if (activeBtn) activeBtn.classList.add('active');
 
+    // Header Back Button Toggle
+    const backBtn = document.getElementById('header-back-btn');
+    if (backBtn) {
+      if (tabName !== 'home') backBtn.classList.remove('hidden');
+      else backBtn.classList.add('hidden');
+    }
+
     if (tabName === 'home') renderMobileHome();
     else if (tabName === 'proposals') renderMobileProposals();
     else if (tabName === 'history') renderMobileHistory();
     else if (tabName === 'profile') renderMobileProfile();
 
+    if (pushToHistory) {
+      navigationStack.push(tabName);
+      history.pushState({ type: 'tab', tab: tabName }, '');
+    }
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
+  function goBackToPreviousTab() {
+    // 1. If any sheet modal is open, close it (Undo modal)
+    const openSheetEl = document.querySelector('.mobile-bottom-sheet.open');
+    if (openSheetEl) {
+      openSheetEl.classList.remove('open');
+      return;
+    }
+
+    // 2. Otherwise navigate to previous tab
+    if (navigationStack.length > 1) {
+      navigationStack.pop(); // remove current
+      const prevTab = navigationStack[navigationStack.length - 1];
+      switchMobileTab(prevTab, false);
+    } else {
+      switchMobileTab('home', false);
+    }
+  }
+
+  // Intercept Device Hardware Back Button (Popstate Listener)
+  window.addEventListener('popstate', function (e) {
+    const openSheetEl = document.querySelector('.mobile-bottom-sheet.open');
+    if (openSheetEl) {
+      openSheetEl.classList.remove('open');
+      return;
+    }
+
+    if (navigationStack.length > 1) {
+      navigationStack.pop();
+      const prevTab = navigationStack[navigationStack.length - 1];
+      switchMobileTab(prevTab, false);
+    }
+  });
 
   // 1. Mobile Home View
   function renderMobileHome() {
@@ -339,7 +389,7 @@
   }
 
   function proceedToPin() {
-    closeSheet('sheet-payment-confirm');
+    closeSheet('sheet-payment-confirm', true);
     store.enteredPin = '';
     updatePinDots();
     openSheet('sheet-pin');
@@ -377,7 +427,7 @@
 
   async function verifyPin() {
     if (store.enteredPin === store.user.pin || store.enteredPin === '123456') {
-      closeSheet('sheet-pin');
+      closeSheet('sheet-pin', true);
       const inv = store.selectedInvoice;
 
       inv.status = 'PAID';
@@ -422,12 +472,20 @@
 
   function openSheet(id) {
     const el = document.getElementById(id);
-    if (el) el.classList.add('open');
+    if (el) {
+      el.classList.add('open');
+      history.pushState({ type: 'sheet', sheetId: id }, '');
+    }
   }
 
-  function closeSheet(id) {
+  function closeSheet(id, skipHistoryBack = false) {
     const el = document.getElementById(id);
-    if (el) el.classList.remove('open');
+    if (el && el.classList.contains('open')) {
+      el.classList.remove('open');
+      if (!skipHistoryBack && history.state && history.state.type === 'sheet') {
+        history.back();
+      }
+    }
   }
 
   // Keyboard Physical listener for mobile PIN
@@ -444,9 +502,10 @@
   window.mobileApp = {
     init: async function () {
       await initMobileStore();
-      switchMobileTab('home');
+      switchMobileTab('home', false);
     },
     switchTab: switchMobileTab,
+    goBack: goBackToPreviousTab,
     startPay: startPay,
     proceedToPin: proceedToPin,
     pinInput: pinInput,

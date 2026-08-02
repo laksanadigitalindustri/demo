@@ -19,9 +19,14 @@
 </head>
 <body class="mobile-body">
 
-  <!-- MOBILE TOP APP BAR -->
+  <!-- MOBILE TOP APP BAR WITH BACK BUTTON -->
   <header class="mobile-app-header">
     <div class="flex items-center gap-2">
+      <!-- Device/UI Back Button -->
+      <button id="header-back-btn" onclick="mobileApp.goBack()" class="p-1 rounded-lg text-slate-700 hover:bg-slate-100 hidden">
+        <span class="material-symbols-outlined text-xl">arrow_back</span>
+      </button>
+
       <div class="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-xs shadow-sm">
         LKS
       </div>

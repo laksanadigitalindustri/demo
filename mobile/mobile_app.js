@@ -1,6 +1,6 @@
 /* ==========================================================================
    Laksanasoft Mobile App - Dedicated Smartphone Application Engine
-   Includes Pull-To-Refresh Touch Gesture & Hardware Back Button Navigation
+   Includes Multi-Step Payment Flow: Select Method -> Invoice Details -> PIN -> Status
    ========================================================================== */
 
 (function () {
@@ -290,7 +290,7 @@
     }
   });
 
-  // 1. Mobile Home View
+  // --- 1. MOBILE HOME VIEW ---
   function renderMobileHome() {
     let unpaidTotal = 0;
     let unpaidCount = 0;
@@ -361,7 +361,7 @@
     `).join('');
   }
 
-  // 2. Mobile Proposals View
+  // --- 2. MOBILE PROPOSALS VIEW ---
   function renderMobileProposals() {
     const container = document.getElementById('mobile-proposals-list');
     if (!container) return;
@@ -405,7 +405,7 @@
     `).join('');
   }
 
-  // 3. Mobile History View
+  // --- 3. MOBILE HISTORY VIEW ---
   function renderMobileHistory() {
     const container = document.getElementById('mobile-history-list');
     if (!container) return;
@@ -434,26 +434,102 @@
     `).join('');
   }
 
-  // 4. Mobile Profile View
+  // --- 4. MOBILE PROFILE VIEW ---
   function renderMobileProfile() {
     document.getElementById('mobile-prof-name').textContent = store.user.name;
     document.getElementById('mobile-prof-corp').textContent = store.user.company;
   }
 
-  // Mobile Payment Flow
+  // --- MULTI-STEP MOBILE PAYMENT FLOW ---
+  // STEP 1: Click "Bayar Sekarang" -> Select Payment Method Modal
   function startPay(invId) {
     store.selectedInvoice = store.invoices.find(i => i.id === invId);
     if (!store.selectedInvoice) return;
 
-    document.getElementById('mobile-pay-inv-id').textContent = store.selectedInvoice.id;
-    document.getElementById('mobile-pay-vendor').textContent = store.selectedInvoice.vendor;
-    document.getElementById('mobile-pay-amount').textContent = formatIDR(store.selectedInvoice.amount);
+    document.getElementById('mobile-method-inv-id').textContent = store.selectedInvoice.id;
+    document.getElementById('mobile-method-vendor').textContent = store.selectedInvoice.vendor;
+    document.getElementById('mobile-method-amount').textContent = formatIDR(store.selectedInvoice.amount);
+
+    selectPaymentMethod('bca_va');
+    openSheet('sheet-payment-method');
+  }
+
+  function selectPaymentMethod(method) {
+    store.paymentMethod = method;
+    document.querySelectorAll('.mobile-method-item').forEach(el => {
+      el.classList.remove('border-slate-900', 'bg-slate-50');
+      el.classList.add('border-slate-200');
+    });
+
+    const selectedItem = document.getElementById(`m-method-${method}`);
+    if (selectedItem) {
+      selectedItem.classList.remove('border-slate-200');
+      selectedItem.classList.add('border-slate-900', 'bg-slate-50');
+    }
+  }
+
+  // STEP 2: Selected Method -> Confirm Invoice Details Modal or QRIS
+  function confirmMethodAndProceed() {
+    closeSheet('sheet-payment-method', true);
+
+    if (store.paymentMethod === 'qris') {
+      openSheet('sheet-payment-qr');
+      startQrisTimer();
+      return;
+    }
+
+    const inv = store.selectedInvoice;
+    if (!inv) return;
+
+    const subtotal = inv.subtotal || Math.round(inv.amount / 1.11);
+    const tax = inv.tax || (inv.amount - subtotal);
+    const methodNameStr = getMethodNameString(store.paymentMethod);
+
+    document.getElementById('mobile-confirm-inv-id').textContent = inv.id;
+    document.getElementById('mobile-confirm-vendor').textContent = inv.vendor;
+    document.getElementById('mobile-confirm-method').textContent = methodNameStr;
+    document.getElementById('mobile-confirm-subtotal').textContent = formatIDR(subtotal);
+    document.getElementById('mobile-confirm-tax').textContent = formatIDR(tax);
+    document.getElementById('mobile-confirm-total').textContent = formatIDR(inv.amount);
 
     openSheet('sheet-payment-confirm');
   }
 
+  let qrisTimerInterval = null;
+  function startQrisTimer() {
+    if (qrisTimerInterval) clearInterval(qrisTimerInterval);
+    store.qrisTimerSeconds = 899;
+    const timerEl = document.getElementById('mobile-qr-timer');
+
+    qrisTimerInterval = setInterval(() => {
+      if (store.qrisTimerSeconds <= 0) {
+        clearInterval(qrisTimerInterval);
+        if (timerEl) timerEl.textContent = '00:00 (Kadaluarsa)';
+        return;
+      }
+      store.qrisTimerSeconds--;
+      const mins = Math.floor(store.qrisTimerSeconds / 60);
+      const secs = store.qrisTimerSeconds % 60;
+      if (timerEl) {
+        timerEl.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      }
+    }, 1000);
+  }
+
+  function getMethodNameString(m) {
+    switch(m) {
+      case 'bca_va': return 'Virtual Account BCA';
+      case 'mandiri_trf': return 'Bank Transfer Mandiri';
+      case 'qris': return 'QRIS / QR Code Standard';
+      case 'ewallet': return 'E-Wallet (GoPay / OVO / Dana)';
+      default: return 'Virtual Account BCA';
+    }
+  }
+
+  // STEP 3: Click "Lanjut ke PIN" -> Enter 6-Digit PIN
   function proceedToPin() {
     closeSheet('sheet-payment-confirm', true);
+    closeSheet('sheet-payment-qr', true);
     store.enteredPin = '';
     updatePinDots();
     openSheet('sheet-pin');
@@ -489,6 +565,7 @@
     });
   }
 
+  // STEP 4: PIN Verified -> Process & Display Payment Status Sheet
   async function verifyPin() {
     if (store.enteredPin === store.user.pin || store.enteredPin === '123456') {
       closeSheet('sheet-pin', true);
@@ -498,6 +575,7 @@
       const dateStr = new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) + ' WIB';
       const refCode = `LKS-${Math.floor(1000000000 + Math.random() * 9000000000)}`;
       const trxId = `TRX-${Math.floor(100000000 + Math.random() * 900000000)}`;
+      const methodStr = getMethodNameString(store.paymentMethod);
 
       let driveUrl = '';
       if (window.GoogleBackend && window.GoogleBackend.isConfigured()) {
@@ -506,7 +584,7 @@
           invoiceId: inv.id,
           vendor: inv.vendor,
           amount: inv.amount,
-          method: 'Virtual Account BCA'
+          method: methodStr
         });
         if (res && res.driveReceiptUrl) driveUrl = res.driveReceiptUrl;
       }
@@ -517,15 +595,39 @@
         vendor: inv.vendor,
         amount: inv.amount,
         date: dateStr,
-        method: 'Virtual Account BCA',
+        method: methodStr,
         status: 'SUCCESS',
         refCode: refCode,
         driveReceiptUrl: driveUrl
       };
 
       store.transactions.unshift(trx);
+      store.latestReceipt = trx;
       saveStore();
-      showMobileToast('Pembayaran Sukses!', 'success');
+
+      // Render Status Modal Sheet Content
+      document.getElementById('status-trx-id').textContent = trxId;
+      document.getElementById('status-ref-code').textContent = refCode;
+      document.getElementById('status-inv-id').textContent = inv.id;
+      document.getElementById('status-vendor').textContent = inv.vendor;
+      document.getElementById('status-date').textContent = dateStr;
+      document.getElementById('status-method').textContent = methodStr;
+      document.getElementById('status-amount').textContent = formatIDR(inv.amount);
+
+      const driveBtnContainer = document.getElementById('status-drive-container');
+      if (driveBtnContainer) {
+        if (driveUrl) {
+          driveBtnContainer.innerHTML = `
+            <a href="${driveUrl}" target="_blank" class="w-full py-2.5 bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm">
+              <span class="material-symbols-outlined text-base">cloud_download</span> Buka Resi di Google Drive
+            </a>
+          `;
+        } else {
+          driveBtnContainer.innerHTML = '';
+        }
+      }
+
+      openSheet('sheet-payment-status');
       renderMobileHome();
     } else {
       showMobileToast('PIN Salah! (PIN Demo: 123456)', 'error');
@@ -577,6 +679,8 @@
       showMobileToast('Data berhasil diperbarui!', 'success');
     },
     startPay: startPay,
+    selectPaymentMethod: selectPaymentMethod,
+    confirmMethodAndProceed: confirmMethodAndProceed,
     proceedToPin: proceedToPin,
     pinInput: pinInput,
     pinBackspace: pinBackspace,

@@ -168,49 +168,184 @@
     </a>
   </nav>
 
-  <!-- BOTTOM SHEET 1: PAYMENT CONFIRMATION -->
+  <!-- ==========================================================================
+       STEP 1: SELECT PAYMENT METHOD BOTTOM SHEET
+       ========================================================================== -->
+  <div id="sheet-payment-method" class="mobile-bottom-sheet">
+    <div class="mobile-sheet-content space-y-4">
+      <div class="sheet-handle"></div>
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div>
+          <h3 class="font-extrabold text-sm text-slate-900">Pilih Metode Pembayaran</h3>
+          <span id="mobile-method-inv-id" class="text-[10px] text-slate-400 font-mono">-</span>
+        </div>
+        <button onclick="mobileApp.closeSheet('sheet-payment-method')" class="text-slate-400">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <!-- Payment Method Selection Grid -->
+      <div class="space-y-2 text-xs">
+        <div id="m-method-bca_va" onclick="mobileApp.selectPaymentMethod('bca_va')" class="mobile-method-item p-3.5 border-2 border-slate-900 bg-slate-50 rounded-2xl flex items-center justify-between cursor-pointer transition-all">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center font-bold">
+              <span class="material-symbols-outlined text-xl">account_balance</span>
+            </div>
+            <div>
+              <h4 class="font-extrabold text-slate-900 text-xs">Virtual Account BCA</h4>
+              <p class="text-[10px] text-slate-500">Proses Otomatis Verifikasi 24 Jam</p>
+            </div>
+          </div>
+          <span class="material-symbols-outlined text-emerald-600 text-lg">check_circle</span>
+        </div>
+
+        <div id="m-method-mandiri_trf" onclick="mobileApp.selectPaymentMethod('mandiri_trf')" class="mobile-method-item p-3.5 border border-slate-200 rounded-2xl flex items-center justify-between cursor-pointer transition-all">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
+              <span class="material-symbols-outlined text-xl">account_balance_wallet</span>
+            </div>
+            <div>
+              <h4 class="font-extrabold text-slate-900 text-xs">Bank Transfer Mandiri</h4>
+              <p class="text-[10px] text-slate-500">Transfer Antar Bank Korporat</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="m-method-qris" onclick="mobileApp.selectPaymentMethod('qris')" class="mobile-method-item p-3.5 border border-slate-200 rounded-2xl flex items-center justify-between cursor-pointer transition-all">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center font-bold">
+              <span class="material-symbols-outlined text-xl">qr_code_scanner</span>
+            </div>
+            <div>
+              <h4 class="font-extrabold text-slate-900 text-xs">QRIS / QR Code Instant</h4>
+              <p class="text-[10px] text-slate-500">Pindai via M-Banking & E-Wallet</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="m-method-ewallet" onclick="mobileApp.selectPaymentMethod('ewallet')" class="mobile-method-item p-3.5 border border-slate-200 rounded-2xl flex items-center justify-between cursor-pointer transition-all">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold">
+              <span class="material-symbols-outlined text-xl">smartphone</span>
+            </div>
+            <div>
+              <h4 class="font-extrabold text-slate-900 text-xs">E-Wallet (GoPay / OVO / Dana)</h4>
+              <p class="text-[10px] text-slate-500">Potong Saldo Instant Korporat</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-between items-center pt-2 border-t border-slate-100 text-xs">
+        <span class="text-slate-500">Total Nominal:</span>
+        <strong id="mobile-method-amount" class="text-sm font-black text-slate-900">Rp 0</strong>
+      </div>
+
+      <button onclick="mobileApp.confirmMethodAndProceed()" class="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-md active:scale-95 transition-transform">
+        Lanjut ke Rincian Tagihan
+      </button>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       STEP 2: CONFIRM INVOICE DETAILS & PERSETUJUAN BOTTOM SHEET
+       ========================================================================== -->
   <div id="sheet-payment-confirm" class="mobile-bottom-sheet">
     <div class="mobile-sheet-content space-y-4">
       <div class="sheet-handle"></div>
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <h3 class="font-extrabold text-sm text-slate-900">Konfirmasi Pembayaran Tagihan</h3>
+        <div>
+          <h3 class="font-extrabold text-sm text-slate-900">Rincian Tagihan & Persetujuan</h3>
+          <span class="text-[10px] text-slate-400">Laksanasoft Corporate Portal</span>
+        </div>
         <button onclick="mobileApp.closeSheet('sheet-payment-confirm')" class="text-slate-400">
           <span class="material-symbols-outlined text-lg">close</span>
         </button>
       </div>
 
-      <div class="space-y-2 text-xs">
+      <div class="bg-slate-50 p-4 rounded-2xl space-y-2.5 text-xs">
         <div class="flex justify-between text-slate-500">
           <span>No. Invoice:</span>
-          <strong id="mobile-pay-inv-id" class="text-slate-900 font-mono">-</strong>
+          <strong id="mobile-confirm-inv-id" class="text-slate-900 font-mono">-</strong>
         </div>
         <div class="flex justify-between text-slate-500">
-          <span>Vendor:</span>
-          <strong id="mobile-pay-vendor" class="text-slate-900">-</strong>
+          <span>Penerbit / Vendor:</span>
+          <strong id="mobile-confirm-vendor" class="text-slate-900">-</strong>
         </div>
         <div class="flex justify-between text-slate-500">
           <span>Metode Pembayaran:</span>
-          <span class="font-bold text-slate-900">Virtual Account BCA</span>
+          <strong id="mobile-confirm-method" class="text-emerald-700 font-bold">-</strong>
         </div>
-        <div class="flex justify-between pt-2 border-t border-slate-100 text-sm font-extrabold text-slate-900">
-          <span>Total Tagihan:</span>
-          <span id="mobile-pay-amount">Rp 0</span>
+        <div class="flex justify-between text-slate-500 border-t border-slate-200 pt-2">
+          <span>Subtotal Layanan:</span>
+          <span id="mobile-confirm-subtotal" class="font-semibold text-slate-900">Rp 0</span>
+        </div>
+        <div class="flex justify-between text-slate-500">
+          <span>PPN 11%:</span>
+          <span id="mobile-confirm-tax" class="font-semibold text-slate-900">Rp 0</span>
+        </div>
+        <div class="flex justify-between text-slate-900 text-sm font-black pt-2 border-t border-slate-300">
+          <span>Total Pembayaran:</span>
+          <span id="mobile-confirm-total" class="text-emerald-700">Rp 0</span>
         </div>
       </div>
 
-      <button onclick="mobileApp.proceedToPin()" class="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-md active:scale-95 transition-transform">
-        Lanjut ke Otentikasi PIN
+      <button onclick="mobileApp.proceedToPin()" class="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-md active:scale-95 transition-transform flex items-center justify-center gap-1.5">
+        <span class="material-symbols-outlined text-base">lock</span> Lanjut ke Otentikasi PIN Keamanan
       </button>
     </div>
   </div>
 
-  <!-- BOTTOM SHEET 2: PIN VERIFICATION -->
+  <!-- ==========================================================================
+       QRIS PAYMENT SHEET
+       ========================================================================== -->
+  <div id="sheet-payment-qr" class="mobile-bottom-sheet">
+    <div class="mobile-sheet-content space-y-4 text-center">
+      <div class="sheet-handle"></div>
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-extrabold text-sm text-slate-900">Pembayaran QRIS Instant</h3>
+        <button onclick="mobileApp.closeSheet('sheet-payment-qr')" class="text-slate-400">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-1">
+        <span class="text-[10px] font-bold text-slate-400 uppercase">Waktu Pembayaran Tersisa:</span>
+        <div id="mobile-qr-timer" class="text-lg font-black text-rose-600">14:59</div>
+      </div>
+
+      <!-- QR Code Placeholder -->
+      <div class="bg-white p-4 rounded-2xl border-2 border-slate-900 inline-block shadow-sm">
+        <svg class="w-48 h-48 mx-auto" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="100" height="100" fill="white"/>
+          <path d="M10 10H40V40H10V10ZM15 15V35H35V15H15Z" fill="#0F172A"/>
+          <path d="M20 20H30V30H20V20Z" fill="#0F172A"/>
+          <path d="M60 10H90V40H60V10ZM65 15V35H85V15H65Z" fill="#0F172A"/>
+          <path d="M70 20H80V30H70V20Z" fill="#0F172A"/>
+          <path d="M10 60H40V90H10V60ZM15 65V85H35V65H15Z" fill="#0F172A"/>
+          <path d="M20 70H30V80H20V70Z" fill="#0F172A"/>
+          <path d="M50 50H60V60H50V50Z" fill="#0F172A"/>
+          <path d="M70 50H90V60H70V50Z" fill="#0F172A"/>
+          <path d="M50 70H70V90H50V70Z" fill="#0F172A"/>
+          <path d="M80 70H90V90H80V70Z" fill="#0F172A"/>
+        </svg>
+      </div>
+
+      <button onclick="mobileApp.proceedToPin()" class="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-md">
+        Saya Sudah Memindai / Verifikasi PIN
+      </button>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       STEP 3: 6-DIGIT PIN AUTHENTICATION BOTTOM SHEET
+       ========================================================================== -->
   <div id="sheet-pin" class="mobile-bottom-sheet">
     <div class="mobile-sheet-content space-y-5 text-center">
       <div class="sheet-handle"></div>
       <div>
         <h3 class="font-extrabold text-base text-slate-900">Masukkan PIN Keamanan</h3>
-        <p class="text-[11px] text-slate-400 mt-0.5">Ketik 6 digit PIN (PIN Demo: 123456)</p>
+        <p class="text-[11px] text-slate-400 mt-0.5">Ketik 6 digit PIN transaksi korporat Anda (PIN Demo: 123456)</p>
       </div>
 
       <!-- PIN Dots -->
@@ -243,7 +378,62 @@
     </div>
   </div>
 
-  <!-- BOTTOM SHEET 3: TRANSACTION DETAIL -->
+  <!-- ==========================================================================
+       STEP 4: PAYMENT STATUS & RECEIPT SHEET
+       ========================================================================== -->
+  <div id="sheet-payment-status" class="mobile-bottom-sheet">
+    <div class="mobile-sheet-content space-y-4 text-center">
+      <div class="sheet-handle"></div>
+      
+      <div class="w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
+        <span class="material-symbols-outlined text-3xl">check_circle</span>
+      </div>
+
+      <div>
+        <h3 class="font-black text-base text-slate-900">Pembayaran Berhasil!</h3>
+        <p class="text-xs text-emerald-700 font-bold mt-0.5">Status: LUNAS / VERIFIED</p>
+      </div>
+
+      <div class="bg-slate-50 p-4 rounded-2xl space-y-2 text-xs text-left">
+        <div class="flex justify-between text-slate-500">
+          <span>Kode Referensi:</span>
+          <strong id="status-ref-code" class="text-slate-900 font-mono">-</strong>
+        </div>
+        <div class="flex justify-between text-slate-500">
+          <span>ID Transaksi:</span>
+          <strong id="status-trx-id" class="text-slate-900 font-mono">-</strong>
+        </div>
+        <div class="flex justify-between text-slate-500">
+          <span>No. Invoice:</span>
+          <strong id="status-inv-id" class="text-slate-900 font-mono">-</strong>
+        </div>
+        <div class="flex justify-between text-slate-500">
+          <span>Vendor:</span>
+          <strong id="status-vendor" class="text-slate-900">-</strong>
+        </div>
+        <div class="flex justify-between text-slate-500">
+          <span>Waktu & Tanggal:</span>
+          <span id="status-date" class="text-slate-900 font-medium">-</span>
+        </div>
+        <div class="flex justify-between text-slate-500">
+          <span>Metode:</span>
+          <span id="status-method" class="text-slate-900 font-semibold">-</span>
+        </div>
+        <div class="flex justify-between pt-2 border-t border-slate-200 text-sm font-black text-slate-900">
+          <span>Total Terbayar:</span>
+          <span id="status-amount" class="text-emerald-700">Rp 0</span>
+        </div>
+      </div>
+
+      <div id="status-drive-container"></div>
+
+      <button onclick="mobileApp.closeSheet('sheet-payment-status')" class="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-md">
+        Selesai & Kembali ke Beranda
+      </button>
+    </div>
+  </div>
+
+  <!-- BOTTOM SHEET 5: TRANSACTION DETAIL -->
   <div id="sheet-trx-detail" class="mobile-bottom-sheet">
     <div class="mobile-sheet-content space-y-4">
       <div class="sheet-handle"></div>
@@ -281,7 +471,7 @@
     </div>
   </div>
 
-  <!-- BOTTOM SHEET 4: NEGOTIATION FORM -->
+  <!-- BOTTOM SHEET 6: NEGOTIATION FORM -->
   <div id="sheet-nego" class="mobile-bottom-sheet">
     <div class="mobile-sheet-content space-y-4">
       <div class="sheet-handle"></div>

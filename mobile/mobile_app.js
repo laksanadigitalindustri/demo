@@ -1,6 +1,6 @@
 /* ==========================================================================
    Laksanasoft Mobile App - Dedicated Smartphone Application Engine
-   Includes Skeleton Loading Shimmer & Fixed Bottom Navigation / Pay Click
+   Includes Skeleton Loading Shimmer, Fixed Pull-to-Refresh & Pay Click
    ========================================================================== */
 
 (function () {
@@ -200,7 +200,7 @@
     }, 3500);
   }
 
-  // --- PULL TO REFRESH TOUCH GESTURE ---
+  // --- FIXED PULL TO REFRESH TOUCH GESTURE ---
   function initPullToRefresh() {
     let startY = 0;
     let currentY = 0;
@@ -213,18 +213,19 @@
     if (!indicator) return;
 
     window.addEventListener('touchstart', function (e) {
-      if (window.scrollY === 0) {
+      if (window.scrollY <= 2) {
         startY = e.touches[0].clientY;
-        isPulling = true;
+        isPulling = false;
       }
     }, { passive: true });
 
     window.addEventListener('touchmove', function (e) {
-      if (!isPulling || window.scrollY > 0) return;
+      if (window.scrollY > 2 || !startY) return;
       currentY = e.touches[0].clientY;
-      const pullDist = Math.max(0, (currentY - startY) * 0.45);
+      const pullDist = (currentY - startY) * 0.45;
 
-      if (pullDist > 10) {
+      if (pullDist > 15) {
+        isPulling = true;
         indicator.style.height = `${Math.min(pullDist, 75)}px`;
         indicator.classList.add('pulling');
 
@@ -239,11 +240,14 @@
     }, { passive: true });
 
     window.addEventListener('touchend', async function () {
-      if (!isPulling) return;
+      if (!isPulling) {
+        startY = 0;
+        return;
+      }
       isPulling = false;
 
       const pullDist = (currentY - startY) * 0.45;
-      if (pullDist >= threshold && window.scrollY === 0) {
+      if (pullDist >= threshold && window.scrollY <= 5) {
         indicator.style.height = '50px';
         indicator.classList.add('refreshing');
         if (label) label.textContent = 'Memuat data terbaru dari server...';
@@ -288,7 +292,9 @@
 
     if (pushToHistory) {
       navigationStack.push(tabName);
-      history.pushState({ type: 'tab', tab: tabName }, '');
+      try {
+        history.pushState({ type: 'tab', tab: tabName }, '');
+      } catch (e) {}
     }
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -391,11 +397,11 @@
 
         <div class="pt-2 border-t border-slate-100 flex items-center justify-end gap-2">
           ${inv.status !== 'PAID' ? `
-            <button type="button" onclick="mobileApp.startPay('${inv.id}')" class="w-full py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-transform">
+            <button type="button" onclick="window.mobileApp.startPay('${inv.id}')" class="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-transform">
               <span class="material-symbols-outlined text-base">payments</span> Bayar Sekarang
             </button>
           ` : `
-            <button type="button" onclick="mobileApp.viewTrxByInv('${inv.id}')" class="w-full py-2.5 bg-slate-100 text-slate-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5">
+            <button type="button" onclick="window.mobileApp.viewTrxByInv('${inv.id}')" class="w-full py-2.5 bg-slate-100 text-slate-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5">
               <span class="material-symbols-outlined text-base">receipt_long</span> Lihat Resi Pembayaran
             </button>
           `}
@@ -438,8 +444,8 @@
 
         <div class="flex items-center justify-end gap-2 pt-1">
           ${quo.status === 'PENDING' || quo.status === 'NEGOTIATING' ? `
-            <button type="button" onclick="mobileApp.openNegoModal('${quo.id}')" class="flex-1 py-2 bg-slate-100 text-slate-800 text-xs font-bold rounded-xl">Negosiasi</button>
-            <button type="button" onclick="mobileApp.approveQuo('${quo.id}')" class="flex-1 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl shadow-sm">Setujui</button>
+            <button type="button" onclick="window.mobileApp.openNegoModal('${quo.id}')" class="flex-1 py-2 bg-slate-100 text-slate-800 text-xs font-bold rounded-xl">Negosiasi</button>
+            <button type="button" onclick="window.mobileApp.approveQuo('${quo.id}')" class="flex-1 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl shadow-sm">Setujui</button>
           ` : `
             <span class="text-xs font-bold text-emerald-700">Status: ${quo.status}</span>
           `}
@@ -459,7 +465,7 @@
     }
 
     container.innerHTML = store.transactions.map(trx => `
-      <div onclick="mobileApp.openTrxModal('${trx.trxId}')" class="mobile-card flex items-center justify-between cursor-pointer active:bg-slate-50">
+      <div onclick="window.mobileApp.openTrxModal('${trx.trxId}')" class="mobile-card flex items-center justify-between cursor-pointer active:bg-slate-50">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
             <span class="material-symbols-outlined text-xl">check_circle</span>
@@ -485,12 +491,22 @@
 
   // --- MULTI-STEP MOBILE PAYMENT FLOW ---
   function startPay(invId) {
-    store.selectedInvoice = store.invoices.find(i => i.id === invId);
-    if (!store.selectedInvoice) return;
+    if (!invId) return;
+    const targetInv = store.invoices.find(i => String(i.id).trim() === String(invId).trim()) || store.invoices[0];
+    if (!targetInv) {
+      showMobileToast("Tagihan tidak ditemukan.", "error");
+      return;
+    }
 
-    document.getElementById('mobile-method-inv-id').textContent = store.selectedInvoice.id;
-    document.getElementById('mobile-method-vendor').textContent = store.selectedInvoice.vendor;
-    document.getElementById('mobile-method-amount').textContent = formatIDR(store.selectedInvoice.amount);
+    store.selectedInvoice = targetInv;
+
+    const idEl = document.getElementById('mobile-method-inv-id');
+    const vendorEl = document.getElementById('mobile-method-vendor');
+    const amountEl = document.getElementById('mobile-method-amount');
+
+    if (idEl) idEl.textContent = targetInv.id;
+    if (vendorEl) vendorEl.textContent = targetInv.vendor;
+    if (amountEl) amountEl.textContent = formatIDR(targetInv.amount);
 
     selectPaymentMethod('bca_va');
     openSheet('sheet-payment-method');
@@ -678,7 +694,9 @@
     const el = document.getElementById(id);
     if (el) {
       el.classList.add('open');
-      history.pushState({ type: 'sheet', sheetId: id }, '');
+      try {
+        history.pushState({ type: 'sheet', sheetId: id }, '');
+      } catch (e) {}
     }
   }
 

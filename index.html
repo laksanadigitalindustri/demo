@@ -310,7 +310,7 @@
             </div>
 
             <div class="overflow-x-auto">
-              <table class="w-full text-left border-collapse">
+              <table class="w-full text-left border-collapse min-w-[720px]">
                 <thead>
                   <tr class="bg-surface-container-low dark:bg-surface-container border-b border-surface-container-high text-xs font-bold text-on-surface-variant uppercase tracking-wider">
                     <th class="px-6 py-4">No. Invoice</th>
@@ -737,7 +737,7 @@
 
           <div class="bg-surface-container-lowest dark:bg-surface-container-low rounded-2xl border border-surface-container-high card-shadow overflow-hidden">
             <div class="overflow-x-auto">
-              <table class="w-full text-left border-collapse">
+              <table class="w-full text-left border-collapse min-w-[700px]">
                 <thead>
                   <tr class="bg-surface-container-low dark:bg-surface-container border-b border-surface-container-high text-xs font-bold text-on-surface-variant uppercase tracking-wider">
                     <th class="px-6 py-4">ID Transaksi</th>
@@ -879,7 +879,7 @@
        MODAL 1: 6-DIGIT SECURITY PIN KEYPAD MODAL
        ========================================================================== -->
   <div id="modal-pin" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-surface-container-lowest dark:bg-surface-container-low w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-surface-container-high text-center space-y-6">
+    <div class="bg-surface-container-lowest dark:bg-surface-container-low w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-surface-container-high text-center space-y-6 max-h-[90vh] overflow-y-auto">
       <div class="w-12 h-12 rounded-2xl bg-primary/10 text-primary dark:text-secondary flex items-center justify-center mx-auto">
         <span class="material-symbols-outlined text-2xl">shield_lock</span>
       </div>
@@ -946,7 +946,7 @@
        MODAL 3: REJECT PROPOSAL MODAL
        ========================================================================== -->
   <div id="modal-reject-proposal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-surface-container-lowest dark:bg-surface-container-low w-full max-w-md rounded-2xl p-6 shadow-2xl border border-surface-container-high space-y-5">
+    <div class="bg-surface-container-lowest dark:bg-surface-container-low w-full max-w-md rounded-2xl p-6 shadow-2xl border border-surface-container-high space-y-5 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between">
         <h3 class="text-lg font-bold text-rose-600 dark:text-rose-400">Penolakan Penawaran Vendor</h3>
         <button onclick="document.getElementById('modal-reject-proposal').classList.add('hidden')" class="p-1 rounded-lg text-outline hover:bg-surface-container">
@@ -973,7 +973,7 @@
        MODAL 4: NEGOTIATE PROPOSAL MODAL
        ========================================================================== -->
   <div id="modal-negotiate-proposal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-surface-container-lowest dark:bg-surface-container-low w-full max-w-md rounded-2xl p-6 shadow-2xl border border-surface-container-high space-y-5">
+    <div class="bg-surface-container-lowest dark:bg-surface-container-low w-full max-w-md rounded-2xl p-6 shadow-2xl border border-surface-container-high space-y-5 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between">
         <div>
           <h3 class="text-lg font-bold text-primary dark:text-on-primary-container">Pengajuan Negosiasi Harga</h3>
@@ -1011,7 +1011,7 @@
        MODAL 5: TRANSACTION DETAIL MODAL
        ========================================================================== -->
   <div id="modal-trx-detail" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
-    <div class="bg-surface-container-lowest dark:bg-surface-container-low w-full max-w-md rounded-2xl p-6 shadow-2xl border border-surface-container-high space-y-6">
+    <div class="bg-surface-container-lowest dark:bg-surface-container-low w-full max-w-md rounded-2xl p-6 shadow-2xl border border-surface-container-high space-y-6 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-surface-container pb-4">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-300 flex items-center justify-center font-bold">

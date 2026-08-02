@@ -156,3 +156,32 @@ body {
     display: none !important;
   }
 }
+
+/* ==========================================================================
+   Mobile Responsiveness & Touch Optimization
+   ========================================================================== */
+@media (max-width: 639px) {
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Custom Touch Scrollbar */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+
+  /* Minimum Touch Target Sizes */
+  .touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Modal max height & responsive padding */
+  .modal-responsive {
+    max-height: 90vh;
+    overflow-y: auto;
+    margin: 1rem;
+    width: calc(100% - 2rem);
+  }
+}

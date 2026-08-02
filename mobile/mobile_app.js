@@ -647,21 +647,21 @@
         </div>
 
         <!-- 3-Button Row: [ PDF ]  [ Detail ]  [ Bayar Sekarang / Resi ] -->
-        <div class="pt-2 border-t border-slate-100 flex items-center gap-1.5">
-          <button type="button" onclick="window.mobileApp.downloadInvoicePDF('${inv.id}')" class="px-2.5 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-xs font-bold flex items-center gap-1">
+        <div class="pt-2 border-t border-slate-100 flex flex-wrap sm:flex-nowrap items-center gap-1.5">
+          <button type="button" onclick="window.mobileApp.downloadInvoicePDF('${inv.id}')" class="px-2.5 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1 flex-shrink-0 active:scale-95 transition-all">
             <span class="material-symbols-outlined text-base">picture_as_pdf</span> PDF
           </button>
 
-          <button type="button" onclick="window.mobileApp.openInvoiceDetailModal('${inv.id}')" class="px-2.5 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold flex items-center gap-1">
+          <button type="button" onclick="window.mobileApp.openInvoiceDetailModal('${inv.id}')" class="px-2.5 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1 flex-shrink-0 active:scale-95 transition-all">
             <span class="material-symbols-outlined text-base">info</span> Detail
           </button>
 
           ${inv.status !== 'PAID' ? `
-            <button type="button" onclick="window.mobileApp.startPay('${inv.id}')" class="flex-1 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1 active:scale-95 transition-transform">
+            <button type="button" onclick="window.mobileApp.startPay('${inv.id}')" class="flex-1 min-w-[120px] py-2 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1 active:scale-95 transition-all">
               <span class="material-symbols-outlined text-base">payments</span> Bayar Sekarang
             </button>
           ` : `
-            <button type="button" onclick="window.mobileApp.viewTrxByInv('${inv.id}')" class="flex-1 py-2 bg-emerald-100 text-emerald-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1">
+            <button type="button" onclick="window.mobileApp.viewTrxByInv('${inv.id}')" class="flex-1 min-w-[100px] py-2 bg-emerald-100 text-emerald-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1 active:scale-95 transition-all">
               <span class="material-symbols-outlined text-base">receipt_long</span> Resi
             </button>
           `}

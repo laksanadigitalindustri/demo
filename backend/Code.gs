@@ -1,14 +1,15 @@
 /**
  * ============================================================================
- * Laksanasoft Corporate Payment Portal - Google Apps Script Backend (Hardened)
- * Includes Telegram Bot Integration (@laksanasoft_bot)
+ * Laksanasoft Corporate Payment Portal - Google Apps Script Backend (v4 Upgraded)
+ * Full Features: Invoices, Proposals, Transactions, Requests & Telegram Bot
+ * GUARANTEE: Zero Data Loss - Existing Rows & Sheets Are Preserved 100%
  * ============================================================================
  */
 
 const API_SECRET_TOKEN = 'LAKSA_SECURE_TOKEN_2026_98F3A';
 const TELEGRAM_BOT_TOKEN = '8814615182:AAF_bAmLXUQrUkmxLfCBrnZEKUoFPeyQ0_w';
 
-// Helper function to send Telegram Bot notification
+// Telegram Bot Dispatcher with Auto Chat-ID Detection
 function sendTelegramNotification(messageText) {
   if (!TELEGRAM_BOT_TOKEN) return;
 
@@ -16,17 +17,20 @@ function sendTelegramNotification(messageText) {
     const props = PropertiesService.getScriptProperties();
     let chatId = props.getProperty('TELEGRAM_CHAT_ID');
 
-    // Auto-detect Chat ID from getUpdates if not stored
+    // Auto-detect Chat ID from getUpdates if not stored yet
     if (!chatId) {
       const updatesUrl = "https://api.telegram.org/bot" + TELEGRAM_BOT_TOKEN + "/getUpdates";
       const response = UrlFetchApp.fetch(updatesUrl, { muteHttpExceptions: true });
       const json = JSON.parse(response.getContentText());
 
       if (json.ok && json.result && json.result.length > 0) {
-        const lastUpdate = json.result[json.result.length - 1];
-        if (lastUpdate.message && lastUpdate.message.chat) {
-          chatId = String(lastUpdate.message.chat.id);
-          props.setProperty('TELEGRAM_CHAT_ID', chatId);
+        for (let i = json.result.length - 1; i >= 0; i--) {
+          const item = json.result[i];
+          if (item.message && item.message.chat) {
+            chatId = String(item.message.chat.id);
+            props.setProperty('TELEGRAM_CHAT_ID', chatId);
+            break;
+          }
         }
       }
     }
@@ -81,7 +85,7 @@ function doGet(e) {
     else if (action === 'getNotifications') responseData.data = getTableData('Notifications');
     else if (action === 'getRequests') responseData.data = getTableData('Requests');
     else if (action === 'initTables') responseData.message = initializeDatabaseTables();
-    else responseData = { status: 'ERROR', message: 'Aksi tidak dikenali!' };
+    else responseData = { status: 'ERROR', message: 'Aksi GET tidak dikenali!' };
 
   } catch (error) {
     responseData = { status: 'ERROR', message: error.toString() };
@@ -166,6 +170,9 @@ function doPost(e) {
       const category = sanitizeString(requestData.category);
       const priority = sanitizeString(requestData.priority);
       const desc = sanitizeString(requestData.description);
+      const dateStr = Utilities.formatDate(new Date(), "Asia/Jakarta", "dd MMM yyyy");
+
+      recordServiceRequest(reqId, title, category, priority, 'PENDING', dateStr, desc);
 
       // Telegram Bot Alert for Service Request
       const telegramMsg = "<b>📥 NOTIFIKASI PERMINTAAN LAYANAN BARU</b>\n\n" +
@@ -189,6 +196,7 @@ function doPost(e) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
+// SAFE DATA RETRIEVAL (PRESERVES EXISTING ROWS)
 function getTableData(tableName) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(tableName);
@@ -225,6 +233,31 @@ function recordPaymentTransaction(invoiceId, vendor, amount, method) {
 
   sheet.appendRow([trxId, invoiceId, vendor, amount, dateStr, method, 'SUCCESS', refCode, '']);
   return { trxId: trxId, refCode: refCode };
+}
+
+function updateTransactionDriveUrl(trxId, driveUrl) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Transactions');
+  if (!sheet) return;
+
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(trxId)) {
+      sheet.getRange(i + 1, 9).setValue(driveUrl); // DriveReceiptUrl Column
+      break;
+    }
+  }
+}
+
+function recordServiceRequest(reqId, title, category, priority, status, dateStr, description) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName('Requests');
+  if (!sheet) {
+    sheet = ss.insertSheet('Requests');
+    sheet.appendRow(['ReqID', 'Title', 'Category', 'Priority', 'Status', 'Date', 'Description']);
+  }
+
+  sheet.appendRow([reqId, title, category, priority, status, dateStr, description]);
 }
 
 function updateInvoiceStatus(invoiceId, newStatus) {
@@ -287,4 +320,29 @@ function generateDriveReceiptPDF(trxId, invoiceId, vendor, amount, method, refCo
   } catch (e) {
     return "";
   }
+}
+
+// SAFE MIGRATION / INITIALIZATION (NEVER OVERWRITES OR DELETES EXISTING ROWS)
+function initializeDatabaseTables() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  const tables = {
+    'Invoices': ['InvoiceID', 'Vendor', 'VendorLogo', 'Category', 'IssueDate', 'DueDate', 'Amount', 'Tax', 'Subtotal', 'Status', 'Description', 'ItemsJSON'],
+    'Proposals': ['ProposalID', 'Vendor', 'VendorLogo', 'Title', 'IssueDate', 'ValidUntil', 'OriginalPrice', 'CounterPrice', 'Status', 'Notes', 'ItemsJSON', 'HistoryJSON'],
+    'Transactions': ['TrxID', 'InvoiceID', 'Vendor', 'Amount', 'Date', 'Method', 'Status', 'RefCode', 'DriveReceiptUrl'],
+    'Requests': ['ReqID', 'Title', 'Category', 'Priority', 'Status', 'Date', 'Description'],
+    'Notifications': ['NotifID', 'Title', 'Message', 'Date', 'Type', 'IsRead']
+  };
+
+  let createdSheets = [];
+  for (let tableName in tables) {
+    let sheet = ss.getSheetByName(tableName);
+    if (!sheet) {
+      sheet = ss.insertSheet(tableName);
+      sheet.appendRow(tables[tableName]);
+      createdSheets.push(tableName);
+    }
+  }
+
+  return "Inisialisasi tabel aman selesai! Tabel baru dibuat: " + (createdSheets.length > 0 ? createdSheets.join(', ') : 'Tidak ada (semua data lama aman).');
 }

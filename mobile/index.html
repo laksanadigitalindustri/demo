@@ -23,7 +23,7 @@
   <header class="mobile-app-header">
     <div class="flex items-center gap-2">
       <!-- Device/UI Back Button -->
-      <button id="header-back-btn" onclick="mobileApp.goBack()" class="p-1 rounded-lg text-slate-700 hover:bg-slate-100 hidden">
+      <button id="header-back-btn" type="button" onclick="mobileApp.goBack()" class="p-1 rounded-lg text-slate-700 hover:bg-slate-100 hidden">
         <span class="material-symbols-outlined text-xl">arrow_back</span>
       </button>
 
@@ -37,10 +37,10 @@
     </div>
 
     <div class="flex items-center gap-1.5">
-      <button onclick="mobileApp.refreshData()" class="p-1.5 rounded-lg text-slate-700 hover:bg-slate-100" title="Refresh Data">
+      <button type="button" onclick="mobileApp.refreshData()" class="p-1.5 rounded-lg text-slate-700 hover:bg-slate-100" title="Refresh Data">
         <span class="material-symbols-outlined text-lg">sync</span>
       </button>
-      <button onclick="mobileApp.switchToDesktop()" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-[10px] font-bold flex items-center gap-1 border border-slate-200">
+      <button type="button" onclick="mobileApp.switchToDesktop()" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-[10px] font-bold flex items-center gap-1 border border-slate-200">
         <span class="material-symbols-outlined text-xs">desktop_windows</span> Versi Desktop
       </button>
     </div>
@@ -71,7 +71,7 @@
 
       <!-- Quick Action Buttons -->
       <div class="grid grid-cols-2 gap-3">
-        <button onclick="mobileApp.switchTab('proposals')" class="p-3 bg-white border border-slate-200 rounded-xl flex items-center gap-2.5 shadow-sm active:bg-slate-50">
+        <button type="button" onclick="mobileApp.switchTab('proposals')" class="p-3 bg-white border border-slate-200 rounded-xl flex items-center gap-2.5 shadow-sm active:bg-slate-50">
           <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
             <span class="material-symbols-outlined text-lg">request_quote</span>
           </div>
@@ -81,7 +81,7 @@
           </div>
         </button>
 
-        <button onclick="mobileApp.switchTab('history')" class="p-3 bg-white border border-slate-200 rounded-xl flex items-center gap-2.5 shadow-sm active:bg-slate-50">
+        <button type="button" onclick="mobileApp.switchTab('history')" class="p-3 bg-white border border-slate-200 rounded-xl flex items-center gap-2.5 shadow-sm active:bg-slate-50">
           <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
             <span class="material-symbols-outlined text-lg">history</span>
           </div>
@@ -97,7 +97,7 @@
         <h3 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Daftar Tagihan Korporat</h3>
       </div>
 
-      <!-- Invoice List Container -->
+      <!-- Invoice List Container (with Skeleton Loading Shimmer) -->
       <div id="mobile-invoice-list"></div>
     </div>
 
@@ -150,27 +150,25 @@
 
   <!-- MOBILE BOTTOM NAVIGATION BAR -->
   <nav class="mobile-bottom-nav">
-    <a href="#" id="nav-btn-home" onclick="mobileApp.switchTab('home')" class="mobile-nav-item active">
+    <button type="button" id="nav-btn-home" onclick="mobileApp.switchTab('home')" class="mobile-nav-item active">
       <span class="material-symbols-outlined text-xl">home</span>
       <span>Beranda</span>
-    </a>
-    <a href="#" id="nav-btn-proposals" onclick="mobileApp.switchTab('proposals')" class="mobile-nav-item">
+    </button>
+    <button type="button" id="nav-btn-proposals" onclick="mobileApp.switchTab('proposals')" class="mobile-nav-item">
       <span class="material-symbols-outlined text-xl">request_quote</span>
       <span>Penawaran</span>
-    </a>
-    <a href="#" id="nav-btn-history" onclick="mobileApp.switchTab('history')" class="mobile-nav-item">
+    </button>
+    <button type="button" id="nav-btn-history" onclick="mobileApp.switchTab('history')" class="mobile-nav-item">
       <span class="material-symbols-outlined text-xl">history</span>
       <span>Riwayat</span>
-    </a>
-    <a href="#" id="nav-btn-profile" onclick="mobileApp.switchTab('profile')" class="mobile-nav-item">
+    </button>
+    <button type="button" id="nav-btn-profile" onclick="mobileApp.switchTab('profile')" class="mobile-nav-item">
       <span class="material-symbols-outlined text-xl">person</span>
       <span>Profil</span>
-    </a>
+    </button>
   </nav>
 
-  <!-- ==========================================================================
-       STEP 1: SELECT PAYMENT METHOD BOTTOM SHEET
-       ========================================================================== -->
+  <!-- STEP 1: SELECT PAYMENT METHOD BOTTOM SHEET -->
   <div id="sheet-payment-method" class="mobile-bottom-sheet">
     <div class="mobile-sheet-content space-y-4">
       <div class="sheet-handle"></div>
@@ -179,7 +177,7 @@
           <h3 class="font-extrabold text-sm text-slate-900">Pilih Metode Pembayaran</h3>
           <span id="mobile-method-inv-id" class="text-[10px] text-slate-400 font-mono">-</span>
         </div>
-        <button onclick="mobileApp.closeSheet('sheet-payment-method')" class="text-slate-400">
+        <button type="button" onclick="mobileApp.closeSheet('sheet-payment-method')" class="text-slate-400">
           <span class="material-symbols-outlined text-lg">close</span>
         </button>
       </div>
@@ -241,15 +239,13 @@
         <strong id="mobile-method-amount" class="text-sm font-black text-slate-900">Rp 0</strong>
       </div>
 
-      <button onclick="mobileApp.confirmMethodAndProceed()" class="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-md active:scale-95 transition-transform">
+      <button type="button" onclick="mobileApp.confirmMethodAndProceed()" class="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-md active:scale-95 transition-transform">
         Lanjut ke Rincian Tagihan
       </button>
     </div>
   </div>
 
-  <!-- ==========================================================================
-       STEP 2: CONFIRM INVOICE DETAILS & PERSETUJUAN BOTTOM SHEET
-       ========================================================================== -->
+  <!-- STEP 2: CONFIRM INVOICE DETAILS BOTTOM SHEET -->
   <div id="sheet-payment-confirm" class="mobile-bottom-sheet">
     <div class="mobile-sheet-content space-y-4">
       <div class="sheet-handle"></div>
@@ -258,7 +254,7 @@
           <h3 class="font-extrabold text-sm text-slate-900">Rincian Tagihan & Persetujuan</h3>
           <span class="text-[10px] text-slate-400">Laksanasoft Corporate Portal</span>
         </div>
-        <button onclick="mobileApp.closeSheet('sheet-payment-confirm')" class="text-slate-400">
+        <button type="button" onclick="mobileApp.closeSheet('sheet-payment-confirm')" class="text-slate-400">
           <span class="material-symbols-outlined text-lg">close</span>
         </button>
       </div>
@@ -290,21 +286,19 @@
         </div>
       </div>
 
-      <button onclick="mobileApp.proceedToPin()" class="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-md active:scale-95 transition-transform flex items-center justify-center gap-1.5">
+      <button type="button" onclick="mobileApp.proceedToPin()" class="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-md active:scale-95 transition-transform flex items-center justify-center gap-1.5">
         <span class="material-symbols-outlined text-base">lock</span> Lanjut ke Otentikasi PIN Keamanan
       </button>
     </div>
   </div>
 
-  <!-- ==========================================================================
-       QRIS PAYMENT SHEET
-       ========================================================================== -->
+  <!-- QRIS PAYMENT SHEET -->
   <div id="sheet-payment-qr" class="mobile-bottom-sheet">
     <div class="mobile-sheet-content space-y-4 text-center">
       <div class="sheet-handle"></div>
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
         <h3 class="font-extrabold text-sm text-slate-900">Pembayaran QRIS Instant</h3>
-        <button onclick="mobileApp.closeSheet('sheet-payment-qr')" class="text-slate-400">
+        <button type="button" onclick="mobileApp.closeSheet('sheet-payment-qr')" class="text-slate-400">
           <span class="material-symbols-outlined text-lg">close</span>
         </button>
       </div>
@@ -314,7 +308,6 @@
         <div id="mobile-qr-timer" class="text-lg font-black text-rose-600">14:59</div>
       </div>
 
-      <!-- QR Code Placeholder -->
       <div class="bg-white p-4 rounded-2xl border-2 border-slate-900 inline-block shadow-sm">
         <svg class="w-48 h-48 mx-auto" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
           <rect width="100" height="100" fill="white"/>
@@ -331,15 +324,13 @@
         </svg>
       </div>
 
-      <button onclick="mobileApp.proceedToPin()" class="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-md">
+      <button type="button" onclick="mobileApp.proceedToPin()" class="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-md">
         Saya Sudah Memindai / Verifikasi PIN
       </button>
     </div>
   </div>
 
-  <!-- ==========================================================================
-       STEP 3: 6-DIGIT PIN AUTHENTICATION BOTTOM SHEET
-       ========================================================================== -->
+  <!-- STEP 3: 6-DIGIT PIN AUTHENTICATION BOTTOM SHEET -->
   <div id="sheet-pin" class="mobile-bottom-sheet">
     <div class="mobile-sheet-content space-y-5 text-center">
       <div class="sheet-handle"></div>
@@ -360,27 +351,25 @@
 
       <!-- Keypad -->
       <div class="grid grid-cols-3 gap-3 justify-items-center max-w-[260px] mx-auto pt-2">
-        <button onclick="mobileApp.pinInput('1')" class="mobile-pin-btn">1</button>
-        <button onclick="mobileApp.pinInput('2')" class="mobile-pin-btn">2</button>
-        <button onclick="mobileApp.pinInput('3')" class="mobile-pin-btn">3</button>
-        <button onclick="mobileApp.pinInput('4')" class="mobile-pin-btn">4</button>
-        <button onclick="mobileApp.pinInput('5')" class="mobile-pin-btn">5</button>
-        <button onclick="mobileApp.pinInput('6')" class="mobile-pin-btn">6</button>
-        <button onclick="mobileApp.pinInput('7')" class="mobile-pin-btn">7</button>
-        <button onclick="mobileApp.pinInput('8')" class="mobile-pin-btn">8</button>
-        <button onclick="mobileApp.pinInput('9')" class="mobile-pin-btn">9</button>
-        <button onclick="mobileApp.closeSheet('sheet-pin')" class="mobile-pin-btn text-xs font-bold text-slate-400 bg-transparent">Batal</button>
-        <button onclick="mobileApp.pinInput('0')" class="mobile-pin-btn">0</button>
-        <button onclick="mobileApp.pinBackspace()" class="mobile-pin-btn bg-transparent">
+        <button type="button" onclick="mobileApp.pinInput('1')" class="mobile-pin-btn">1</button>
+        <button type="button" onclick="mobileApp.pinInput('2')" class="mobile-pin-btn">2</button>
+        <button type="button" onclick="mobileApp.pinInput('3')" class="mobile-pin-btn">3</button>
+        <button type="button" onclick="mobileApp.pinInput('4')" class="mobile-pin-btn">4</button>
+        <button type="button" onclick="mobileApp.pinInput('5')" class="mobile-pin-btn">5</button>
+        <button type="button" onclick="mobileApp.pinInput('6')" class="mobile-pin-btn">6</button>
+        <button type="button" onclick="mobileApp.pinInput('7')" class="mobile-pin-btn">7</button>
+        <button type="button" onclick="mobileApp.pinInput('8')" class="mobile-pin-btn">8</button>
+        <button type="button" onclick="mobileApp.pinInput('9')" class="mobile-pin-btn">9</button>
+        <button type="button" onclick="mobileApp.closeSheet('sheet-pin')" class="mobile-pin-btn text-xs font-bold text-slate-400 bg-transparent">Batal</button>
+        <button type="button" onclick="mobileApp.pinInput('0')" class="mobile-pin-btn">0</button>
+        <button type="button" onclick="mobileApp.pinBackspace()" class="mobile-pin-btn bg-transparent">
           <span class="material-symbols-outlined text-xl text-slate-600">backspace</span>
         </button>
       </div>
     </div>
   </div>
 
-  <!-- ==========================================================================
-       STEP 4: PAYMENT STATUS & RECEIPT SHEET
-       ========================================================================== -->
+  <!-- STEP 4: PAYMENT STATUS & RECEIPT SHEET -->
   <div id="sheet-payment-status" class="mobile-bottom-sheet">
     <div class="mobile-sheet-content space-y-4 text-center">
       <div class="sheet-handle"></div>
@@ -427,7 +416,7 @@
 
       <div id="status-drive-container"></div>
 
-      <button onclick="mobileApp.closeSheet('sheet-payment-status')" class="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-md">
+      <button type="button" onclick="mobileApp.closeSheet('sheet-payment-status')" class="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-md">
         Selesai & Kembali ke Beranda
       </button>
     </div>
@@ -439,7 +428,7 @@
       <div class="sheet-handle"></div>
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
         <h3 class="font-extrabold text-sm text-slate-900">Rincian Transaksi Pembayaran</h3>
-        <button onclick="mobileApp.closeSheet('sheet-trx-detail')" class="text-slate-400">
+        <button type="button" onclick="mobileApp.closeSheet('sheet-trx-detail')" class="text-slate-400">
           <span class="material-symbols-outlined text-lg">close</span>
         </button>
       </div>
@@ -465,7 +454,7 @@
 
       <div id="mobile-trx-drive"></div>
 
-      <button onclick="mobileApp.closeSheet('sheet-trx-detail')" class="w-full py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold">
+      <button type="button" onclick="mobileApp.closeSheet('sheet-trx-detail')" class="w-full py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold">
         Tutup
       </button>
     </div>
@@ -484,8 +473,8 @@
       </div>
 
       <div class="flex items-center gap-2 pt-2">
-        <button onclick="mobileApp.closeSheet('sheet-nego')" class="flex-1 py-2.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl">Batal</button>
-        <button onclick="mobileApp.confirmNego()" class="flex-1 py-2.5 bg-slate-900 text-white text-xs font-bold rounded-xl shadow-md">Kirim Negosiasi</button>
+        <button type="button" onclick="mobileApp.closeSheet('sheet-nego')" class="flex-1 py-2.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl">Batal</button>
+        <button type="button" onclick="mobileApp.confirmNego()" class="flex-1 py-2.5 bg-slate-900 text-white text-xs font-bold rounded-xl shadow-md">Kirim Negosiasi</button>
       </div>
     </div>
   </div>

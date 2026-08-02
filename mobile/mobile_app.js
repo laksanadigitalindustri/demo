@@ -1,6 +1,6 @@
 /* ==========================================================================
    Laksanasoft Mobile App - Dedicated Smartphone Application Engine
-   Includes Multi-Step Payment Flow: Select Method -> Invoice Details -> PIN -> Status
+   Includes Skeleton Loading Shimmer & Fixed Bottom Navigation / Pay Click
    ========================================================================== */
 
 (function () {
@@ -27,7 +27,7 @@
     paymentMethod: 'bca_va',
     enteredPin: '',
     latestReceipt: null,
-    qrisTimerSeconds: 899
+    isLoading: true
   };
 
   const navigationStack = ['home'];
@@ -103,8 +103,49 @@
     };
   }
 
+  function renderSkeletonLoaders() {
+    store.isLoading = true;
+
+    const invContainer = document.getElementById('mobile-invoice-list');
+    if (invContainer) {
+      invContainer.innerHTML = `
+        <div class="mobile-card space-y-3">
+          <div class="flex justify-between items-center"><div class="skeleton-box w-32 h-4"></div><div class="skeleton-box w-16 h-4"></div></div>
+          <div class="skeleton-box w-full h-8"></div>
+          <div class="skeleton-box w-full h-10"></div>
+        </div>
+        <div class="mobile-card space-y-3">
+          <div class="flex justify-between items-center"><div class="skeleton-box w-32 h-4"></div><div class="skeleton-box w-16 h-4"></div></div>
+          <div class="skeleton-box w-full h-8"></div>
+          <div class="skeleton-box w-full h-10"></div>
+        </div>
+      `;
+    }
+
+    const propContainer = document.getElementById('mobile-proposals-list');
+    if (propContainer) {
+      propContainer.innerHTML = `
+        <div class="mobile-card space-y-3">
+          <div class="skeleton-box w-40 h-4"></div>
+          <div class="skeleton-box w-full h-12"></div>
+        </div>
+      `;
+    }
+
+    const histContainer = document.getElementById('mobile-history-list');
+    if (histContainer) {
+      histContainer.innerHTML = `
+        <div class="mobile-card space-y-3">
+          <div class="skeleton-box w-full h-10"></div>
+        </div>
+      `;
+    }
+  }
+
   async function initMobileStore() {
+    renderSkeletonLoaders();
     let synced = false;
+
     if (window.GoogleBackend && window.GoogleBackend.isConfigured()) {
       try {
         const remoteInvoices = await window.GoogleBackend.fetchInvoices();
@@ -131,6 +172,9 @@
       const savedInv = localStorage.getItem('laksanasoft_invoices');
       if (savedInv) store.invoices = JSON.parse(savedInv).map(normalizeInvoice).filter(Boolean);
     }
+
+    store.isLoading = false;
+    renderCurrentTabContent();
   }
 
   function saveStore() {
@@ -205,7 +249,6 @@
         if (label) label.textContent = 'Memuat data terbaru dari server...';
 
         await initMobileStore();
-        renderCurrentTabContent();
         showMobileToast('Data berhasil diperbarui dari Google Sheets!', 'success');
 
         setTimeout(() => {
@@ -222,10 +265,8 @@
     });
   }
 
-  // --- ROUTER WITH DEVICE BACK BUTTON SUPPORT ---
+  // --- TAB SWITCHER & BACK BUTTON ---
   function switchMobileTab(tabName, pushToHistory = true) {
-    if (store.currentTab === tabName && pushToHistory) return;
-
     store.currentTab = tabName;
 
     document.querySelectorAll('.mobile-tab-content').forEach(el => el.classList.add('hidden'));
@@ -254,6 +295,8 @@
   }
 
   function renderCurrentTabContent() {
+    if (store.isLoading) return;
+
     if (store.currentTab === 'home') renderMobileHome();
     else if (store.currentTab === 'proposals') renderMobileProposals();
     else if (store.currentTab === 'history') renderMobileHistory();
@@ -290,7 +333,7 @@
     }
   });
 
-  // --- 1. MOBILE HOME VIEW ---
+  // 1. Mobile Home View
   function renderMobileHome() {
     let unpaidTotal = 0;
     let unpaidCount = 0;
@@ -314,7 +357,7 @@
       container.innerHTML = `
         <div class="p-8 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
           <span class="material-symbols-outlined text-3xl mb-1 text-slate-300">task_alt</span>
-          <p class="font-semibold text-xs">Belum ada tagihan.</p>
+          <p class="font-semibold text-xs">Belum ada tagihan dari database.</p>
         </div>
       `;
       return;
@@ -348,11 +391,11 @@
 
         <div class="pt-2 border-t border-slate-100 flex items-center justify-end gap-2">
           ${inv.status !== 'PAID' ? `
-            <button onclick="mobileApp.startPay('${inv.id}')" class="w-full py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-transform">
+            <button type="button" onclick="mobileApp.startPay('${inv.id}')" class="w-full py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-transform">
               <span class="material-symbols-outlined text-base">payments</span> Bayar Sekarang
             </button>
           ` : `
-            <button onclick="mobileApp.viewTrxByInv('${inv.id}')" class="w-full py-2.5 bg-slate-100 text-slate-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5">
+            <button type="button" onclick="mobileApp.viewTrxByInv('${inv.id}')" class="w-full py-2.5 bg-slate-100 text-slate-800 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5">
               <span class="material-symbols-outlined text-base">receipt_long</span> Lihat Resi Pembayaran
             </button>
           `}
@@ -361,7 +404,7 @@
     `).join('');
   }
 
-  // --- 2. MOBILE PROPOSALS VIEW ---
+  // 2. Mobile Proposals View
   function renderMobileProposals() {
     const container = document.getElementById('mobile-proposals-list');
     if (!container) return;
@@ -395,8 +438,8 @@
 
         <div class="flex items-center justify-end gap-2 pt-1">
           ${quo.status === 'PENDING' || quo.status === 'NEGOTIATING' ? `
-            <button onclick="mobileApp.openNegoModal('${quo.id}')" class="flex-1 py-2 bg-slate-100 text-slate-800 text-xs font-bold rounded-xl">Negosiasi</button>
-            <button onclick="mobileApp.approveQuo('${quo.id}')" class="flex-1 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl shadow-sm">Setujui</button>
+            <button type="button" onclick="mobileApp.openNegoModal('${quo.id}')" class="flex-1 py-2 bg-slate-100 text-slate-800 text-xs font-bold rounded-xl">Negosiasi</button>
+            <button type="button" onclick="mobileApp.approveQuo('${quo.id}')" class="flex-1 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl shadow-sm">Setujui</button>
           ` : `
             <span class="text-xs font-bold text-emerald-700">Status: ${quo.status}</span>
           `}
@@ -405,7 +448,7 @@
     `).join('');
   }
 
-  // --- 3. MOBILE HISTORY VIEW ---
+  // 3. Mobile History View
   function renderMobileHistory() {
     const container = document.getElementById('mobile-history-list');
     if (!container) return;
@@ -434,14 +477,13 @@
     `).join('');
   }
 
-  // --- 4. MOBILE PROFILE VIEW ---
+  // 4. Mobile Profile View
   function renderMobileProfile() {
     document.getElementById('mobile-prof-name').textContent = store.user.name;
     document.getElementById('mobile-prof-corp').textContent = store.user.company;
   }
 
   // --- MULTI-STEP MOBILE PAYMENT FLOW ---
-  // STEP 1: Click "Bayar Sekarang" -> Select Payment Method Modal
   function startPay(invId) {
     store.selectedInvoice = store.invoices.find(i => i.id === invId);
     if (!store.selectedInvoice) return;
@@ -468,7 +510,6 @@
     }
   }
 
-  // STEP 2: Selected Method -> Confirm Invoice Details Modal or QRIS
   function confirmMethodAndProceed() {
     closeSheet('sheet-payment-method', true);
 
@@ -526,7 +567,6 @@
     }
   }
 
-  // STEP 3: Click "Lanjut ke PIN" -> Enter 6-Digit PIN
   function proceedToPin() {
     closeSheet('sheet-payment-confirm', true);
     closeSheet('sheet-payment-qr', true);
@@ -565,7 +605,6 @@
     });
   }
 
-  // STEP 4: PIN Verified -> Process & Display Payment Status Sheet
   async function verifyPin() {
     if (store.enteredPin === store.user.pin || store.enteredPin === '123456') {
       closeSheet('sheet-pin', true);
@@ -605,7 +644,6 @@
       store.latestReceipt = trx;
       saveStore();
 
-      // Render Status Modal Sheet Content
       document.getElementById('status-trx-id').textContent = trxId;
       document.getElementById('status-ref-code').textContent = refCode;
       document.getElementById('status-inv-id').textContent = inv.id;
@@ -663,19 +701,18 @@
     else if (e.key === 'Escape') closeSheet('sheet-pin');
   });
 
-  // Public API
+  // Expose API Object Immediately
   window.mobileApp = {
     init: async function () {
-      await initMobileStore();
       initPullToRefresh();
       switchMobileTab('home', false);
+      await initMobileStore();
     },
     switchTab: switchMobileTab,
     goBack: goBackToPreviousTab,
     refreshData: async function () {
       showMobileToast('Memuat data terbaru...', 'info');
       await initMobileStore();
-      renderCurrentTabContent();
       showMobileToast('Data berhasil diperbarui!', 'success');
     },
     startPay: startPay,

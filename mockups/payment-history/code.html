@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Riwayat Pembayaran - Laksanasoft</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed": "#c6e7ff",
+                        "surface-container-high": "#e6e8ea",
+                        "surface-tint": "#3a5f94",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "secondary-fixed-dim": "#81cfff",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#d3e4fe",
+                        "outline-variant": "#c3c6d1",
+                        "outline": "#737780",
+                        "primary-fixed-dim": "#a7c8ff",
+                        "primary": "#001e40",
+                        "surface-container": "#eceef0",
+                        "surface-container-low": "#f2f4f6",
+                        "on-surface": "#191c1e",
+                        "surface-bright": "#f7f9fb",
+                        "on-primary-fixed-variant": "#1f477b",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "primary-container": "#003366",
+                        "background": "#f7f9fb",
+                        "on-primary-fixed": "#001b3c",
+                        "secondary-container": "#41befd",
+                        "inverse-surface": "#2d3133",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#e0e3e5",
+                        "secondary": "#00658d",
+                        "on-primary-container": "#799dd6",
+                        "primary-fixed": "#d5e3ff",
+                        "tertiary": "#0e1f32",
+                        "tertiary-container": "#243448",
+                        "inverse-primary": "#a7c8ff",
+                        "on-secondary-fixed-variant": "#004c6b",
+                        "on-tertiary-container": "#8c9cb5",
+                        "on-error-container": "#93000a",
+                        "error": "#ba1a1a",
+                        "surface": "#f7f9fb",
+                        "error-container": "#ffdad6",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-secondary-fixed": "#001e2d",
+                        "on-background": "#191c1e",
+                        "surface-dim": "#d8dadc",
+                        "on-secondary-container": "#004b69",
+                        "on-surface-variant": "#43474f",
+                        "on-error": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "card-padding": "1rem",
+                        "stack-gap": "0.75rem",
+                        "container-margin": "1rem",
+                        "section-gap": "1.5rem",
+                        "inline-gutter": "0.5rem"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-lg": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "30px", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            background-color: #f7f9fb;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e0e3e5;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- Top App Bar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-container-margin h-16 bg-surface shadow-sm">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a corporate executive in a modern office setting. The lighting is soft and natural, emphasizing a high-trust financial environment. The background is slightly blurred showing a minimalist blue-toned corporate interior. High-end photography style with clean, sharp focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCq6CQTuBjAK4Ltexxh_m1kthsJU2TFgISKCYwSr2XTTj2_AydN15Kl2CpTVaCO7Qir1ZVceoAJDuvwSYnWVhWCmPTS4eP9WHfP6Brho9S81kV5u6qJOBfcXkmk-IU9fUmQT_QF22HgzrMUTg_HMYPsCjhVmspFTq7j7XASiZ_WuKPLuWSlAXTW-TsPoGivaTQq6sobQpQ9ZEvpQN1fFe50DEY-fWp7LetrNGWU8VtBcowfx2QWyYAXSQ"/>
+</div>
+<h1 class="text-headline-md font-headline-md font-bold text-primary">Laksanasoft</h1>
+</div>
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-primary hover:bg-surface-container-high transition-colors active:scale-95 duration-100">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-20 pb-32 px-container-margin max-w-2xl mx-auto">
+<!-- Header Section -->
+<section class="mb-section-gap">
+<h2 class="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-1">Riwayat Pembayaran</h2>
+<p class="text-body-md text-on-surface-variant">Pantau semua aktivitas transaksi Anda di sini.</p>
+</section>
+<!-- Filters Section -->
+<section class="mb-section-gap sticky top-16 bg-background/80 backdrop-blur-md py-4 z-40">
+<div class="flex flex-col gap-stack-gap">
+<!-- Date Filter -->
+<div class="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+<button class="whitespace-nowrap px-4 py-2 rounded-full bg-primary text-on-primary font-label-md text-label-md transition-all active:scale-95">Semua Tanggal</button>
+<button class="whitespace-nowrap px-4 py-2 rounded-full bg-surface-container-lowest border border-outline-variant text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high transition-all active:scale-95">Hari Ini</button>
+<button class="whitespace-nowrap px-4 py-2 rounded-full bg-surface-container-lowest border border-outline-variant text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high transition-all active:scale-95">7 Hari Terakhir</button>
+<button class="whitespace-nowrap px-4 py-2 rounded-full bg-surface-container-lowest border border-outline-variant text-on-surface-variant font-label-md text-label-md hover:bg-surface-container-high transition-all active:scale-95">30 Hari Terakhir</button>
+</div>
+<!-- Status Filter -->
+<div class="flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+<button class="flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-container-lowest border border-outline-variant text-on-surface-variant hover:border-primary transition-all group">
+<span class="material-symbols-outlined text-[18px] text-green-600">check_circle</span>
+<span class="font-label-md text-label-md">Berhasil</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-container-lowest border border-outline-variant text-on-surface-variant hover:border-primary transition-all group">
+<span class="material-symbols-outlined text-[18px] text-amber-500">pending</span>
+<span class="font-label-md text-label-md">Pending</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-container-lowest border border-outline-variant text-on-surface-variant hover:border-primary transition-all group">
+<span class="material-symbols-outlined text-[18px] text-error">cancel</span>
+<span class="font-label-md text-label-md">Gagal</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Transaction List -->
+<div class="flex flex-col gap-stack-gap">
+<!-- Group Header -->
+<h3 class="font-label-md text-label-md text-outline uppercase tracking-wider mt-2">Mei 2024</h3>
+<!-- Transaction Item 1: Berhasil -->
+<div class="bg-surface-container-lowest p-card-padding rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-transparent hover:border-primary-container transition-all active:scale-[0.98] cursor-pointer">
+<div class="flex justify-between items-start">
+<div class="flex gap-3">
+<div class="w-12 h-12 rounded-lg bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed-variant">
+<span class="material-symbols-outlined">receipt_long</span>
+</div>
+<div>
+<p class="font-headline-md text-body-lg text-primary">Layanan Cloud SaaS</p>
+<p class="text-body-md text-on-surface-variant">12 Mei 2024, 14:20</p>
+<div class="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-800 text-[10px] font-bold uppercase">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                                Berhasil
+                            </div>
+</div>
+</div>
+<div class="text-right">
+<p class="font-headline-md text-headline-md text-primary">Rp 450.000</p>
+<p class="text-body-md text-outline-variant">ID: TRX-99281</p>
+</div>
+</div>
+</div>
+<!-- Transaction Item 2: Pending -->
+<div class="bg-surface-container-lowest p-card-padding rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-transparent hover:border-primary-container transition-all active:scale-[0.98] cursor-pointer">
+<div class="flex justify-between items-start">
+<div class="flex gap-3">
+<div class="w-12 h-12 rounded-lg bg-tertiary-fixed flex items-center justify-center text-on-tertiary-fixed-variant">
+<span class="material-symbols-outlined">api</span>
+</div>
+<div>
+<p class="font-headline-md text-body-lg text-primary">Integrasi API Lanjutan</p>
+<p class="text-body-md text-on-surface-variant">10 Mei 2024, 09:15</p>
+<div class="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold uppercase">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">pending</span>
+                                Pending
+                            </div>
+</div>
+</div>
+<div class="text-right">
+<p class="font-headline-md text-headline-md text-primary">Rp 2.150.000</p>
+<p class="text-body-md text-outline-variant">ID: TRX-99105</p>
+</div>
+</div>
+</div>
+<!-- Group Header -->
+<h3 class="font-label-md text-label-md text-outline uppercase tracking-wider mt-6">April 2024</h3>
+<!-- Transaction Item 3: Gagal -->
+<div class="bg-surface-container-lowest p-card-padding rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-transparent hover:border-primary-container transition-all active:scale-[0.98] cursor-pointer">
+<div class="flex justify-between items-start">
+<div class="flex gap-3">
+<div class="w-12 h-12 rounded-lg bg-error-container flex items-center justify-center text-on-error-container">
+<span class="material-symbols-outlined">security</span>
+</div>
+<div>
+<p class="font-headline-md text-body-lg text-primary">Sertifikat SSL Pro</p>
+<p class="text-body-md text-on-surface-variant">28 April 2024, 16:45</p>
+<div class="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-100 text-red-800 text-[10px] font-bold uppercase">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">error</span>
+                                Gagal
+                            </div>
+</div>
+</div>
+<div class="text-right">
+<p class="font-headline-md text-headline-md text-error">Rp 890.000</p>
+<p class="text-body-md text-outline-variant">ID: TRX-98772</p>
+</div>
+</div>
+</div>
+<!-- Transaction Item 4: Berhasil -->
+<div class="bg-surface-container-lowest p-card-padding rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-transparent hover:border-primary-container transition-all active:scale-[0.98] cursor-pointer">
+<div class="flex justify-between items-start">
+<div class="flex gap-3">
+<div class="w-12 h-12 rounded-lg bg-primary-fixed flex items-center justify-center text-on-primary-fixed-variant">
+<span class="material-symbols-outlined">dns</span>
+</div>
+<div>
+<p class="font-headline-md text-body-lg text-primary">Biaya Server Bulanan</p>
+<p class="text-body-md text-on-surface-variant">15 April 2024, 11:00</p>
+<div class="mt-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-800 text-[10px] font-bold uppercase">
+<span class="material-symbols-outlined text-[12px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                                Berhasil
+                            </div>
+</div>
+</div>
+<div class="text-right">
+<p class="font-headline-md text-headline-md text-primary">Rp 1.200.000</p>
+<p class="text-body-md text-outline-variant">ID: TRX-98551</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty State Visual Cue (Hidden by default, for demo logic) -->
+<div class="hidden flex flex-col items-center justify-center py-20 text-center" id="empty-state">
+<div class="w-32 h-32 mb-6 opacity-40">
+<img class="w-full h-full object-contain" data-alt="A minimalist 3D illustration of a magnifying glass searching through digital folders, floating in a clean corporate white space. Soft blue and grey color scheme consistent with a banking UI empty state." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAkEgL8vWAHFA9QvOolQR0XmgnI_OFayYWHKtBaC44canGt3dNTCabv4EBaKCOyo9F2XufLn7CDtFqlXS0Yk4ZoExx18Mavgob1cSAV3Zz_fksKzxki0IvhRjD4P7rNiIEnBOFym8Mca_glHKzJYX9RfbWCowXcjnEl7yU3AXvy_yI_5La8W5Ok4_9WvlOi3IGbFupVT_d01AJc62KS8RFBir8zKmtpIrJgv7hmvn0f1Psq40bDV-IeRQ"/>
+</div>
+<p class="font-headline-md text-primary">Tidak Ada Transaksi</p>
+<p class="text-body-md text-on-surface-variant max-w-xs">Coba sesuaikan filter pencarian atau tanggal Anda.</p>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-surface-container-lowest shadow-[0px_-4px_20px_rgba(0,0,0,0.05)] rounded-t-xl">
+<!-- Beranda -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container transition-all active:transform active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md text-label-md">Beranda</span>
+</a>
+<!-- Tagihan -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container transition-all active:transform active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined">description</span>
+<span class="font-label-md text-label-md">Tagihan</span>
+</a>
+<!-- Riwayat (ACTIVE) -->
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 active:transform active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">history</span>
+<span class="font-label-md text-label-md">Riwayat</span>
+</a>
+<!-- Profil -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container transition-all active:transform active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md">Profil</span>
+</a>
+</nav>
+<script>
+        // Simple Interaction logic for filters
+        const filterButtons = document.querySelectorAll('button[class*="rounded-full"], button[class*="rounded-xl"]');
+        
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Determine group (date or status)
+                const parent = this.parentElement;
+                parent.querySelectorAll('button').forEach(sibling => {
+                    sibling.classList.remove('bg-primary', 'text-on-primary');
+                    sibling.classList.add('bg-surface-container-lowest', 'text-on-surface-variant', 'border-outline-variant');
+                });
+                
+                this.classList.remove('bg-surface-container-lowest', 'text-on-surface-variant', 'border-outline-variant');
+                this.classList.add('bg-primary', 'text-on-primary');
+            });
+        });
+
+        // Pull-to-refresh effect (visual only)
+        let startY;
+        document.addEventListener('touchstart', e => {
+            startY = e.touches[0].pageY;
+        }, {passive: true});
+
+        document.addEventListener('touchmove', e => {
+            const y = e.touches[0].pageY;
+            if (window.scrollY === 0 && y > startY) {
+                // Adding a subtle bounce effect could go here
+            }
+        }, {passive: true});
+    </script>
+</body></html>

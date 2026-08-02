@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pusat Notifikasi - Laksanasoft Indonesia</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed-variant": "#1f477b",
+                    "on-error-container": "#93000a",
+                    "surface-variant": "#e0e3e5",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error": "#ffffff",
+                    "primary-fixed": "#d5e3ff",
+                    "on-surface-variant": "#43474f",
+                    "error": "#ba1a1a",
+                    "surface-container-highest": "#e0e3e5",
+                    "tertiary-fixed": "#d3e4fe",
+                    "on-surface": "#191c1e",
+                    "surface-container-low": "#f2f4f6",
+                    "inverse-primary": "#a7c8ff",
+                    "on-tertiary-fixed": "#0b1c30",
+                    "primary-container": "#003366",
+                    "on-tertiary-fixed-variant": "#38485d",
+                    "error-container": "#ffdad6",
+                    "inverse-on-surface": "#eff1f3",
+                    "secondary-fixed": "#c6e7ff",
+                    "surface-bright": "#f7f9fb",
+                    "secondary-container": "#41befd",
+                    "primary-fixed-dim": "#a7c8ff",
+                    "on-background": "#191c1e",
+                    "on-primary-fixed": "#001b3c",
+                    "on-secondary-fixed-variant": "#004c6b",
+                    "surface": "#f7f9fb",
+                    "tertiary": "#0e1f32",
+                    "on-secondary-container": "#004b69",
+                    "surface-container-high": "#e6e8ea",
+                    "surface-container": "#eceef0",
+                    "surface-tint": "#3a5f94",
+                    "on-primary": "#ffffff",
+                    "on-primary-container": "#799dd6",
+                    "secondary": "#00658d",
+                    "primary": "#001e40",
+                    "secondary-fixed-dim": "#81cfff",
+                    "surface-dim": "#d8dadc",
+                    "outline": "#737780",
+                    "inverse-surface": "#2d3133",
+                    "on-tertiary-container": "#8c9cb5",
+                    "on-secondary": "#ffffff",
+                    "background": "#f7f9fb",
+                    "tertiary-container": "#243448",
+                    "outline-variant": "#c3c6d1",
+                    "tertiary-fixed-dim": "#b7c8e1",
+                    "on-secondary-fixed": "#001e2d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap": "1.5rem",
+                    "container-margin": "1rem",
+                    "stack-gap": "0.75rem",
+                    "inline-gutter": "0.5rem",
+                    "card-padding": "1rem"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "headline-md": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "30px", "fontWeight": "700"}],
+                    "headline-lg": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .notif-card-shadow {
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-24">
+<!-- Top App Bar -->
+<header class="bg-surface dark:bg-inverse-surface shadow-sm docked full-width top-0 sticky flex justify-between items-center w-full px-container-margin py-3 z-50">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim">account_balance</span>
+<h1 class="text-headline-md font-headline-md text-primary dark:text-secondary-fixed-dim">Laksanasoft Indonesia</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-full hover:bg-surface-container-low dark:hover:bg-tertiary-container transition-colors active:scale-95 duration-100">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim">settings</span>
+</button>
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim">account_circle</span>
+</div>
+</header>
+<!-- Content Canvas -->
+<main class="max-w-2xl mx-auto px-container-margin pt-6">
+<!-- Header Section -->
+<div class="flex justify-between items-end mb-section-gap">
+<div>
+<h2 class="text-headline-lg-mobile font-headline-lg-mobile md:text-headline-lg md:font-headline-lg text-on-surface">Notifikasi</h2>
+<p class="text-body-md font-body-md text-on-surface-variant">Pantau seluruh aktivitas transaksi dan keamanan akun Anda.</p>
+</div>
+<button class="text-label-md font-label-md text-secondary hover:underline transition-all">Tandai semua dibaca</button>
+</div>
+<!-- Notification List -->
+<div class="space-y-section-gap">
+<!-- Group: Hari Ini -->
+<section>
+<h3 class="text-label-md font-label-md text-outline uppercase tracking-wider mb-stack-gap">Hari Ini</h3>
+<div class="space-y-stack-gap">
+<!-- Notification Item: Login Baru -->
+<div class="bg-surface-container-lowest p-card-padding rounded-xl notif-card-shadow flex gap-4 items-start transition-all hover:bg-surface-container-low cursor-pointer border-l-4 border-error">
+<div class="p-2 rounded-lg bg-error-container text-on-error-container">
+<span class="material-symbols-outlined" data-icon="security" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="text-body-lg font-bold text-on-surface leading-tight">Login Baru Terdeteksi</h4>
+<span class="text-label-md font-label-md text-outline">08:45</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant mt-1">Seseorang mencoba masuk ke akun Anda melalui perangkat Chrome OS di Jakarta.</p>
+</div>
+</div>
+<!-- Notification Item: Tagihan Baru -->
+<div class="bg-surface-container-lowest p-card-padding rounded-xl notif-card-shadow flex gap-4 items-start transition-all hover:bg-surface-container-low cursor-pointer border-l-4 border-primary">
+<div class="p-2 rounded-lg bg-primary-container text-on-primary-container">
+<span class="material-symbols-outlined" data-icon="receipt">receipt</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="text-body-lg font-bold text-on-surface leading-tight">Tagihan Baru Masuk</h4>
+<span class="text-label-md font-label-md text-outline">07:20</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant mt-1">Tagihan layanan cloud Laksanasoft periode Juli telah terbit. Segera lakukan pembayaran.</p>
+<div class="mt-3 flex gap-2">
+<button class="px-4 py-1.5 bg-primary text-on-primary text-label-md font-label-md rounded-lg hover:brightness-110 active:scale-95 transition-all">Bayar Sekarang</button>
+<button class="px-4 py-1.5 border border-outline text-on-surface-variant text-label-md font-label-md rounded-lg hover:bg-surface-container transition-all">Rincian</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Group: Kemarin -->
+<section>
+<h3 class="text-label-md font-label-md text-outline uppercase tracking-wider mb-stack-gap">Kemarin</h3>
+<div class="space-y-stack-gap opacity-80">
+<!-- Notification Item: Pembayaran Berhasil -->
+<div class="bg-surface-container-lowest p-card-padding rounded-xl notif-card-shadow flex gap-4 items-start transition-all hover:bg-surface-container-low cursor-pointer">
+<div class="p-2 rounded-lg bg-secondary-container text-on-secondary-container">
+<span class="material-symbols-outlined" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="text-body-lg font-bold text-on-surface leading-tight">Pembayaran Berhasil</h4>
+<span class="text-label-md font-label-md text-outline">Yesterday, 14:10</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant mt-1">Pembayaran sebesar Rp 2.500.000 untuk tagihan Server-A telah kami terima.</p>
+</div>
+</div>
+<!-- Notification Item: Promo/Update -->
+<div class="bg-surface-container-lowest p-card-padding rounded-xl notif-card-shadow flex gap-4 items-start transition-all hover:bg-surface-container-low cursor-pointer">
+<div class="p-2 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed">
+<span class="material-symbols-outlined" data-icon="info">info</span>
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start">
+<h4 class="text-body-lg font-bold text-on-surface leading-tight">Update Sistem Versi 2.4</h4>
+<span class="text-label-md font-label-md text-outline">Yesterday, 09:00</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant mt-1">Kami telah meningkatkan fitur keamanan enkripsi pada portal utama. Baca selengkapnya perubahan ini.</p>
+</div>
+</div>
+<!-- Promotional Card (Bento Style) -->
+<div class="relative overflow-hidden bg-primary-container p-card-padding rounded-xl text-on-primary-container notif-card-shadow group">
+<div class="relative z-10">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-secondary-container" data-icon="stars">stars</span>
+<span class="text-label-md font-label-md uppercase tracking-widest text-on-primary-container opacity-80">Eksklusif Member</span>
+</div>
+<h4 class="text-headline-md font-headline-md text-white mb-2">Cashback 5% Untuk Perpanjangan Lisensi</h4>
+<p class="text-body-md font-body-md text-on-primary-container mb-4 max-w-sm">Gunakan kode PROMOJULI saat melakukan checkout tagihan tahunan Anda.</p>
+<button class="bg-secondary-container text-on-secondary-container px-6 py-2 rounded-xl text-label-md font-label-md hover:scale-105 transition-transform active:scale-95">Gunakan Sekarang</button>
+</div>
+<!-- Abstract decorative shape -->
+<div class="absolute -right-10 -bottom-10 w-48 h-48 bg-secondary opacity-20 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
+<div class="absolute right-0 top-0 w-32 h-32 bg-primary-fixed-dim opacity-10 rounded-full blur-2xl"></div>
+</div>
+</div>
+</section>
+</div>
+<!-- Empty State Interaction (Hidden by default) -->
+<div class="hidden flex-col items-center justify-center py-24 text-center" id="empty-state">
+<span class="material-symbols-outlined text-6xl text-outline mb-4">notifications_off</span>
+<h3 class="text-headline-md font-headline-md text-on-surface">Tidak Ada Notifikasi</h3>
+<p class="text-body-md font-body-md text-on-surface-variant mt-2">Semua aktivitas akun Anda telah terbaca.</p>
+</div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full flex justify-around items-center px-4 py-2 pb-safe bg-surface dark:bg-inverse-surface shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-50">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline px-4 py-2 hover:bg-surface-container-high dark:hover:bg-tertiary-container transition-all active:scale-95 duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="text-label-md font-label-md">Beranda</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline px-4 py-2 hover:bg-surface-container-high dark:hover:bg-tertiary-container transition-all active:scale-95 duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="document_scanner">document_scanner</span>
+<span class="text-label-md font-label-md">Tagihan</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline px-4 py-2 hover:bg-surface-container-high dark:hover:bg-tertiary-container transition-all active:scale-95 duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="text-label-md font-label-md">Bayar</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container dark:bg-primary-fixed dark:text-on-primary-fixed rounded-xl px-4 py-2 active:scale-95 duration-150 ease-in-out" href="#">
+<span class="material-symbols-outlined" data-icon="contact_support" style="font-variation-settings: 'FILL' 1;">contact_support</span>
+<span class="text-label-md font-label-md">Bantuan</span>
+</a>
+</nav>
+<!-- Script for simple interactions -->
+<script>
+        // Placeholder for mark as read logic
+        document.querySelectorAll('.cursor-pointer').forEach(item => {
+            item.addEventListener('click', function() {
+                this.classList.remove('border-l-4');
+                this.style.opacity = '0.7';
+                this.style.transform = 'scale(0.98)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 100);
+            });
+        });
+
+        // Simple dark mode toggle helper if needed (not active by default as per instruction)
+        const toggleDarkMode = () => {
+            document.documentElement.classList.toggle('dark');
+        }
+    </script>
+</body></html>

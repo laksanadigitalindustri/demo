@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Customer Support - Laksanasoft</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed": "#001b3c",
+                        "on-tertiary-container": "#8c9cb5",
+                        "tertiary-fixed": "#d3e4fe",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "primary-container": "#003366",
+                        "on-surface-variant": "#43474f",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#a7c8ff",
+                        "inverse-primary": "#a7c8ff",
+                        "secondary-container": "#41befd",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface-container-high": "#e6e8ea",
+                        "on-background": "#191c1e",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed": "#c6e7ff",
+                        "secondary": "#00658d",
+                        "surface-container-low": "#f2f4f6",
+                        "surface-bright": "#f7f9fb",
+                        "primary": "#001e40",
+                        "on-surface": "#191c1e",
+                        "tertiary": "#0e1f32",
+                        "surface-container-highest": "#e0e3e5",
+                        "surface": "#f7f9fb",
+                        "on-primary-fixed-variant": "#1f477b",
+                        "surface-container": "#eceef0",
+                        "outline-variant": "#c3c6d1",
+                        "on-secondary-fixed": "#001e2d",
+                        "background": "#f7f9fb",
+                        "on-primary": "#ffffff",
+                        "on-secondary-fixed-variant": "#004c6b",
+                        "secondary-fixed-dim": "#81cfff",
+                        "inverse-surface": "#2d3133",
+                        "on-error-container": "#93000a",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#243448",
+                        "on-secondary-container": "#004b69",
+                        "primary-fixed": "#d5e3ff",
+                        "outline": "#737780",
+                        "on-primary-container": "#799dd6",
+                        "on-tertiary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "surface-tint": "#3a5f94",
+                        "surface-dim": "#d8dadc",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#e0e3e5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-gap": "1.5rem",
+                        "card-padding": "1rem",
+                        "inline-gutter": "0.5rem",
+                        "stack-gap": "0.75rem",
+                        "container-margin": "1rem"
+                    },
+                    "fontFamily": {
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-lg-mobile": ["24px", { "lineHeight": "30px", "fontWeight": "700" }],
+                        "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Message scroll adjustment */
+        .chat-container {
+            height: calc(100vh - 144px); /* Adjust based on top bar and input height */
+        }
+        
+        /* Subtle transition for message appearance */
+        .message-bubble {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface overflow-hidden">
+<!-- Top Bar (Shared Component Logic) -->
+<header class="fixed top-0 w-full z-50 flex items-center px-container-margin h-16 bg-surface shadow-sm transition-colors">
+<div class="flex items-center gap-3 w-full">
+<button class="material-symbols-outlined text-primary active:scale-90 duration-100 p-2 -ml-2">arrow_back</button>
+<div class="relative">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a friendly customer service representative in a modern office. The lighting is soft and corporate, with a shallow depth of field blurring the clean, white architectural banking environment behind them. The agent wears a dark navy blazer, aligning with the primary blue brand colors, and has a pleasant, helpful expression suitable for high-stakes banking support." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCgi7Gqw4I6MxmPTlShxSLT5yHbMmtR0cpS6eJ-5Y1rFpK-zS4eOnagKz78_AtQpdq2SPf4BWbybCQbdsWf7Y7TNMYEV6WJUK4TXaPdMUof1vxN77hSiZ82ftWZNvNsMvAn5164odG0mk8_AXNYfPPzOrQMk-_EVdz0FCq0Q_2-IZe_NSl6BXXfUDdbhh3FtXFzjVAOtPkAahZOGXYVTmOWxQfS5bzon892Vk60y2yFnhBi-KGPwg4c2Q"/>
+</div>
+<div class="absolute bottom-0 right-0 w-3 h-3 bg-[#4CAF50] border-2 border-surface rounded-full"></div>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md text-primary leading-tight">Laksanasoft Support</span>
+<span class="font-label-md text-label-md text-[#4CAF50] uppercase tracking-wider">Online</span>
+</div>
+<div class="ml-auto flex items-center">
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-colors active:scale-95">call</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container-high p-2 rounded-full transition-colors active:scale-95">more_vert</button>
+</div>
+</div>
+</header>
+<!-- Chat Canvas -->
+<main class="chat-container pt-20 pb-20 px-container-margin overflow-y-auto no-scrollbar flex flex-col gap-stack-gap">
+<!-- Date Divider -->
+<div class="flex items-center gap-4 my-4">
+<div class="h-[1px] flex-grow bg-outline-variant/30"></div>
+<span class="font-label-md text-label-md text-outline uppercase tracking-widest px-2">Hari Ini</span>
+<div class="h-[1px] flex-grow bg-outline-variant/30"></div>
+</div>
+<!-- Support Message -->
+<div class="flex flex-col items-start max-w-[85%] group">
+<div class="message-bubble bg-surface-container text-on-surface p-4 rounded-xl rounded-tl-none shadow-sm">
+<p class="font-body-md text-body-md">Halo! Selamat siang. Saya dengan tim Laksanasoft Support. Ada yang bisa kami bantu terkait transaksi atau akun Anda hari ini?</p>
+</div>
+<span class="font-label-md text-[10px] text-outline mt-1 px-1">14:02</span>
+</div>
+<!-- Customer Message -->
+<div class="flex flex-col items-end max-w-[85%] ml-auto group">
+<div class="message-bubble bg-primary text-on-primary p-4 rounded-xl rounded-tr-none shadow-md">
+<p class="font-body-md text-body-md">Halo, saya ingin menanyakan mengenai status pembayaran tagihan listrik saya yang baru saja dilakukan. Saldo sudah terpotong tapi status masih tertunda.</p>
+</div>
+<div class="flex items-center gap-1 mt-1 px-1">
+<span class="font-label-md text-[10px] text-outline">14:05</span>
+<span class="material-symbols-outlined text-[12px] text-secondary">done_all</span>
+</div>
+</div>
+<!-- Support Message with "Typing" or Quick Detail -->
+<div class="flex flex-col items-start max-w-[85%]">
+<div class="message-bubble bg-surface-container text-on-surface p-4 rounded-xl rounded-tl-none shadow-sm">
+<p class="font-body-md text-body-md">Mohon maaf atas ketidaknyamanannya. Bisa informasikan Nomor Meter atau ID Pelanggan Anda agar dapat kami lakukan pengecekan sistem?</p>
+</div>
+<span class="font-label-md text-[10px] text-outline mt-1 px-1">14:06</span>
+</div>
+<!-- Image Message from Customer -->
+<div class="flex flex-col items-end max-w-[70%] ml-auto">
+<div class="message-bubble bg-primary p-1 rounded-xl rounded-tr-none shadow-md overflow-hidden">
+<img class="rounded-lg w-full" data-alt="A clean, high-resolution screenshot of a digital banking mobile application interface. The screen displays a transaction receipt for a utility payment, featuring corporate blue branding, clear white text, and a 'Pending' status indicator. The visual style is crisp and professional, captured as a flat mobile screen UI element within a messaging thread." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCq4YcHfeTfH8tpftYENXZ9kjWpcVc5D6erhPuUKrKkR6bydebnORCCPj1l_obB6Va1lI6lXVZLoFb3V3u-hAQQBkwLuNq1qY6sNPy028apgHKFkWteVe8KtUjg3ImRPaZn1Gha7xJm4TPX7VL7A7inGPJZI_70OP6Qex4o32VwVGSXStVWXWOOKkEJ348UZQla5t9MPp08e45YsE82Z_uQo7IFvCCLHM50EQUS0ti-T1rYm883tr7wrw"/>
+<div class="px-3 py-2">
+<p class="font-body-md text-body-md text-on-primary">Ini bukti transaksinya.</p>
+</div>
+</div>
+<div class="flex items-center gap-1 mt-1 px-1">
+<span class="font-label-md text-[10px] text-outline">14:08</span>
+<span class="material-symbols-outlined text-[12px] text-secondary">done_all</span>
+</div>
+</div>
+</main>
+<!-- Bottom Input Area (Task-Focused: Suppresses BottomNavBar) -->
+<div class="fixed bottom-0 left-0 w-full bg-surface-container-lowest p-container-margin pb-safe-area shadow-[0px_-4px_20px_rgba(0,0,0,0.05)] z-50">
+<div class="flex items-end gap-3 max-w-4xl mx-auto">
+<button class="material-symbols-outlined text-primary p-2 hover:bg-surface-container-high rounded-full transition-all active:scale-90" title="Attach file">add_circle</button>
+<div class="flex-grow bg-surface-container rounded-2xl px-4 py-2 border border-outline-variant/30 focus-within:border-secondary-container transition-all flex items-center gap-2">
+<textarea class="w-full bg-transparent border-none focus:ring-0 font-body-md text-body-md py-1 max-h-32 resize-none no-scrollbar text-on-surface-variant placeholder:text-outline" id="chat-input" placeholder="Ketik pesan..." rows="1"></textarea>
+<button class="material-symbols-outlined text-outline hover:text-primary transition-colors">sentiment_satisfied</button>
+</div>
+<button class="bg-primary text-on-primary w-12 h-12 rounded-xl flex items-center justify-center shadow-lg active:scale-95 duration-150" id="send-btn">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+</div>
+<script>
+        // Auto-expand textarea
+        const textarea = document.getElementById('chat-input');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // Simple send interaction
+        const sendBtn = document.getElementById('send-btn');
+        sendBtn.addEventListener('click', () => {
+            if (textarea.value.trim() !== "") {
+                const chatContainer = document.querySelector('main');
+                const msg = document.createElement('div');
+                msg.className = "flex flex-col items-end max-w-[85%] ml-auto group mb-4";
+                msg.innerHTML = `
+                    <div class="message-bubble bg-primary text-on-primary p-4 rounded-xl rounded-tr-none shadow-md">
+                        <p class="font-body-md text-body-md">${textarea.value}</p>
+                    </div>
+                    <div class="flex items-center gap-1 mt-1 px-1">
+                        <span class="font-label-md text-[10px] text-outline">Sekarang</span>
+                        <span class="material-symbols-outlined text-[12px] text-secondary">done</span>
+                    </div>
+                `;
+                chatContainer.appendChild(msg);
+                textarea.value = "";
+                textarea.style.height = 'auto';
+                chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+            }
+        });
+
+        // Allow Enter to send (Shift+Enter for newline)
+        textarea.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendBtn.click();
+            }
+        });
+    </script>
+</body></html>

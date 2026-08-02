@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Verifikasi PIN Keamanan - Laksanasoft Indonesia</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary": "#ffffff",
+                    "on-primary-fixed-variant": "#1f477b",
+                    "on-error-container": "#93000a",
+                    "surface-variant": "#e0e3e5",
+                    "surface-container-lowest": "#ffffff",
+                    "on-error": "#ffffff",
+                    "primary-fixed": "#d5e3ff",
+                    "on-surface-variant": "#43474f",
+                    "error": "#ba1a1a",
+                    "surface-container-highest": "#e0e3e5",
+                    "tertiary-fixed": "#d3e4fe",
+                    "on-surface": "#191c1e",
+                    "surface-container-low": "#f2f4f6",
+                    "inverse-primary": "#a7c8ff",
+                    "on-tertiary-fixed": "#0b1c30",
+                    "primary-container": "#003366",
+                    "on-tertiary-fixed-variant": "#38485d",
+                    "error-container": "#ffdad6",
+                    "inverse-on-surface": "#eff1f3",
+                    "secondary-fixed": "#c6e7ff",
+                    "surface-bright": "#f7f9fb",
+                    "secondary-container": "#41befd",
+                    "primary-fixed-dim": "#a7c8ff",
+                    "on-background": "#191c1e",
+                    "on-primary-fixed": "#001b3c",
+                    "on-secondary-fixed-variant": "#004c6b",
+                    "surface": "#f7f9fb",
+                    "tertiary": "#0e1f32",
+                    "on-secondary-container": "#004b69",
+                    "surface-container-high": "#e6e8ea",
+                    "surface-container": "#eceef0",
+                    "surface-tint": "#3a5f94",
+                    "on-primary": "#ffffff",
+                    "on-primary-container": "#799dd6",
+                    "secondary": "#00658d",
+                    "primary": "#001e40",
+                    "secondary-fixed-dim": "#81cfff",
+                    "surface-dim": "#d8dadc",
+                    "outline": "#737780",
+                    "inverse-surface": "#2d3133",
+                    "on-tertiary-container": "#8c9cb5",
+                    "on-secondary": "#ffffff",
+                    "background": "#f7f9fb",
+                    "tertiary-container": "#243448",
+                    "outline-variant": "#c3c6d1",
+                    "tertiary-fixed-dim": "#b7c8e1",
+                    "on-secondary-fixed": "#001e2d"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap": "1.5rem",
+                    "container-margin": "1rem",
+                    "stack-gap": "0.75rem",
+                    "inline-gutter": "0.5rem",
+                    "card-padding": "1rem"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "headline-md": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "30px", "fontWeight": "700"}],
+                    "headline-lg": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+        }
+        
+        .pin-dot {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .pin-dot.active {
+            background-color: #003366; /* primary-container match */
+            transform: scale(1.2);
+        }
+
+        .numpad-key:active {
+            transform: scale(0.9);
+            background-color: #eceef0; /* surface-container */
+        }
+
+        /* Prevent text selection during rapid tapping */
+        .no-select {
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+        .shake {
+            animation: shake 0.2s ease-in-out 0s 2;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-hidden">
+<!-- Top App Bar (Restricted Shell - No Nav) -->
+<header class="flex justify-between items-center w-full px-container-margin py-4 z-50 bg-surface shadow-sm">
+<button aria-label="Kembali" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<span class="text-headline-md font-headline-md text-primary tracking-tight">Laksanasoft Indonesia</span>
+<div class="w-10"></div> <!-- Spacer for balance -->
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col items-center justify-center px-container-margin py-8 max-w-md mx-auto w-full">
+<!-- Header Info -->
+<div class="text-center mb-10">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary mb-2">Masukkan PIN Transaksi</h1>
+<p class="text-on-surface-variant font-body-md px-4">Pastikan PIN Anda terjaga kerahasiannya demi keamanan transaksi perbankan Anda.</p>
+</div>
+<!-- PIN Input Indicators -->
+<div class="flex gap-4 mb-12" id="pin-container">
+<div class="pin-dot w-4 h-4 rounded-full border-2 border-outline-variant bg-transparent"></div>
+<div class="pin-dot w-4 h-4 rounded-full border-2 border-outline-variant bg-transparent"></div>
+<div class="pin-dot w-4 h-4 rounded-full border-2 border-outline-variant bg-transparent"></div>
+<div class="pin-dot w-4 h-4 rounded-full border-2 border-outline-variant bg-transparent"></div>
+<div class="pin-dot w-4 h-4 rounded-full border-2 border-outline-variant bg-transparent"></div>
+<div class="pin-dot w-4 h-4 rounded-full border-2 border-outline-variant bg-transparent"></div>
+</div>
+<!-- Numeric Keypad -->
+<div class="grid grid-cols-3 gap-x-8 gap-y-4 w-full no-select">
+<!-- Row 1 -->
+<button class="numpad-key flex items-center justify-center w-full h-16 rounded-xl font-headline-md text-headline-md text-on-surface hover:bg-surface-container-low transition-all duration-100" onclick="appendPin('1')">1</button>
+<button class="numpad-key flex items-center justify-center w-full h-16 rounded-xl font-headline-md text-headline-md text-on-surface hover:bg-surface-container-low transition-all duration-100" onclick="appendPin('2')">2</button>
+<button class="numpad-key flex items-center justify-center w-full h-16 rounded-xl font-headline-md text-headline-md text-on-surface hover:bg-surface-container-low transition-all duration-100" onclick="appendPin('3')">3</button>
+<!-- Row 2 -->
+<button class="numpad-key flex items-center justify-center w-full h-16 rounded-xl font-headline-md text-headline-md text-on-surface hover:bg-surface-container-low transition-all duration-100" onclick="appendPin('4')">4</button>
+<button class="numpad-key flex items-center justify-center w-full h-16 rounded-xl font-headline-md text-headline-md text-on-surface hover:bg-surface-container-low transition-all duration-100" onclick="appendPin('5')">5</button>
+<button class="numpad-key flex items-center justify-center w-full h-16 rounded-xl font-headline-md text-headline-md text-on-surface hover:bg-surface-container-low transition-all duration-100" onclick="appendPin('6')">6</button>
+<!-- Row 3 -->
+<button class="numpad-key flex items-center justify-center w-full h-16 rounded-xl font-headline-md text-headline-md text-on-surface hover:bg-surface-container-low transition-all duration-100" onclick="appendPin('7')">7</button>
+<button class="numpad-key flex items-center justify-center w-full h-16 rounded-xl font-headline-md text-headline-md text-on-surface hover:bg-surface-container-low transition-all duration-100" onclick="appendPin('8')">8</button>
+<button class="numpad-key flex items-center justify-center w-full h-16 rounded-xl font-headline-md text-headline-md text-on-surface hover:bg-surface-container-low transition-all duration-100" onclick="appendPin('9')">9</button>
+<!-- Row 4 -->
+<button aria-label="Biometrik" class="numpad-key flex flex-col items-center justify-center w-full h-16 rounded-xl text-primary hover:bg-primary-fixed/20 transition-all duration-100" onclick="triggerBiometric()">
+<span class="material-symbols-outlined text-[32px]">fingerprint</span>
+<span class="font-label-md text-[10px] uppercase tracking-widest mt-1">Biometrik</span>
+</button>
+<button class="numpad-key flex items-center justify-center w-full h-16 rounded-xl font-headline-md text-headline-md text-on-surface hover:bg-surface-container-low transition-all duration-100" onclick="appendPin('0')">0</button>
+<button aria-label="Hapus" class="numpad-key flex items-center justify-center w-full h-16 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-all duration-100" onclick="deletePin()">
+<span class="material-symbols-outlined text-[28px]">backspace</span>
+</button>
+</div>
+<!-- Footer Actions -->
+<div class="mt-12 w-full text-center">
+<button class="text-primary font-label-md hover:underline decoration-2 underline-offset-4 transition-all">
+                Lupa PIN Transaksi?
+            </button>
+</div>
+</main>
+<!-- Success Overlay (Hidden) -->
+<div class="fixed inset-0 bg-primary-container/90 z-[100] flex flex-col items-center justify-center text-white opacity-0 pointer-events-none transition-opacity duration-500" id="success-overlay">
+<div class="w-20 h-20 bg-white rounded-full flex items-center justify-center mb-6 scale-50 transition-transform duration-500" id="success-circle">
+<span class="material-symbols-outlined text-primary-container text-5xl">check</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg">Verifikasi Berhasil</h2>
+<p class="font-body-lg text-on-primary-container mt-2">Transaksi Anda sedang diproses...</p>
+</div>
+<script>
+        let currentPin = "";
+        const maxPinLength = 6;
+        const dots = document.querySelectorAll('.pin-dot');
+
+        function updateDots() {
+            dots.forEach((dot, index) => {
+                if (index < currentPin.length) {
+                    dot.classList.add('active', 'border-primary-container');
+                    dot.classList.remove('border-outline-variant');
+                } else {
+                    dot.classList.remove('active', 'border-primary-container');
+                    dot.classList.add('border-outline-variant');
+                }
+            });
+        }
+
+        function appendPin(digit) {
+            if (currentPin.length < maxPinLength) {
+                currentPin += digit;
+                updateDots();
+                
+                if (currentPin.length === maxPinLength) {
+                    // Simulate verification
+                    setTimeout(processVerification, 300);
+                }
+            }
+        }
+
+        function deletePin() {
+            if (currentPin.length > 0) {
+                currentPin = currentPin.slice(0, -1);
+                updateDots();
+            }
+        }
+
+        function triggerBiometric() {
+            // Visual feedback for biometric activation
+            const biometricBtn = event.currentTarget;
+            biometricBtn.classList.add('scale-95');
+            setTimeout(() => {
+                alert('Mengaktifkan Face ID / Fingerprint...');
+                // Demo purposes: simulate success
+                processVerification();
+            }, 100);
+        }
+
+        function processVerification() {
+            // Simulated validation
+            const overlay = document.getElementById('success-overlay');
+            const circle = document.getElementById('success-circle');
+            
+            overlay.classList.remove('pointer-events-none', 'opacity-0');
+            overlay.classList.add('opacity-100');
+            
+            setTimeout(() => {
+                circle.classList.remove('scale-50');
+                circle.classList.add('scale-100');
+            }, 100);
+
+            // In a real app, redirect after delay
+        }
+
+        // Handle physical keyboard inputs
+        document.addEventListener('keydown', (e) => {
+            if (e.key >= '0' && e.key <= '9') {
+                appendPin(e.key);
+            } else if (e.key === 'Backspace') {
+                deletePin();
+            }
+        });
+    </script>
+</body></html>

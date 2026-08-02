@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "#d8dadc",
+                        "secondary-fixed-dim": "#81cfff",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "on-primary-container": "#799dd6",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-highest": "#e0e3e5",
+                        "secondary": "#00658d",
+                        "primary-container": "#003366",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#c3c6d1",
+                        "inverse-surface": "#2d3133",
+                        "tertiary": "#0e1f32",
+                        "surface-container": "#eceef0",
+                        "secondary-container": "#41befd",
+                        "primary-fixed-dim": "#a7c8ff",
+                        "on-primary": "#ffffff",
+                        "on-background": "#191c1e",
+                        "surface": "#f7f9fb",
+                        "on-surface": "#191c1e",
+                        "primary-fixed": "#d5e3ff",
+                        "inverse-primary": "#a7c8ff",
+                        "surface-bright": "#f7f9fb",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "on-primary-fixed-variant": "#1f477b",
+                        "primary": "#001e40",
+                        "on-surface-variant": "#43474f",
+                        "on-error-container": "#93000a",
+                        "background": "#f7f9fb",
+                        "on-tertiary-container": "#8c9cb5",
+                        "tertiary-fixed": "#d3e4fe",
+                        "secondary-fixed": "#c6e7ff",
+                        "surface-tint": "#3a5f94",
+                        "on-secondary-fixed-variant": "#004c6b",
+                        "on-error": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed": "#001e2d",
+                        "on-primary-fixed": "#001b3c",
+                        "tertiary-container": "#243448",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#e0e3e5",
+                        "on-secondary-container": "#004b69",
+                        "surface-container-high": "#e6e8ea",
+                        "outline": "#737780",
+                        "surface-container-low": "#f2f4f6",
+                        "inverse-on-surface": "#eff1f3"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "inline-gutter": "0.5rem",
+                        "section-gap": "1.5rem",
+                        "container-margin": "1rem",
+                        "card-padding": "1rem",
+                        "stack-gap": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "30px", "fontWeight": "700"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .chat-container {
+            height: calc(100vh - 64px - 88px);
+        }
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #d8dadc;
+            border-radius: 10px;
+        }
+        .chat-bubble-user {
+            border-bottom-right-radius: 4px;
+        }
+        .chat-bubble-agent {
+            border-bottom-left-radius: 4px;
+        }
+        .active-interaction:active {
+            transform: scale(0.95);
+            transition: transform 100ms;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- Top Navigation Anchor (Shared Component: TopAppBar) -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-4 md:px-container-margin h-16 bg-surface shadow-sm">
+<div class="flex items-center gap-3">
+<button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-container-high transition-colors active-interaction">
+<span class="material-symbols-outlined text-on-surface">arrow_back</span>
+</button>
+<div class="flex items-center gap-3">
+<div class="relative">
+<img class="w-10 h-10 rounded-full object-cover border-2 border-primary-container" data-alt="A professional close-up portrait of Siska, a friendly female customer support agent with a warm smile, wearing a professional corporate attire. She is in a brightly lit, modern office environment with soft focus banking technology in the background. The aesthetic is clean, corporate modern, using a light mode palette of whites and soft blues to convey trust and reliability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDwcijpyeiNANkT7hhWKm9bb6A6Hq4Pga1qpwXfflNTPLsHWJVgMD7m8093uIzfa-oVGnBASKfk0P1VC171VwpoGtA037QTKXbDhBzAUtqIyDh9xjr4mEDC9JoEM6RhAGdf8dIpKhWPt2ErKdcAlKIQNbGtAJ2t3nDCIdfvjWEDd3y2W3F5XdqzAO68_FvVXC9hbey78Vi5LhUOxqtcb27Tfq6LXDf1lE1k6JCXw8W7R_pXO1xDb6LjvQ"/>
+<div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-surface rounded-full"></div>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md text-primary leading-tight">Siska</span>
+<div class="flex items-center gap-1">
+<span class="text-[10px] font-bold uppercase tracking-wider text-green-600">Online</span>
+<span class="text-[10px] text-on-surface-variant">• Customer Support</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded-full hover:bg-surface-container-high transition-colors active-interaction">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="phone">phone</span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container-high transition-colors active-interaction">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-16 pb-24 min-h-screen flex flex-col">
+<div class="flex-1 overflow-y-auto custom-scrollbar px-4 py-6 space-y-6">
+<!-- Date Divider -->
+<div class="flex justify-center">
+<span class="bg-surface-container-high px-4 py-1 rounded-full font-label-md text-label-md text-on-surface-variant">Hari Ini</span>
+</div>
+<!-- Chat Area -->
+<div class="max-w-3xl mx-auto w-full space-y-6">
+<!-- Agent Message -->
+<div class="flex items-end gap-2 max-w-[85%]">
+<div class="flex-shrink-0 mb-1">
+<img class="w-8 h-8 rounded-full" data-alt="A small circular avatar of a friendly female support agent, styled for a professional banking app. The agent has a soft, approachable look with a neutral, bright background that matches the corporate modern aesthetic of Laksanasoft banking." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGjTXsKfxoOn3MWOhxhzzJYhNPmPFFE7S9bY68nG3JRqdLBF6cGN1r5hEycQkZfVxpfIJybu215ylbwSidXmRUehKzu6B_iN16av9taqwOaq6pIewU7yEllyALesxN69lHgbf64e33KTnenrCESHcavoRB60Ax0eviRW4qNhMQPWwce9JBIuFUttDUTVx7ahwM-XVzTNlMp1ug2AJvIus74gIpSBzUe6TKbUH4deNIYxiGqedbj01uEA"/>
+</div>
+<div class="flex flex-col gap-1">
+<div class="bg-surface-container-high text-on-surface font-body-md text-body-md p-4 rounded-2xl chat-bubble-agent shadow-sm">
+                            Halo! Saya Siska dari Laksanasoft Support. Ada yang bisa saya bantu hari ini?
+                        </div>
+<span class="text-[10px] text-outline ml-1">09:41</span>
+</div>
+</div>
+<!-- User Message -->
+<div class="flex flex-col items-end gap-1 ml-auto max-w-[85%]">
+<div class="bg-primary text-on-primary font-body-md text-body-md p-4 rounded-2xl chat-bubble-user shadow-md">
+                        Halo Siska, saya ingin menanyakan detail untuk tagihan nomor #INV-2024-0892. Kenapa nominalnya berbeda dengan bulan lalu ya?
+                    </div>
+<div class="flex items-center gap-1 mr-1">
+<span class="text-[10px] text-outline">09:42</span>
+<span class="material-symbols-outlined text-[12px] text-secondary" style="font-variation-settings: 'FILL' 1;">done_all</span>
+</div>
+</div>
+<!-- Agent Message (Response) -->
+<div class="flex items-end gap-2 max-w-[85%]">
+<div class="flex-shrink-0 mb-1">
+<img class="w-8 h-8 rounded-full" data-alt="Close up of a professional support agent avatar, specifically for a banking interface. The style is minimalist and high-end, utilizing soft professional lighting and a clear corporate identity. The agent's expression is helpful and confident." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCv7xkXKLpeZUUw3RQTQVdQRoug8adK5r6nFU83dv8oDj5q4e_TUH27vAUv2fGt-Lq-1RCvMm4xZnIzDi8klnFVedE4XM6YjxWkn-oWVzsQoG01X0gNm8vivzEEdq9DCz7jpzONHE16fwqzqxpgEc4ue492tLv5TzXdKRLO-tXHzWpkzHsGgevTVbBIMlCmLpfG2Of20OlUaBlHuplR2o5UYTCR7YWfjEZguGy4YhfWywKSrOmPb0xo-Q"/>
+</div>
+<div class="flex flex-col gap-1">
+<div class="bg-surface-container-high text-on-surface font-body-md text-body-md p-4 rounded-2xl chat-bubble-agent shadow-sm space-y-3">
+<p>Tentu, biarkan saya periksa sebentar detail invoice #INV-2024-0892 Anda.</p>
+<!-- Embedded Card for Invoice Detail -->
+<div class="bg-white border border-outline-variant rounded-xl p-3 flex items-center gap-3">
+<div class="w-10 h-10 bg-primary-fixed rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="description">description</span>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface leading-none mb-1">Invoice #INV-2024-0892</p>
+<p class="text-[11px] text-on-surface-variant">Layanan Cloud &amp; Maintenance</p>
+</div>
+<span class="font-headline-md text-[14px] text-primary">Rp1.250.000</span>
+</div>
+<p>Setelah saya cek, terdapat penambahan biaya untuk paket "Security Essentials" yang Anda aktifkan pada tanggal 15 Juli kemarin. Itulah yang menyebabkan perbedaan nominalnya.</p>
+</div>
+<span class="text-[10px] text-outline ml-1">09:44</span>
+</div>
+</div>
+<!-- User Message -->
+<div class="flex flex-col items-end gap-1 ml-auto max-w-[85%]">
+<div class="bg-primary text-on-primary font-body-md text-body-md p-4 rounded-2xl chat-bubble-user shadow-md">
+                        Oh begitu, saya lupa kalau sempat mengaktifkan fitur itu. Terima kasih penjelasannya Siska.
+                    </div>
+<div class="flex items-center gap-1 mr-1">
+<span class="text-[10px] text-outline">09:45</span>
+<span class="material-symbols-outlined text-[12px] text-secondary" style="font-variation-settings: 'FILL' 1;">done_all</span>
+</div>
+</div>
+<!-- Agent is Typing Indicator (Micro-interaction) -->
+<div class="flex items-end gap-2" id="typing-indicator">
+<div class="flex-shrink-0 mb-1">
+<img class="w-8 h-8 rounded-full" data-alt="Avatar of a support specialist, consistent with the Laksanasoft branding, conveying efficiency and expertise. The lighting is crisp, and the overall look is polished for a premium banking application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuz_VUpOMM2uEnlyHya3BqA-1bcV14bKRo0RGUwOH0loLG57KP6V_tlfsxs5WCPriY2vc--OWGRgSQxR3o_d5-y5MxsqSAqeYOj1wsOAcVKga7SRnlNEGmd5Qdl8lFrlSobiJnF_CTteMieV0hF_rRfb95gIVRPiD3xfgDg29OSwpIyN05sz_fN5_SNoQ1VClx-tx_m2491x5-eJiI-Jl5Mg0Zmsw_raTb4iXWsn2YxkOTwKDSMQn91A"/>
+</div>
+<div class="bg-surface-container-low px-4 py-3 rounded-full flex gap-1 items-center">
+<div class="w-1.5 h-1.5 bg-outline rounded-full animate-bounce" style="animation-delay: 0ms"></div>
+<div class="w-1.5 h-1.5 bg-outline rounded-full animate-bounce" style="animation-delay: 150ms"></div>
+<div class="w-1.5 h-1.5 bg-outline rounded-full animate-bounce" style="animation-delay: 300ms"></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Message Input Shell -->
+<footer class="fixed bottom-0 w-full bg-surface-container-lowest p-4 pb-safe flex items-center gap-3 z-50">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high text-on-surface-variant active-interaction">
+<span class="material-symbols-outlined" data-icon="attach_file">attach_file</span>
+</button>
+<div class="flex-1 relative">
+<input class="w-full bg-surface-container-low border-none rounded-full py-3 px-5 pr-12 font-body-md text-body-md text-on-surface placeholder-outline focus:ring-2 focus:ring-secondary transition-all outline-none" placeholder="Ketik pesan..." type="text"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-full text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="sentiment_satisfied">sentiment_satisfied</span>
+</button>
+</div>
+<button class="w-12 h-12 flex items-center justify-center rounded-full bg-primary text-on-primary shadow-lg active-interaction">
+<span class="material-symbols-outlined" data-icon="send" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</footer>
+<script>
+        // Simple micro-interaction for the chat
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.querySelector('input');
+            const sendBtn = document.querySelector('footer button.bg-primary');
+            const typing = document.getElementById('typing-indicator');
+
+            // Simulate typing stop after 3 seconds
+            setTimeout(() => {
+                typing.style.opacity = '0';
+                typing.style.transition = 'opacity 0.5s ease';
+                setTimeout(() => typing.remove(), 500);
+            }, 5000);
+
+            sendBtn.addEventListener('click', () => {
+                if (input.value.trim() !== "") {
+                    // Logic to append message would go here
+                    input.value = "";
+                }
+            });
+
+            // Prevent default form behavior if any
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendBtn.click();
+                }
+            });
+        });
+    </script>
+</body></html>

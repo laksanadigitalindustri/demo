@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Laksanasoft | Corporate Payment & Proposal Portal</title>
+  
+  <!-- Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="assets/css/styles.css" />
+
+  <!-- Tailwind Config matching Design System -->
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#001e40",
+            "on-primary": "#ffffff",
+            "primary-container": "#003366",
+            "on-primary-container": "#799dd6",
+            "secondary": "#00658d",
+            "on-secondary": "#ffffff",
+            "secondary-container": "#41befd",
+            "on-secondary-container": "#004b69",
+            "surface": "#f7f9fb",
+            "surface-dim": "#d8dadc",
+            "surface-bright": "#f7f9fb",
+            "surface-container-lowest": "#ffffff",
+            "surface-container-low": "#f2f4f6",
+            "surface-container": "#eceef0",
+            "surface-container-high": "#e6e8ea",
+            "surface-container-highest": "#e0e3e5",
+            "on-surface": "#191c1e",
+            "on-surface-variant": "#43474f",
+            "outline": "#737780",
+            "outline-variant": "#c3c6d1",
+            "error": "#ba1a1a"
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "2xl": "1rem",
+            "full": "9999px"
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col antialiased selection:bg-secondary/20">
+
+  <!-- ==========================================================================
+       LOGIN LAYOUT
+       ========================================================================== -->
+  <div id="view-login" class="hidden min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-primary via-primary-container to-slate-900 p-4">
+    <div class="w-full max-w-md bg-surface-container-lowest dark:bg-surface-container-low rounded-2xl shadow-2xl p-8 border border-surface-container-high">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary text-white shadow-lg mb-3">
+          <span class="material-symbols-outlined text-3xl">account_balance</span>
+        </div>
+        <h1 class="text-2xl font-extrabold text-primary dark:text-on-primary-container tracking-tight">Laksanasoft</h1>
+        <p class="text-xs text-on-surface-variant uppercase tracking-widest font-semibold mt-1">Corporate Payment Portal</p>
+      </div>
+
+      <form onsubmit="app.login(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Corporate ID</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-3 text-outline text-xl">business</span>
+            <input id="login-corp-id" type="text" value="admin" required placeholder="Masukkan Corporate ID (cth: admin)" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-outline-variant bg-surface-container-low text-sm font-semibold text-on-surface focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">User ID / Email</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-3 text-outline text-xl">badge</span>
+            <input id="login-user-id" type="text" value="admin" required placeholder="Masukkan User ID (cth: admin)" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-outline-variant bg-surface-container-low text-sm font-semibold text-on-surface focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20" />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Kata Sandi</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-3 text-outline text-xl">lock</span>
+            <input id="login-password" type="password" value="admin" required placeholder="Masukkan Password (cth: admin)" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-outline-variant bg-surface-container-low text-sm font-semibold text-on-surface focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20" />
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs pt-1">
+          <label class="flex items-center gap-2 text-on-surface-variant cursor-pointer">
+            <input type="checkbox" checked class="rounded border-outline-variant text-secondary focus:ring-secondary" />
+            <span>Ingat Perangkat Ini</span>
+          </label>
+          <a href="#" onclick="showToast('Gunakan Corp ID: admin, User: admin, Password: admin', 'info')" class="text-secondary font-semibold hover:underline">Bantuan Login</a>
+        </div>
+
+        <button type="submit" class="w-full py-3.5 px-4 bg-primary hover:bg-primary-container text-white font-bold rounded-xl shadow-lg transition-all transform active:scale-[0.99] flex items-center justify-center gap-2 mt-4">
+          <span class="material-symbols-outlined text-xl">login</span> Masuk ke Portal
+        </button>
+      </form>
+
+      <div class="mt-8 pt-6 border-t border-surface-container text-center text-xs text-on-surface-variant">
+        <p class="font-semibold text-secondary">Kredensial Demo: Corp ID: <code class="bg-surface-container px-1 py-0.5 rounded">admin</code> | User: <code class="bg-surface-container px-1 py-0.5 rounded">admin</code> | Password: <code class="bg-surface-container px-1 py-0.5 rounded">admin</code></p>
+        <p class="mt-2 text-outline">© 2026 PT Laksana Software Solutions. All rights reserved.</p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==========================================================================
+       MAIN APPLICATION LAYOUT (Sidebar + Header + Dynamic View Container)
+       ========================================================================== -->
+  <div id="main-app-layout" class="flex min-h-screen w-full relative">
+
+    <!-- MOBILE SIDEBAR BACKDROP OVERLAY -->
+    <div id="sidebar-backdrop" onclick="app.closeMobileMenu()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-30 hidden md:hidden transition-all duration-300"></div>
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside id="app-sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-surface-container-lowest dark:bg-surface-container-low border-r border-surface-container-high transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col shadow-2xl md:shadow-none">
+      <!-- Sidebar Brand Header -->
+      <div class="h-20 px-6 flex items-center justify-between border-b border-surface-container">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-primary text-white flex items-center justify-center shadow-md">
+            <span class="material-symbols-outlined text-2xl">account_balance</span>
+          </div>
+          <div>
+            <h2 class="font-extrabold text-primary dark:text-on-primary-container text-lg tracking-tight leading-none">Laksanasoft</h2>
+            <span class="text-[11px] font-semibold text-secondary uppercase tracking-widest">Payment Portal</span>
+          </div>
+        </div>
+        <button onclick="app.closeMobileMenu()" class="md:hidden p-1.5 text-on-surface-variant hover:bg-surface-container rounded-lg" title="Tutup Menu">
+          <span class="material-symbols-outlined text-xl">close</span>
+        </button>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+        <button onclick="app.navigate('dashboard')" data-view="dashboard" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all text-left">
+          <span class="material-symbols-outlined">dashboard</span> Beranda & Tagihan
+        </button>
+
+        <button onclick="app.navigate('proposals')" data-view="proposals" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all text-left">
+          <span class="material-symbols-outlined">request_quote</span> Penawaran & Quotation
+        </button>
+
+        <button onclick="app.navigate('invoice-detail')" data-view="invoice-detail" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all text-left">
+          <span class="material-symbols-outlined">receipt</span> Detail Tagihan
+        </button>
+
+        <button onclick="app.navigate('history')" data-view="history" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all text-left">
+          <span class="material-symbols-outlined">history</span> Riwayat Pembayaran
+        </button>
+
+        <button onclick="app.navigate('notifications')" data-view="notifications" class="nav-link w-full flex items-center justify-between px-4 py-3 rounded-xl font-semibold text-sm transition-all text-left">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined">notifications</span> Notifikasi
+          </div>
+          <span id="nav-notif-badge" class="px-2 py-0.5 rounded-full text-xs bg-rose-600 text-white font-bold hidden">0</span>
+        </button>
+
+        <button onclick="app.navigate('support')" data-view="support" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all text-left">
+          <span class="material-symbols-outlined">support_agent</span> Chat Support
+        </button>
+
+        <div class="pt-4 border-t border-surface-container my-2">
+          <span class="px-4 text-[10px] font-extrabold uppercase text-outline tracking-wider">Pengaturan</span>
+        </div>
+
+        <button onclick="app.navigate('profile')" data-view="profile" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-sm transition-all text-left">
+          <span class="material-symbols-outlined">settings</span> Profil & Keamanan
+        </button>
+      </nav>
+
+      <!-- Sidebar User Footer -->
+      <div class="p-4 border-t border-surface-container bg-surface-container-low/50 dark:bg-surface-container">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3 overflow-hidden">
+            <div class="w-10 h-10 rounded-full bg-primary-container text-white flex items-center justify-center font-bold text-sm shrink-0">
+              AD
+            </div>
+            <div class="truncate">
+              <p class="text-xs font-bold text-on-surface truncate">Admin User</p>
+              <p class="text-[11px] text-on-surface-variant truncate">CORP: admin</p>
+            </div>
+          </div>
+          <button onclick="app.logout()" title="Keluar" class="p-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition-colors">
+            <span class="material-symbols-outlined text-xl">logout</span>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="flex-1 md:ml-64 flex flex-col min-w-0 min-h-screen">
+      
+      <!-- TOP HEADER BAR -->
+      <header class="h-20 bg-surface-container-lowest/80 dark:bg-surface-container-low/80 backdrop-blur-md border-b border-surface-container-high sticky top-0 z-20 px-4 md:px-8 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+          <button onclick="app.toggleMobileMenu()" class="md:hidden p-2 rounded-xl text-on-surface hover:bg-surface-container transition-colors flex items-center gap-1.5 font-bold text-xs">
+            <span class="material-symbols-outlined text-2xl">menu</span> Menu
+          </button>
+          <div>
+            <h1 class="text-lg font-bold text-primary dark:text-on-primary-container tracking-tight">Portal Pembayaran Korporat</h1>
+            <p class="text-xs text-on-surface-variant hidden sm:block">PT Laksana Software Solutions • Jakarta HQ</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 sm:gap-3">
+          <button onclick="app.toggleTheme()" class="p-2.5 rounded-xl text-on-surface hover:bg-surface-container transition-colors" title="Ubah Mode Tampilan">
+            <span class="material-symbols-outlined text-xl dark:hidden">dark_mode</span>
+            <span class="material-symbols-outlined text-xl hidden dark:inline-block text-amber-400">light_mode</span>
+          </button>
+
+          <button onclick="app.navigate('notifications')" class="p-2.5 rounded-xl text-on-surface hover:bg-surface-container transition-colors relative" title="Notifikasi">
+            <span class="material-symbols-outlined text-xl">notifications</span>
+            <span id="header-notif-badge" class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center hidden">0</span>
+          </button>
+
+          <div class="h-6 w-px bg-surface-container-high mx-1"></div>
+
+          <button onclick="app.navigate('profile')" class="flex items-center gap-2.5 p-1.5 pl-2.5 rounded-xl hover:bg-surface-container transition-colors">
+            <span class="text-xs font-semibold text-on-surface hidden sm:inline-block">Admin User</span>
+            <div class="w-8 h-8 rounded-full bg-secondary text-white font-bold text-xs flex items-center justify-center">AD</div>
+          </button>
+        </div>
+      </header>
+
+      <!-- DYNAMIC PAGE VIEWS -->
+      <main class="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto">
+
+        <!-- ==========================================================================
+             VIEW 1: DASHBOARD & INVOICE LIST
+             ========================================================================== -->
+        <section id="view-dashboard" class="app-view space-y-8">
+          <div class="bg-gradient-to-r from-primary via-primary-container to-slate-900 rounded-2xl p-6 md:p-8 text-white shadow-xl relative overflow-hidden">
+            <div class="relative z-10 max-w-2xl">
+              <span class="px-3 py-1 rounded-full text-xs font-semibold bg-white/10 backdrop-blur-sm text-secondary-fixed mb-3 inline-block">Enterprise Account • CORP ID: admin</span>
+              <h2 class="text-2xl md:text-3xl font-extrabold tracking-tight">Selamat Datang Kembali, Admin User</h2>
+              <p class="text-sm text-surface-container-high mt-2 leading-relaxed">Kelola semua tagihan layanan software, server, dan infrastruktur IT korporasi Anda dengan cepat dan aman.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div class="bg-surface-container-lowest dark:bg-surface-container-low p-6 rounded-2xl border border-surface-container-high card-shadow flex items-center justify-between">
+              <div>
+                <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Total Belum Bayar</span>
+                <h3 id="stat-unpaid-total" class="text-2xl font-extrabold text-rose-600 dark:text-rose-400 mt-1">Rp 0</h3>
+                <p id="stat-unpaid-count" class="text-xs text-on-surface-variant mt-1">0 Tagihan Belum Dibayar</p>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-300 flex items-center justify-center">
+                <span class="material-symbols-outlined text-2xl">pending_actions</span>
+              </div>
+            </div>
+
+            <div class="bg-surface-container-lowest dark:bg-surface-container-low p-6 rounded-2xl border border-surface-container-high card-shadow flex items-center justify-between">
+              <div>
+                <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Total Lunas (Bulan Ini)</span>
+                <h3 id="stat-paid-total" class="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">Rp 0</h3>
+                <p id="stat-paid-count" class="text-xs text-on-surface-variant mt-1">0 Tagihan Terbayar</p>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-300 flex items-center justify-center">
+                <span class="material-symbols-outlined text-2xl">verified</span>
+              </div>
+            </div>
+
+            <div class="bg-surface-container-lowest dark:bg-surface-container-low p-6 rounded-2xl border border-surface-container-high card-shadow flex items-center justify-between sm:col-span-2 lg:col-span-1">
+              <div>
+                <span class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Batas Kredit Korporat</span>
+                <h3 class="text-2xl font-extrabold text-primary dark:text-on-primary-container mt-1">Rp 500.000.000</h3>
+                <p class="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-1">✓ Limit Tersedia: Rp 430.750.000</p>
+              </div>
+              <div class="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-950/60 text-primary dark:text-secondary flex items-center justify-center">
+                <span class="material-symbols-outlined text-2xl">credit_score</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-surface-container-lowest dark:bg-surface-container-low rounded-2xl border border-surface-container-high card-shadow overflow-hidden">
+            <div class="p-6 border-b border-surface-container flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h3 class="text-lg font-extrabold text-on-surface tracking-tight">Daftar Tagihan & Invoice</h3>
+                <p class="text-xs text-on-surface-variant">Pilih tagihan untuk melihat rincian item atau melakukan pembayaran.</p>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <div class="relative flex-1 sm:w-64">
+                  <span class="material-symbols-outlined absolute left-3 top-2.5 text-outline text-lg">search</span>
+                  <input id="dashboard-search-input" type="text" placeholder="Cari No. Invoice / Vendor..." class="w-full pl-9 pr-3 py-2 text-xs rounded-xl border border-outline-variant bg-surface text-on-surface focus:outline-none focus:border-secondary" />
+                </div>
+                <select id="dashboard-status-filter" class="text-xs font-semibold rounded-xl border border-outline-variant bg-surface text-on-surface py-2 px-3 focus:outline-none focus:border-secondary">
+                  <option value="ALL">Semua Status</option>
+                  <option value="UNPAID">Belum Bayar</option>
+                  <option value="OVERDUE">Jatuh Tempo</option>
+                  <option value="PAID">Lunas</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-surface-container-low dark:bg-surface-container border-b border-surface-container-high text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+                    <th class="px-6 py-4">No. Invoice</th>
+                    <th class="px-6 py-4">Vendor / Layanan</th>
+                    <th class="px-6 py-4">Tanggal Jatuh Tempo</th>
+                    <th class="px-6 py-4 text-right">Total Tagihan</th>
+                    <th class="px-6 py-4 text-center">Status</th>
+                    <th class="px-6 py-4 text-right">Tindakan</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-invoice-table-body">
+                  <!-- Rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ==========================================================================
+             NEW VIEW: PROPOSALS & QUOTATIONS (Persetujuan / Penolakan / Negosiasi)
+             ========================================================================== -->
+        <section id="view-proposals" class="app-view hidden space-y-6">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h2 class="text-2xl font-extrabold text-primary dark:text-on-primary-container tracking-tight">Manajemen Penawaran & Quotation</h2>
+              <p class="text-xs text-on-surface-variant">Setujui penawaran vendor untuk menerbitkan tagihan, tolak penawaran, atau ajukan negosiasi harga balik.</p>
+            </div>
+          </div>
+
+          <!-- Filter Pills -->
+          <div class="flex items-center gap-2 overflow-x-auto pb-2 border-b border-surface-container">
+            <button id="quo-btn-ALL" onclick="app.filterProposals('ALL')" class="quo-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-primary text-white transition-all shrink-0">Semua Penawaran</button>
+            <button id="quo-btn-PENDING" onclick="app.filterProposals('PENDING')" class="quo-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-surface-container text-on-surface hover:bg-surface-container-high transition-all shrink-0">Menunggu Persetujuan</button>
+            <button id="quo-btn-NEGOTIATING" onclick="app.filterProposals('NEGOTIATING')" class="quo-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-surface-container text-on-surface hover:bg-surface-container-high transition-all shrink-0">Dalam Negosiasi</button>
+            <button id="quo-btn-APPROVED" onclick="app.filterProposals('APPROVED')" class="quo-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-surface-container text-on-surface hover:bg-surface-container-high transition-all shrink-0">Disetujui</button>
+            <button id="quo-btn-REJECTED" onclick="app.filterProposals('REJECTED')" class="quo-filter-btn px-4 py-2 rounded-xl text-xs font-bold bg-surface-container text-on-surface hover:bg-surface-container-high transition-all shrink-0">Ditolak</button>
+          </div>
+
+          <!-- Proposals List Container -->
+          <div id="proposals-list-container" class="space-y-6">
+            <!-- Rendered dynamically -->
+          </div>
+        </section>
+
+
+        <!-- ==========================================================================
+             VIEW 2: INVOICE DETAIL
+             ========================================================================== -->
+        <section id="view-invoice-detail" class="app-view hidden space-y-6">
+          <div class="flex items-center justify-between">
+            <button onclick="app.navigate('dashboard')" class="inline-flex items-center gap-2 text-xs font-bold text-secondary hover:underline">
+              <span class="material-symbols-outlined text-base">arrow_back</span> Kembali ke Beranda
+            </button>
+            <div class="flex items-center gap-2">
+              <button onclick="app.printDocument()" class="px-3.5 py-2 text-xs font-bold bg-surface-container text-on-surface hover:bg-surface-container-high rounded-xl transition-colors flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-base">print</span> Cetak
+              </button>
+              <button onclick="app.shareDocument()" class="px-3.5 py-2 text-xs font-bold bg-surface-container text-on-surface hover:bg-surface-container-high rounded-xl transition-colors flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-base">share</span> Bagikan
+              </button>
+            </div>
+          </div>
+
+          <div id="printable-area" class="bg-surface-container-lowest dark:bg-surface-container-low rounded-2xl border border-surface-container-high card-shadow p-6 md:p-10 space-y-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-surface-container pb-6 gap-4">
+              <div>
+                <span class="text-xs font-bold text-secondary uppercase tracking-widest">Formal Invoice</span>
+                <h2 id="inv-detail-id" class="text-3xl font-extrabold text-primary dark:text-on-primary-container tracking-tight mt-1">INV-2026-0000</h2>
+                <p id="inv-detail-desc" class="text-xs text-on-surface-variant mt-1 max-w-xl">Deskripsi Layanan Invoice Korporasi</p>
+              </div>
+              <div id="inv-detail-status-badge"></div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-5 rounded-xl bg-surface-container-low dark:bg-surface-container">
+              <div>
+                <span class="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Penerbit / Vendor</span>
+                <p id="inv-detail-vendor" class="font-bold text-sm text-on-surface mt-1">-</p>
+                <p id="inv-detail-category" class="text-xs text-on-surface-variant">-</p>
+              </div>
+              <div>
+                <span class="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Diterbitkan Kepada</span>
+                <p class="font-bold text-sm text-on-surface mt-1">PT Laksana Software Solutions</p>
+                <p class="text-xs text-on-surface-variant">CORP ID: admin</p>
+              </div>
+              <div>
+                <span class="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Tanggal Terbit</span>
+                <p id="inv-detail-issue" class="font-bold text-sm text-on-surface mt-1">-</p>
+              </div>
+              <div>
+                <span class="text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider">Jatuh Tempo</span>
+                <p id="inv-detail-due" class="font-bold text-sm text-rose-600 dark:text-rose-400 mt-1">-</p>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-3">Rincian Item & Layanan</h4>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="border-b border-surface-container-high text-xs font-bold text-on-surface-variant">
+                      <th class="py-3 px-4">Deskripsi Item</th>
+                      <th class="py-3 px-4 text-center">Jumlah (Qty)</th>
+                      <th class="py-3 px-4 text-right">Harga Satuan</th>
+                      <th class="py-3 px-4 text-right">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody id="inv-detail-items-table"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end pt-4 border-t border-surface-container gap-4">
+              <div class="text-xs text-on-surface-variant space-y-1">
+                <p>• Pembayaran harus dilakukan sebelum tanggal jatuh tempo.</p>
+                <p>• Metode pembayaran mendukung Transfer Bank, Virtual Account, dan QRIS.</p>
+              </div>
+
+              <div class="w-full sm:w-72 space-y-2 bg-surface p-4 rounded-xl border border-surface-container">
+                <div class="flex justify-between text-xs text-on-surface-variant">
+                  <span>Subtotal:</span>
+                  <span id="inv-detail-subtotal" class="font-medium text-on-surface">Rp 0</span>
+                </div>
+                <div class="flex justify-between text-xs text-on-surface-variant">
+                  <span>PPN 11%:</span>
+                  <span id="inv-detail-tax" class="font-medium text-on-surface">Rp 0</span>
+                </div>
+                <div class="flex justify-between text-base font-extrabold text-primary dark:text-on-primary-container pt-2 border-t border-surface-container">
+                  <span>Total Tagihan:</span>
+                  <span id="inv-detail-amount">Rp 0</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-6 border-t border-surface-container flex items-center justify-end gap-3 no-print">
+              <button id="inv-detail-pay-btn" onclick="app.startPayment(app.selectedInvoice?.id)" class="px-6 py-3 bg-primary hover:bg-primary-container text-white font-bold rounded-xl shadow-lg transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-xl">payments</span> Lanjutkan Pembayaran
+              </button>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ==========================================================================
+             VIEW 3: PAYMENT CONFIRMATION
+             ========================================================================== -->
+        <section id="view-payment-confirm" class="app-view hidden space-y-6 max-w-4xl mx-auto">
+          <div class="flex items-center justify-between">
+            <button onclick="app.navigate('invoice-detail')" class="inline-flex items-center gap-2 text-xs font-bold text-secondary hover:underline">
+              <span class="material-symbols-outlined text-base">arrow_back</span> Kembali ke Detail Tagihan
+            </button>
+            <span class="text-xs font-bold text-on-surface-variant">Langkah 1 dari 3: Konfirmasi Pembayaran</span>
+          </div>
+
+          <div class="bg-surface-container-lowest dark:bg-surface-container-low rounded-2xl border border-surface-container-high card-shadow p-6 md:p-8 space-y-8">
+            <div>
+              <h2 class="text-2xl font-extrabold text-primary dark:text-on-primary-container tracking-tight">Konfirmasi Pembayaran</h2>
+              <p class="text-xs text-on-surface-variant mt-1">Pilih metode pembayaran dan tinjau rincian transaksi sebelum verifikasi PIN.</p>
+            </div>
+
+            <div class="p-5 rounded-2xl bg-surface-container-low dark:bg-surface-container border border-surface-container-high flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div>
+                <span class="text-[11px] font-bold text-secondary uppercase tracking-wider">No. Invoice: <span id="pay-confirm-inv-id">INV-000</span></span>
+                <h4 id="pay-confirm-vendor" class="text-lg font-bold text-on-surface mt-1">PT Vendor Name</h4>
+              </div>
+              <div class="text-left sm:text-right">
+                <span class="text-xs text-on-surface-variant block">Total Pembayaran</span>
+                <span id="pay-confirm-amount" class="text-2xl font-extrabold text-primary dark:text-on-primary-container">Rp 0</span>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-4">Pilih Metode Pembayaran</h4>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                
+                <div id="method-bca_va" onclick="app.selectPaymentMethod('bca_va')" class="pay-method-card p-4 rounded-xl border-2 border-primary bg-primary/5 cursor-pointer transition-all flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-blue-700 text-white font-black text-xs flex items-center justify-center">BCA</div>
+                    <div>
+                      <p class="font-bold text-sm text-on-surface">Virtual Account BCA</p>
+                      <p class="text-xs text-on-surface-variant">Konfirmasi otomatis tanpa upload bukti</p>
+                    </div>
+                  </div>
+                  <span class="material-symbols-outlined text-primary">check_circle</span>
+                </div>
+
+                <div id="method-mandiri_trf" onclick="app.selectPaymentMethod('mandiri_trf')" class="pay-method-card p-4 rounded-xl border-2 border-surface-container-high hover:border-outline cursor-pointer transition-all flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-sky-800 text-white font-black text-xs flex items-center justify-center">MDR</div>
+                    <div>
+                      <p class="font-bold text-sm text-on-surface">Transfer Bank Mandiri</p>
+                      <p class="text-xs text-on-surface-variant">Nomor Rekening Giro Korporat</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="method-qris" onclick="app.selectPaymentMethod('qris')" class="pay-method-card p-4 rounded-xl border-2 border-surface-container-high hover:border-outline cursor-pointer transition-all flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-rose-700 text-white font-black text-xs flex items-center justify-center">QRIS</div>
+                    <div>
+                      <p class="font-bold text-sm text-on-surface">QRIS / QR Code Standard</p>
+                      <p class="text-xs text-on-surface-variant">Scan M-Banking / GoPay / ShopeePay / OVO</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="method-ewallet" onclick="app.selectPaymentMethod('ewallet')" class="pay-method-card p-4 rounded-xl border-2 border-surface-container-high hover:border-outline cursor-pointer transition-all flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-emerald-700 text-white font-black text-xs flex items-center justify-center">E-WAL</div>
+                    <div>
+                      <p class="font-bold text-sm text-on-surface">E-Wallet Direct Debit</p>
+                      <p class="text-xs text-on-surface-variant">GoPay Enterprise / OVO Business</p>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Catatan Pembayaran (Opsional)</label>
+              <input type="text" placeholder="Masukkan catatan referensi internal korporat..." class="w-full px-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm text-on-surface focus:outline-none focus:border-secondary" />
+            </div>
+
+            <div class="pt-6 border-t border-surface-container flex items-center justify-between">
+              <div class="text-xs text-on-surface-variant">
+                <span>Batas Waktu Transaksi: <strong class="text-on-surface">24 Jam</strong></span>
+              </div>
+              <button onclick="app.proceedToPinOrQR()" class="px-8 py-3.5 bg-primary hover:bg-primary-container text-white font-bold rounded-xl shadow-lg transition-all flex items-center gap-2">
+                <span class="material-symbols-outlined text-xl">lock</span> Verifikasi & Lanjut
+              </button>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ==========================================================================
+             VIEW 4: QRIS PAYMENT SCREEN
+             ========================================================================== -->
+        <section id="view-payment-qr" class="app-view hidden space-y-6 max-w-2xl mx-auto">
+          <div class="flex items-center justify-between">
+            <button onclick="app.navigate('payment-confirm')" class="inline-flex items-center gap-2 text-xs font-bold text-secondary hover:underline">
+              <span class="material-symbols-outlined text-base">arrow_back</span> Ubah Metode Pembayaran
+            </button>
+            <span class="text-xs font-bold text-on-surface-variant">Pembayaran QRIS</span>
+          </div>
+
+          <div class="bg-surface-container-lowest dark:bg-surface-container-low rounded-2xl border border-surface-container-high card-shadow p-6 md:p-8 text-center space-y-6">
+            <div>
+              <span class="px-3 py-1 rounded-full text-xs font-extrabold bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300 inline-flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-rose-600 animate-ping"></span> Standar QRIS Indonesia
+              </span>
+              <h2 class="text-2xl font-extrabold text-primary dark:text-on-primary-container tracking-tight mt-3">Pindai Kode QRIS</h2>
+              <p class="text-xs text-on-surface-variant mt-1">Buka aplikasi M-Banking atau E-Wallet Anda lalu pindai kode di bawah ini.</p>
+            </div>
+
+            <div class="bg-surface-container-low dark:bg-surface-container p-3 rounded-xl inline-block px-6">
+              <span class="text-xs text-on-surface-variant block">Sisa Waktu Pembayaran</span>
+              <span id="qr-timer" class="text-xl font-extrabold text-rose-600 dark:text-rose-400">14:59</span>
+            </div>
+
+            <div class="p-6 bg-white rounded-2xl border border-surface-container-high shadow-inner inline-block mx-auto">
+              <svg class="w-56 h-56 mx-auto" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="200" height="200" rx="12" fill="white"/>
+                <rect x="15" y="15" width="45" height="45" rx="6" fill="#001E40"/>
+                <rect x="23" y="23" width="29" height="29" rx="3" fill="white"/>
+                <rect x="29" y="29" width="17" height="17" rx="2" fill="#001E40"/>
+                
+                <rect x="140" y="15" width="45" height="45" rx="6" fill="#001E40"/>
+                <rect x="148" y="23" width="29" height="29" rx="3" fill="white"/>
+                <rect x="154" y="29" width="17" height="17" rx="2" fill="#001E40"/>
+
+                <rect x="15" y="140" width="45" height="45" rx="6" fill="#001E40"/>
+                <rect x="23" y="148" width="29" height="29" rx="3" fill="white"/>
+                <rect x="29" y="154" width="17" height="17" rx="2" fill="#001E40"/>
+                
+                <rect x="75" y="20" width="12" height="12" fill="#001E40"/>
+                <rect x="95" y="20" width="12" height="12" fill="#001E40"/>
+                <rect x="115" y="20" width="12" height="12" fill="#001E40"/>
+                
+                <rect x="75" y="40" width="12" height="12" fill="#001E40"/>
+                <rect x="95" y="55" width="12" height="12" fill="#001E40"/>
+                <rect x="75" y="75" width="20" height="20" fill="#001E40"/>
+                
+                <rect x="20" y="75" width="15" height="15" fill="#001E40"/>
+                <rect x="45" y="75" width="15" height="15" fill="#001E40"/>
+                
+                <rect x="115" y="75" width="30" height="30" rx="4" fill="#00658D"/>
+                <rect x="155" y="75" width="25" height="12" fill="#001E40"/>
+
+                <rect x="75" y="115" width="45" height="45" fill="#001E40"/>
+                <rect x="135" y="115" width="20" height="20" fill="#001E40"/>
+                <rect x="160" y="140" width="25" height="45" fill="#001E40"/>
+                <rect x="135" y="165" width="20" height="20" fill="#00658D"/>
+
+                <circle cx="100" cy="100" r="14" fill="#001E40"/>
+                <text x="94" y="104" font-weight="bold" font-size="12" fill="white">Q</text>
+              </svg>
+              <div class="mt-3 font-mono text-[11px] text-outline tracking-wider">NMID: ID1020268891024</div>
+            </div>
+
+            <div class="max-w-md mx-auto space-y-2 text-xs text-on-surface-variant text-left bg-surface p-4 rounded-xl border border-surface-container">
+              <div class="flex justify-between">
+                <span>Vendor / Penerbit:</span>
+                <strong id="qr-pay-vendor" class="text-on-surface">-</strong>
+              </div>
+              <div class="flex justify-between">
+                <span>No. Invoice:</span>
+                <strong id="qr-pay-inv-id" class="text-on-surface">-</strong>
+              </div>
+              <div class="flex justify-between pt-2 border-t border-surface-container text-sm font-extrabold text-primary dark:text-on-primary-container">
+                <span>Total Tagihan:</span>
+                <span id="qr-pay-amount">Rp 0</span>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-surface-container flex flex-col sm:flex-row gap-3 justify-center">
+              <button onclick="app.openPinModal()" class="px-6 py-3 bg-primary hover:bg-primary-container text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-xl">check_circle</span> Masukkan PIN & Selesaikan
+              </button>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ==========================================================================
+             VIEW 5: TRANSACTION PROCESSING STATE
+             ========================================================================== -->
+        <section id="view-payment-processing" class="app-view hidden space-y-6 max-w-lg mx-auto py-16 text-center">
+          <div class="bg-surface-container-lowest dark:bg-surface-container-low rounded-2xl border border-surface-container-high card-shadow p-10 space-y-6">
+            <div class="w-20 h-20 rounded-full bg-primary/10 text-primary dark:text-secondary flex items-center justify-center mx-auto animate-pulse">
+              <span class="material-symbols-outlined text-4xl animate-spin">sync</span>
+            </div>
+            
+            <div>
+              <h2 class="text-2xl font-extrabold text-primary dark:text-on-primary-container tracking-tight">Memproses Pembayaran...</h2>
+              <p class="text-xs text-on-surface-variant mt-2">Sistem sedang memverifikasi token enkripsi PIN dan mengonfirmasi dana dengan jaringan perbankan.</p>
+            </div>
+
+            <div class="w-full bg-surface-container-high rounded-full h-2 overflow-hidden">
+              <div class="bg-secondary h-full rounded-full animate-pulse w-3/4"></div>
+            </div>
+
+            <p class="text-[11px] text-outline">Mohon tidak menutup atau menyegarkan halaman ini.<br>Re: Invoice <span id="processing-inv-id" class="font-bold text-on-surface">-</span></p>
+          </div>
+        </section>
+
+
+        <!-- ==========================================================================
+             VIEW 6: OFFICIAL PAYMENT RECEIPT
+             ========================================================================== -->
+        <section id="view-receipt" class="app-view hidden space-y-6 max-w-2xl mx-auto">
+          <div class="flex items-center justify-between">
+            <button onclick="app.navigate('dashboard')" class="inline-flex items-center gap-2 text-xs font-bold text-secondary hover:underline">
+              <span class="material-symbols-outlined text-base">arrow_back</span> Kembali ke Beranda
+            </button>
+            <div class="flex items-center gap-2">
+              <button onclick="app.downloadReceiptPDF()" class="px-3.5 py-2 text-xs font-bold bg-primary text-white hover:bg-primary-container rounded-xl transition-colors flex items-center gap-1.5 shadow-md">
+                <span class="material-symbols-outlined text-base">download</span> Unduh PDF
+              </button>
+            </div>
+          </div>
+
+          <div id="printable-area-receipt" class="bg-surface-container-lowest dark:bg-surface-container-low rounded-2xl border border-surface-container-high card-shadow p-8 space-y-6 relative overflow-hidden">
+            <div class="text-center pb-6 border-b border-surface-container">
+              <div class="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-300 flex items-center justify-center mx-auto mb-3 shadow-inner">
+                <span class="material-symbols-outlined text-3xl">check_circle</span>
+              </div>
+              <span class="text-xs font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest block">Pembayaran Berhasil</span>
+              <h2 id="receipt-amount" class="text-3xl font-black text-primary dark:text-on-primary-container tracking-tight mt-1">Rp 0</h2>
+              <p class="text-xs text-on-surface-variant mt-1">Bukti Transfer Resmi Laksanasoft Corporate Banking</p>
+              <div id="receipt-drive-link-container"></div>
+            </div>
+
+            <div class="space-y-3 text-xs">
+              <div class="flex justify-between py-2 border-b border-surface-container">
+                <span class="text-on-surface-variant">Kode Referensi Bank:</span>
+                <strong id="receipt-ref-code" class="font-mono text-on-surface text-sm">-</strong>
+              </div>
+              <div class="flex justify-between py-2 border-b border-surface-container">
+                <span class="text-on-surface-variant">No. Transaksi System:</span>
+                <strong id="receipt-trx-id" class="text-on-surface">-</strong>
+              </div>
+              <div class="flex justify-between py-2 border-b border-surface-container">
+                <span class="text-on-surface-variant">Tanggal & Waktu:</span>
+                <span id="receipt-date" class="text-on-surface font-medium">-</span>
+              </div>
+              <div class="flex justify-between py-2 border-b border-surface-container">
+                <span class="text-on-surface-variant">No. Invoice Tagihan:</span>
+                <strong id="receipt-invoice-id" class="text-on-surface">-</strong>
+              </div>
+              <div class="flex justify-between py-2 border-b border-surface-container">
+                <span class="text-on-surface-variant">Penerbit / Vendor:</span>
+                <span id="receipt-vendor" class="text-on-surface font-semibold">-</span>
+              </div>
+              <div class="flex justify-between py-2 border-b border-surface-container">
+                <span class="text-on-surface-variant">Metode Pembayaran:</span>
+                <span id="receipt-method" class="text-on-surface font-semibold">-</span>
+              </div>
+              <div class="flex justify-between py-2 border-b border-surface-container">
+                <span class="text-on-surface-variant">Status Tagihan Baru:</span>
+                <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[11px]">LUNAS / VERIFIED</span>
+              </div>
+            </div>
+
+            <div class="pt-4 text-center text-[11px] text-outline border-t border-surface-container">
+              <p>Resi pembayaran ini disahkan secara digital oleh Laksanasoft Payment Engine.</p>
+              <p class="mt-1 font-mono">HASH: 8A99-F2E1-00B4-78C9</p>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ==========================================================================
+             VIEW 7: PAYMENT HISTORY
+             ========================================================================== -->
+        <section id="view-history" class="app-view hidden space-y-6">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h2 class="text-2xl font-extrabold text-primary dark:text-on-primary-container tracking-tight">Riwayat Transaksi & Pembayaran</h2>
+              <p class="text-xs text-on-surface-variant">Daftar lengkap transaksi yang telah berhasil diproses oleh akun korporat Anda.</p>
+            </div>
+          </div>
+
+          <div class="bg-surface-container-lowest dark:bg-surface-container-low rounded-2xl border border-surface-container-high card-shadow overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-surface-container-low dark:bg-surface-container border-b border-surface-container-high text-xs font-bold text-on-surface-variant uppercase tracking-wider">
+                    <th class="px-6 py-4">ID Transaksi</th>
+                    <th class="px-6 py-4">Tanggal & Waktu</th>
+                    <th class="px-6 py-4">Vendor & Ref Tagihan</th>
+                    <th class="px-6 py-4">Metode Pembayaran</th>
+                    <th class="px-6 py-4">Jumlah Nominal</th>
+                    <th class="px-6 py-4 text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="history-table-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ==========================================================================
+             VIEW 8: NOTIFICATIONS CENTER
+             ========================================================================== -->
+        <section id="view-notifications" class="app-view hidden space-y-6 max-w-3xl mx-auto">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-2xl font-extrabold text-primary dark:text-on-primary-container tracking-tight">Notifikasi System</h2>
+              <p class="text-xs text-on-surface-variant">Pemberitahuan aktivitas pembayaran dan aktivitas keamanan akun Anda.</p>
+            </div>
+            <button onclick="app.clearAllNotifs()" class="px-3.5 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-xl transition-colors">
+              Bersihkan Semua
+            </button>
+          </div>
+
+          <div id="notif-list-container" class="space-y-3"></div>
+        </section>
+
+
+        <!-- ==========================================================================
+             VIEW 9: PROFILE & SETTINGS
+             ========================================================================== -->
+        <section id="view-profile" class="app-view hidden space-y-6 max-w-3xl mx-auto">
+          <div>
+            <h2 class="text-2xl font-extrabold text-primary dark:text-on-primary-container tracking-tight">Profil & Pengaturan Akun</h2>
+            <p class="text-xs text-on-surface-variant">Kelola informasi identitas korporat, ubah PIN keamanan, dan sesuaikan preferensi tampilan.</p>
+          </div>
+
+          <div class="bg-surface-container-lowest dark:bg-surface-container-low rounded-2xl border border-surface-container-high card-shadow p-6 md:p-8 space-y-8">
+            <div class="flex items-center gap-4 pb-6 border-b border-surface-container">
+              <div class="w-16 h-16 rounded-2xl bg-primary text-white font-extrabold text-xl flex items-center justify-center shadow-lg">
+                AD
+              </div>
+              <div>
+                <h3 id="prof-user-name" class="text-lg font-bold text-on-surface">Administrator (Admin)</h3>
+                <p id="prof-user-corp" class="text-xs text-on-surface-variant">PT Laksana Software Solutions</p>
+                <span class="mt-1 px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[11px] font-bold inline-block">Super Admin Korporat</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-on-surface-variant uppercase mb-1">Corporate ID</label>
+                <input id="prof-corp-id" type="text" readonly class="w-full px-4 py-2.5 rounded-xl border border-surface-container-high bg-surface-container text-xs font-bold text-on-surface" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-on-surface-variant uppercase mb-1">User ID / Email</label>
+                <input id="prof-user-email" type="text" readonly class="w-full px-4 py-2.5 rounded-xl border border-surface-container-high bg-surface-container text-xs font-bold text-on-surface" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-on-surface-variant uppercase mb-1">Jabatan Perusahaan</label>
+                <input id="prof-user-role" type="text" readonly class="w-full px-4 py-2.5 rounded-xl border border-surface-container-high bg-surface-container text-xs font-bold text-on-surface" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-on-surface-variant uppercase mb-1">PIN Keamanan Otorisasi</label>
+                <div class="flex gap-2">
+                  <input type="password" value="••••••" readonly class="w-full px-4 py-2.5 rounded-xl border border-surface-container-high bg-surface-container text-xs font-bold text-on-surface" />
+                  <button onclick="showToast('PIN bawaan saat ini: 123456', 'info')" class="px-3 py-2 text-xs font-semibold bg-surface-container hover:bg-surface-container-high text-on-surface rounded-xl">
+                    Ubah
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-6 border-t border-surface-container">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-on-surface-variant mb-4">Preferensi Tampilan</h4>
+              <div class="flex items-center justify-between p-4 rounded-xl border border-surface-container bg-surface">
+                <div class="flex items-center gap-3">
+                  <span class="material-symbols-outlined text-secondary text-2xl">contrast</span>
+                  <div>
+                    <p class="text-sm font-bold text-on-surface">Mode Gelap (Dark Theme)</p>
+                    <p class="text-xs text-on-surface-variant">Sesuaikan pencahayaan layar untuk kenyamanan kerja</p>
+                  </div>
+                </div>
+                <button onclick="app.toggleTheme()" class="px-4 py-2 text-xs font-bold bg-primary text-white rounded-xl shadow-md">
+                  Ganti Mode
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ==========================================================================
+             VIEW 10: LIVE SUPPORT CHAT
+             ========================================================================== -->
+        <section id="view-support" class="app-view hidden space-y-6 max-w-4xl mx-auto">
+          <div class="flex items-center justify-between">
+            <div>
+              <h2 class="text-2xl font-extrabold text-primary dark:text-on-primary-container tracking-tight">Chat Support & Bantuan</h2>
+              <p class="text-xs text-on-surface-variant">Konsultasikan pertanyaan seputar verifikasi tagihan dan kendala pembayaran secara langsung.</p>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Tim Finance Online
+            </span>
+          </div>
+
+          <div class="bg-surface-container-lowest dark:bg-surface-container-low rounded-2xl border border-surface-container-high card-shadow overflow-hidden flex flex-col h-[520px]">
+            <div class="p-3 bg-surface-container-low dark:bg-surface-container border-b border-surface-container flex items-center gap-2 overflow-x-auto text-xs">
+              <span class="font-bold text-on-surface-variant text-[11px] shrink-0">Pertanyaan Cepat:</span>
+              <button onclick="app.sendPresetChat('Bagaimana cara mengajukan negosiasi penawaran?')" class="px-3 py-1 rounded-full bg-surface-container-lowest hover:bg-surface-container border border-surface-container-high shrink-0 font-medium">Negosiasi Quotation?</button>
+              <button onclick="app.sendPresetChat('Bagaimana cara bayar via QRIS?')" class="px-3 py-1 rounded-full bg-surface-container-lowest hover:bg-surface-container border border-surface-container-high shrink-0 font-medium">QRIS Payment?</button>
+              <button onclick="app.sendPresetChat('Berapa PIN bawaan akun?')" class="px-3 py-1 rounded-full bg-surface-container-lowest hover:bg-surface-container border border-surface-container-high shrink-0 font-medium">PIN Keamanan?</button>
+            </div>
+
+            <div id="chat-messages-container" class="flex-1 p-6 overflow-y-auto space-y-4"></div>
+
+            <div class="p-4 border-t border-surface-container bg-surface-container-lowest dark:bg-surface-container-low flex items-center gap-3">
+              <input id="chat-input-field" type="text" onkeydown="if(event.key==='Enter') app.sendChat()" placeholder="Tuliskan pesan atau pertanyaan Anda di sini..." class="flex-1 px-4 py-3 rounded-xl border border-outline-variant bg-surface text-sm text-on-surface focus:outline-none focus:border-secondary" />
+              <button onclick="app.sendChat()" class="p-3 bg-primary hover:bg-primary-container text-white rounded-xl shadow-md transition-all">
+                <span class="material-symbols-outlined text-xl">send</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+
+  <!-- ==========================================================================
+       MODAL 1: 6-DIGIT SECURITY PIN KEYPAD MODAL
+       ========================================================================== -->
+  <div id="modal-pin" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-surface-container-lowest dark:bg-surface-container-low w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-surface-container-high text-center space-y-6">
+      <div class="w-12 h-12 rounded-2xl bg-primary/10 text-primary dark:text-secondary flex items-center justify-center mx-auto">
+        <span class="material-symbols-outlined text-2xl">shield_lock</span>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-extrabold text-primary dark:text-on-primary-container tracking-tight">Verifikasi PIN Keamanan</h3>
+        <p class="text-xs text-on-surface-variant mt-1">Masukkan 6 digit PIN transaksi korporat Anda.<br><span class="text-[11px] text-secondary font-semibold">(Ketik via Keyboard Fisik / Keypad Layar • PIN Demo: 123456)</span></p>
+      </div>
+
+      <div class="flex justify-center items-center gap-3">
+        <div class="pin-dot w-4 h-4 rounded-full bg-surface-container-high transition-all"></div>
+        <div class="pin-dot w-4 h-4 rounded-full bg-surface-container-high transition-all"></div>
+        <div class="pin-dot w-4 h-4 rounded-full bg-surface-container-high transition-all"></div>
+        <div class="pin-dot w-4 h-4 rounded-full bg-surface-container-high transition-all"></div>
+        <div class="pin-dot w-4 h-4 rounded-full bg-surface-container-high transition-all"></div>
+        <div class="pin-dot w-4 h-4 rounded-full bg-surface-container-high transition-all"></div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3 max-w-[240px] mx-auto">
+        <button onclick="app.pinInput('1')" class="pin-btn py-3 rounded-2xl bg-surface-container text-lg font-bold text-on-surface hover:bg-surface-container-high transition-all">1</button>
+        <button onclick="app.pinInput('2')" class="pin-btn py-3 rounded-2xl bg-surface-container text-lg font-bold text-on-surface hover:bg-surface-container-high transition-all">2</button>
+        <button onclick="app.pinInput('3')" class="pin-btn py-3 rounded-2xl bg-surface-container text-lg font-bold text-on-surface hover:bg-surface-container-high transition-all">3</button>
+        <button onclick="app.pinInput('4')" class="pin-btn py-3 rounded-2xl bg-surface-container text-lg font-bold text-on-surface hover:bg-surface-container-high transition-all">4</button>
+        <button onclick="app.pinInput('5')" class="pin-btn py-3 rounded-2xl bg-surface-container text-lg font-bold text-on-surface hover:bg-surface-container-high transition-all">5</button>
+        <button onclick="app.pinInput('6')" class="pin-btn py-3 rounded-2xl bg-surface-container text-lg font-bold text-on-surface hover:bg-surface-container-high transition-all">6</button>
+        <button onclick="app.pinInput('7')" class="pin-btn py-3 rounded-2xl bg-surface-container text-lg font-bold text-on-surface hover:bg-surface-container-high transition-all">7</button>
+        <button onclick="app.pinInput('8')" class="pin-btn py-3 rounded-2xl bg-surface-container text-lg font-bold text-on-surface hover:bg-surface-container-high transition-all">8</button>
+        <button onclick="app.pinInput('9')" class="pin-btn py-3 rounded-2xl bg-surface-container text-lg font-bold text-on-surface hover:bg-surface-container-high transition-all">9</button>
+        <button onclick="app.closePinModal()" class="py-3 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-2xl">Batal</button>
+        <button onclick="app.pinInput('0')" class="pin-btn py-3 rounded-2xl bg-surface-container text-lg font-bold text-on-surface hover:bg-surface-container-high transition-all">0</button>
+        <button onclick="app.pinBackspace()" class="py-3 rounded-2xl bg-surface-container text-on-surface hover:bg-surface-container-high transition-all flex items-center justify-center">
+          <span class="material-symbols-outlined">backspace</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==========================================================================
+       MODAL 2: SHARE DOCUMENT MODAL
+       ========================================================================== -->
+  <div id="modal-share" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-surface-container-lowest dark:bg-surface-container-low w-full max-w-md rounded-2xl p-6 shadow-2xl border border-surface-container-high space-y-5">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-bold text-on-surface">Bagikan Tagihan / Dokumen</h3>
+        <button onclick="app.closeShareModal()" class="p-1 rounded-lg text-outline hover:bg-surface-container">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <p class="text-xs text-on-surface-variant">Salin tautan dokumen resmi di bawah ini untuk membagikan rincian tagihan kepada tim keuangan Anda.</p>
+
+      <div class="flex items-center gap-2">
+        <input type="text" readonly value="https://portal.laksanasoft.co.id/share/inv-2026-0891" class="flex-1 px-3 py-2 rounded-xl border border-outline-variant bg-surface text-xs font-mono text-on-surface" />
+        <button onclick="app.copyShareLink()" class="px-4 py-2 bg-primary text-white font-bold text-xs rounded-xl shadow-md">
+          Salin Tautan
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==========================================================================
+       MODAL 3: REJECT PROPOSAL MODAL
+       ========================================================================== -->
+  <div id="modal-reject-proposal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-surface-container-lowest dark:bg-surface-container-low w-full max-w-md rounded-2xl p-6 shadow-2xl border border-surface-container-high space-y-5">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-bold text-rose-600 dark:text-rose-400">Penolakan Penawaran Vendor</h3>
+        <button onclick="document.getElementById('modal-reject-proposal').classList.add('hidden')" class="p-1 rounded-lg text-outline hover:bg-surface-container">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <p class="text-xs text-on-surface-variant">Berikan alasan penolakan penawaran ini untuk catatan vendor.</p>
+
+      <div>
+        <label class="block text-xs font-semibold text-on-surface-variant uppercase mb-1">Alasan Penolakan</label>
+        <textarea id="reject-reason-input" rows="3" placeholder="Contoh: Anggaran kuota Q3 belum mencukupi atau spesifikasi belum sesuai..." class="w-full p-3 rounded-xl border border-outline-variant bg-surface text-xs text-on-surface focus:outline-none focus:border-rose-600"></textarea>
+      </div>
+
+      <div class="flex items-center justify-end gap-2">
+        <button onclick="document.getElementById('modal-reject-proposal').classList.add('hidden')" class="px-4 py-2 text-xs font-bold text-on-surface-variant hover:bg-surface-container rounded-xl">Batal</button>
+        <button onclick="app.confirmRejectProposal()" class="px-5 py-2 text-xs font-bold bg-rose-600 hover:bg-rose-700 text-white rounded-xl shadow-md">Konfirmasi Tolak</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==========================================================================
+       MODAL 4: NEGOTIATE PROPOSAL MODAL
+       ========================================================================== -->
+  <div id="modal-negotiate-proposal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-surface-container-lowest dark:bg-surface-container-low w-full max-w-md rounded-2xl p-6 shadow-2xl border border-surface-container-high space-y-5">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-bold text-primary dark:text-on-primary-container">Pengajuan Negosiasi Harga</h3>
+          <span id="nego-quo-id" class="text-xs text-secondary font-mono font-bold">-</span>
+        </div>
+        <button onclick="document.getElementById('modal-negotiate-proposal').classList.add('hidden')" class="p-1 rounded-lg text-outline hover:bg-surface-container">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <p id="nego-quo-title" class="text-xs text-on-surface-variant font-medium bg-surface p-3 rounded-xl border border-surface-container">-</p>
+
+      <div>
+        <label class="block text-xs font-semibold text-on-surface-variant uppercase mb-1">Harga Penawaran Balik (IDR)</label>
+        <div class="relative">
+          <span class="absolute left-3 top-2.5 text-xs font-bold text-on-surface-variant">Rp</span>
+          <input id="nego-price-input" type="number" placeholder="Masukkan harga balik..." class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-outline-variant bg-surface text-sm font-bold text-on-surface focus:outline-none focus:border-secondary" />
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-on-surface-variant uppercase mb-1">Catatan & Usulan ke Vendor</label>
+        <textarea id="nego-note-input" rows="3" placeholder="Masukkan pesan negosiasi atau permintaan penyesuaian spesifikasi..." class="w-full p-3 rounded-xl border border-outline-variant bg-surface text-xs text-on-surface focus:outline-none focus:border-secondary"></textarea>
+      </div>
+
+      <div class="flex items-center justify-end gap-2">
+        <button onclick="document.getElementById('modal-negotiate-proposal').classList.add('hidden')" class="px-4 py-2 text-xs font-bold text-on-surface-variant hover:bg-surface-container rounded-xl">Batal</button>
+        <button onclick="app.confirmNegotiateProposal()" class="px-5 py-2 text-xs font-bold bg-primary hover:bg-primary-container text-white rounded-xl shadow-md">Kirim Negosiasi</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==========================================================================
+       MODAL 5: TRANSACTION DETAIL MODAL
+       ========================================================================== -->
+  <div id="modal-trx-detail" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-surface-container-lowest dark:bg-surface-container-low w-full max-w-md rounded-2xl p-6 shadow-2xl border border-surface-container-high space-y-6">
+      <div class="flex items-center justify-between border-b border-surface-container pb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-300 flex items-center justify-center font-bold">
+            <span class="material-symbols-outlined text-2xl">check_circle</span>
+          </div>
+          <div>
+            <h3 class="text-base font-extrabold text-on-surface">Rincian Transaksi Pembayaran</h3>
+            <span id="trx-modal-id" class="text-xs font-mono font-bold text-primary dark:text-on-primary-container">-</span>
+          </div>
+        </div>
+        <button onclick="document.getElementById('modal-trx-detail').classList.add('hidden')" class="p-1 rounded-lg text-outline hover:bg-surface-container">
+          <span class="material-symbols-outlined">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div class="flex justify-between py-1.5 border-b border-surface-container">
+          <span class="text-on-surface-variant">Kode Referensi Bank:</span>
+          <strong id="trx-modal-ref" class="font-mono text-on-surface">-</strong>
+        </div>
+        <div class="flex justify-between py-1.5 border-b border-surface-container">
+          <span class="text-on-surface-variant">Vendor / Penerbit:</span>
+          <strong id="trx-modal-vendor" class="text-on-surface">-</strong>
+        </div>
+        <div class="flex justify-between py-1.5 border-b border-surface-container">
+          <span class="text-on-surface-variant">No. Invoice Tagihan:</span>
+          <strong id="trx-modal-inv" class="text-on-surface">-</strong>
+        </div>
+        <div class="flex justify-between py-1.5 border-b border-surface-container">
+          <span class="text-on-surface-variant">Tanggal & Waktu:</span>
+          <span id="trx-modal-date" class="text-on-surface font-medium">-</span>
+        </div>
+        <div class="flex justify-between py-1.5 border-b border-surface-container">
+          <span class="text-on-surface-variant">Metode Pembayaran:</span>
+          <span id="trx-modal-method" class="text-on-surface font-semibold">-</span>
+        </div>
+        <div class="flex justify-between py-1.5 border-b border-surface-container">
+          <span class="text-on-surface-variant">Status Transaksi:</span>
+          <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[11px]">BERHASIL / VERIFIED</span>
+        </div>
+        <div class="flex justify-between py-2 border-t border-surface-container text-sm font-extrabold text-primary dark:text-on-primary-container">
+          <span>Total Nominal:</span>
+          <span id="trx-modal-amount">Rp 0</span>
+        </div>
+      </div>
+
+      <div id="trx-modal-drive-link"></div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-surface-container">
+        <button onclick="document.getElementById('modal-trx-detail').classList.add('hidden')" class="px-5 py-2.5 text-xs font-bold bg-primary text-white hover:bg-primary-container rounded-xl shadow-md transition-all">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- FLOATING TOAST CONTAINER -->
+  <div id="toast-notification" class="fixed bottom-5 right-5 z-50 flex items-center gap-3 bg-slate-900 text-white px-5 py-3.5 rounded-xl shadow-xl transition-all duration-300 transform translate-y-10 opacity-0 pointer-events-none">
+    <span id="toast-icon" class="material-symbols-outlined text-xl">info</span>
+    <span id="toast-message" class="text-xs font-semibold">Pemberitahuan</span>
+  </div>
+
+  <!-- Application Scripts -->
+  <script src="assets/js/backend_service.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

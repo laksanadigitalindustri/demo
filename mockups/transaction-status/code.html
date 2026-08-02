@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+
+<html class="light" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .status-card-animation {
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed": "#c6e7ff",
+                        "surface-container-high": "#e6e8ea",
+                        "surface-tint": "#3a5f94",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "secondary-fixed-dim": "#81cfff",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed": "#d3e4fe",
+                        "outline-variant": "#c3c6d1",
+                        "outline": "#737780",
+                        "primary-fixed-dim": "#a7c8ff",
+                        "primary": "#001e40",
+                        "surface-container": "#eceef0",
+                        "surface-container-low": "#f2f4f6",
+                        "on-surface": "#191c1e",
+                        "surface-bright": "#f7f9fb",
+                        "on-primary-fixed-variant": "#1f477b",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "primary-container": "#003366",
+                        "background": "#f7f9fb",
+                        "on-primary-fixed": "#001b3c",
+                        "secondary-container": "#41befd",
+                        "inverse-surface": "#2d3133",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#e0e3e5",
+                        "secondary": "#00658d",
+                        "on-primary-container": "#799dd6",
+                        "primary-fixed": "#d5e3ff",
+                        "tertiary": "#0e1f32",
+                        "tertiary-container": "#243448",
+                        "inverse-primary": "#a7c8ff",
+                        "on-secondary-fixed-variant": "#004c6b",
+                        "on-tertiary-container": "#8c9cb5",
+                        "on-error-container": "#93000a",
+                        "error": "#ba1a1a",
+                        "surface": "#f7f9fb",
+                        "error-container": "#ffdad6",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-secondary-fixed": "#001e2d",
+                        "on-background": "#191c1e",
+                        "surface-dim": "#d8dadc",
+                        "on-secondary-container": "#004b69",
+                        "on-surface-variant": "#43474f",
+                        "on-error": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "card-padding": "1rem",
+                        "stack-gap": "0.75rem",
+                        "container-margin": "1rem",
+                        "section-gap": "1.5rem",
+                        "inline-gutter": "0.5rem"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-lg": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "30px", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background font-body-lg text-on-background min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-container-margin h-16 bg-surface shadow-sm">
+<div class="flex items-center gap-3">
+<span class="text-headline-md font-headline-md font-bold text-primary">Laksanasoft</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-primary p-2 rounded-full hover:bg-surface-container-high transition-colors" data-icon="notifications">notifications</button>
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container text-[12px] font-bold">
+                JD
+            </div>
+</div>
+</header>
+<main class="pt-24 px-container-margin max-w-lg mx-auto">
+<!-- Interactive State Switcher (For Demo Purposes) -->
+<div class="mb-section-gap flex justify-center gap-2 p-1 bg-surface-container rounded-xl overflow-x-auto no-scrollbar">
+<button class="state-btn flex-1 py-2 px-4 rounded-lg font-label-md transition-all bg-white shadow-sm text-primary" data-state="success" onclick="switchState('success')">Berhasil</button>
+<button class="state-btn flex-1 py-2 px-4 rounded-lg font-label-md transition-all text-on-surface-variant hover:bg-white/50" data-state="pending" onclick="switchState('pending')">Pending</button>
+<button class="state-btn flex-1 py-2 px-4 rounded-lg font-label-md transition-all text-on-surface-variant hover:bg-white/50" data-state="failed" onclick="switchState('failed')">Gagal</button>
+</div>
+<div class="status-card-animation" id="status-container">
+<!-- Success State Content (Default) -->
+<div class="flex flex-col items-center" id="content-success">
+<div class="w-24 h-24 mb-6 rounded-full bg-green-100 flex items-center justify-center text-green-600 scale-110">
+<span class="material-symbols-outlined text-[48px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary text-center mb-1">Transaksi Berhasil!</h1>
+<p class="text-on-surface-variant text-body-md text-center mb-8">Pembayaran Anda telah diterima dan dikonfirmasi oleh sistem.</p>
+<!-- Transaction Card -->
+<div class="w-full bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] overflow-hidden">
+<div class="p-6 border-b border-outline-variant/30">
+<p class="text-label-md text-on-surface-variant mb-1 text-center uppercase tracking-wider">Nominal Transaksi</p>
+<p class="font-headline-lg text-headline-lg text-primary text-center">Rp 1.250.000</p>
+</div>
+<div class="p-6 space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-body-md text-on-surface-variant">ID Referensi</span>
+<span class="font-label-md text-on-surface">LKSN-8829410</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-body-md text-on-surface-variant">Waktu</span>
+<span class="font-label-md text-on-surface text-right">12 Okt 2023, 14:25 WIB</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-body-md text-on-surface-variant">Metode</span>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-label-md text-on-surface">LaksanaPay</span>
+</div>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-body-md text-on-surface-variant">Status</span>
+<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-[10px] font-bold uppercase">Selesai</span>
+</div>
+</div>
+</div>
+<div class="w-full mt-section-gap space-y-stack-gap">
+<button class="w-full h-12 bg-primary text-white rounded-xl font-label-md flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-[20px]" data-icon="receipt_long">receipt_long</span>
+                        Lihat Resi
+                    </button>
+<button class="w-full h-12 bg-transparent border border-outline text-primary rounded-xl font-label-md hover:bg-surface-container transition-all">
+                        Kembali ke Beranda
+                    </button>
+</div>
+</div>
+<!-- Pending State Content (Hidden) -->
+<div class="hidden flex flex-col items-center" id="content-pending">
+<div class="w-24 h-24 mb-6 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 relative overflow-hidden">
+<div class="absolute inset-0 shimmer opacity-50"></div>
+<span class="material-symbols-outlined text-[48px]" style="font-variation-settings: 'FILL' 1;">schedule</span>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary text-center mb-1">Transaksi Sedang Diproses</h1>
+<p class="text-on-surface-variant text-body-md text-center mb-8">Mohon tunggu sebentar, kami sedang memproses data pembayaran Anda.</p>
+<div class="w-full bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] p-6 space-y-4">
+<div class="flex justify-between items-center pb-4 border-b border-outline-variant/30">
+<span class="text-body-md text-on-surface-variant">Estimasi Selesai</span>
+<span class="font-label-md text-amber-700">~ 2 Menit</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-body-md text-on-surface-variant">ID Referensi</span>
+<span class="font-label-md text-on-surface">LKSN-8829411</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-body-md text-on-surface-variant">Nominal</span>
+<span class="font-label-md text-on-surface">Rp 500.000</span>
+</div>
+</div>
+<div class="w-full mt-section-gap">
+<button class="w-full h-12 bg-primary text-white rounded-xl font-label-md hover:opacity-90 active:scale-95 transition-all">
+                        Kembali ke Beranda
+                    </button>
+</div>
+</div>
+<!-- Failed State Content (Hidden) -->
+<div class="hidden flex flex-col items-center" id="content-failed">
+<div class="w-24 h-24 mb-6 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+<span class="material-symbols-outlined text-[48px]" style="font-variation-settings: 'FILL' 1;">cancel</span>
+</div>
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-primary text-center mb-1">Transaksi Gagal</h1>
+<p class="text-on-surface-variant text-body-md text-center mb-8">Maaf, terjadi kesalahan saat memproses pembayaran. Saldo Anda tidak terpotong.</p>
+<div class="w-full bg-red-50 border border-red-200 rounded-xl p-4 mb-section-gap flex items-start gap-3">
+<span class="material-symbols-outlined text-red-600 mt-0.5" data-icon="error">error</span>
+<div>
+<p class="font-label-md text-red-800">Pesan Kesalahan</p>
+<p class="text-body-md text-red-700">Saldo tidak mencukupi untuk melakukan transaksi ini.</p>
+</div>
+</div>
+<div class="w-full bg-surface-container-lowest rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.05)] p-6 space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-body-md text-on-surface-variant">Nominal</span>
+<span class="font-label-md text-on-surface">Rp 2.750.000</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-body-md text-on-surface-variant">Metode</span>
+<span class="font-label-md text-on-surface">LaksanaPay</span>
+</div>
+</div>
+<div class="w-full mt-section-gap space-y-stack-gap">
+<button class="w-full h-12 bg-primary text-white rounded-xl font-label-md hover:opacity-90 active:scale-95 transition-all">
+                        Coba Lagi
+                    </button>
+<button class="w-full h-12 bg-transparent border border-outline text-primary rounded-xl font-label-md hover:bg-surface-container transition-all">
+                        Hubungi Dukungan
+                    </button>
+</div>
+</div>
+</div>
+<!-- Bento Style Info Section -->
+<div class="mt-12 grid grid-cols-2 gap-4">
+<div class="col-span-2 bg-surface-container-low p-4 rounded-xl flex items-center gap-4">
+<div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center text-primary shadow-sm">
+<span class="material-symbols-outlined" data-icon="security">security</span>
+</div>
+<div>
+<p class="font-label-md text-on-surface">Keamanan Terjamin</p>
+<p class="text-body-md text-on-surface-variant">Laksanasoft menggunakan enkripsi tingkat bank.</p>
+</div>
+</div>
+<div class="bg-primary-container p-4 rounded-xl flex flex-col justify-between h-32">
+<span class="material-symbols-outlined text-on-primary-container" data-icon="help_center">help_center</span>
+<p class="font-label-md text-on-primary-container">Butuh Bantuan?</p>
+</div>
+<div class="bg-secondary-container p-4 rounded-xl flex flex-col justify-between h-32">
+<span class="material-symbols-outlined text-on-secondary-container" data-icon="share">share</span>
+<p class="font-label-md text-on-secondary-container">Bagikan Bukti</p>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-surface-container-lowest shadow-[0px_-4px_20px_rgba(0,0,0,0.05)] rounded-t-xl">
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container transition-all active:transform active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-md text-label-md">Beranda</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container transition-all active:transform active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+<span class="font-label-md text-label-md">Tagihan</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1 active:transform active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="history" style="font-variation-settings: 'FILL' 1;">history</span>
+<span class="font-label-md text-label-md">Riwayat</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container transition-all active:transform active:scale-90 duration-150">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-md text-label-md">Profil</span>
+</button>
+</nav>
+<script>
+        function switchState(state) {
+            // Update buttons
+            document.querySelectorAll('.state-btn').forEach(btn => {
+                btn.classList.remove('bg-white', 'shadow-sm', 'text-primary');
+                btn.classList.add('text-on-surface-variant', 'hover:bg-white/50');
+                if (btn.dataset.state === state) {
+                    btn.classList.add('bg-white', 'shadow-sm', 'text-primary');
+                    btn.classList.remove('text-on-surface-variant', 'hover:bg-white/50');
+                }
+            });
+
+            // Update content with animation
+            const container = document.getElementById('status-container');
+            container.style.opacity = '0';
+            
+            setTimeout(() => {
+                document.getElementById('content-success').classList.add('hidden');
+                document.getElementById('content-pending').classList.add('hidden');
+                document.getElementById('content-failed').classList.add('hidden');
+                
+                document.getElementById('content-' + state).classList.remove('hidden');
+                container.style.opacity = '1';
+                container.classList.remove('status-card-animation');
+                void container.offsetWidth; // Trigger reflow
+                container.classList.add('status-card-animation');
+            }, 200);
+        }
+
+        // Initialize with Success
+        document.addEventListener('DOMContentLoaded', () => {
+            // Optional micro-interactions can be added here
+        });
+    </script>
+</body></html>

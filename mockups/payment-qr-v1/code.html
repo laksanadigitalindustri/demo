@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Konfirmasi Pembayaran - Laksanasoft</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#ffffff",
+                        "inverse-primary": "#a7c8ff",
+                        "tertiary-container": "#243448",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "on-primary-container": "#799dd6",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "on-primary-fixed": "#001b3c",
+                        "surface-container-highest": "#e0e3e5",
+                        "secondary-container": "#41befd",
+                        "secondary": "#00658d",
+                        "outline-variant": "#c3c6d1",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#eceef0",
+                        "inverse-on-surface": "#eff1f3",
+                        "secondary-fixed-dim": "#81cfff",
+                        "on-tertiary": "#ffffff",
+                        "tertiary": "#0e1f32",
+                        "inverse-surface": "#2d3133",
+                        "surface-container-low": "#f2f4f6",
+                        "on-secondary-fixed": "#001e2d",
+                        "on-surface": "#191c1e",
+                        "surface-variant": "#e0e3e5",
+                        "on-background": "#191c1e",
+                        "primary": "#001e40",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#d8dadc",
+                        "background": "#f7f9fb",
+                        "surface-container-high": "#e6e8ea",
+                        "primary-container": "#003366",
+                        "surface-tint": "#3a5f94",
+                        "on-surface-variant": "#43474f",
+                        "primary-fixed": "#d5e3ff",
+                        "on-tertiary-container": "#8c9cb5",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-container": "#004b69",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed": "#d3e4fe",
+                        "on-tertiary-fixed-dim": "#b7c8e1",
+                        "outline": "#737780",
+                        "on-error": "#ffffff",
+                        "surface-bright": "#f7f9fb",
+                        "surface": "#f7f9fb",
+                        "primary-fixed-dim": "#a7c8ff",
+                        "on-primary-fixed-variant": "#1f477b",
+                        "secondary-fixed": "#c6e7ff",
+                        "on-primary": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "inline-gutter": "0.5rem",
+                        "container-margin": "1rem",
+                        "stack-gap": "0.75rem",
+                        "section-gap": "1.5rem",
+                        "card-padding": "1rem"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["20px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "30px", "fontWeight": "700" }],
+                        "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .tonal-layer {
+            background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(0,30,64,0.02) 100%);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-40">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-container-margin h-16 bg-surface shadow-sm">
+<div class="flex items-center gap-4">
+<button class="active:scale-95 duration-100 p-2 -ml-2 text-on-surface">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-primary">Konfirmasi Bayar</h1>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">help_outline</span>
+</div>
+</header>
+<main class="pt-20 px-container-margin max-w-xl mx-auto">
+<!-- Merchant Identity Card -->
+<section class="mb-section-gap">
+<div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-[0px_4px_20px_rgba(0,0,0,0.05)] border border-outline-variant/30 flex flex-col items-center text-center">
+<div class="w-20 h-20 rounded-full bg-primary-container flex items-center justify-center mb-4 overflow-hidden relative border-4 border-surface-container">
+<img class="w-full h-full object-cover" data-alt="A clean, corporate brand logo for Laksanasoft, featuring minimalist abstract geometric shapes in shades of deep blue and white, set against a pristine white studio background with soft cinematic lighting to emphasize professional excellence." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDW2qpPjuOZR80VYZu-BgLNBqAUKRw39YwlMXOPnC16lR-pd0hGv407qxaEN-QPQqCAYnRz5CPJiaGVwBxvRrpsyx0npor2PIuKwcnhd3JQGcUu8R217qVkgGhpOTF32Y7yzZ-pzuohQG64JzhGQFJhbOJrqNjLBiE4QWMJYnvNk66sucdk0YdBdXVsimBCEFEFQclKy6KzXOL95__gIp4U3fQq4c8aAUykyFrvUcLsmteCa4h-hcdfvw"/>
+</div>
+<div class="flex items-center gap-1.5 mb-1">
+<h2 class="font-headline-md text-headline-md text-on-surface">Laksanasoft Indonesia</h2>
+<span class="material-symbols-outlined text-secondary-container" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Merchant ID: 882049102</p>
+</div>
+</section>
+<!-- Amount Section -->
+<section class="mb-section-gap text-center px-4">
+<h3 class="font-label-md text-label-md text-outline uppercase tracking-widest mb-2">Total Tagihan</h3>
+<div class="font-headline-lg-mobile text-headline-lg-mobile text-primary md:font-headline-lg md:text-headline-lg">
+                Rp1.250.000
+            </div>
+<div class="w-full h-px bg-outline-variant/30 mt-6"></div>
+</section>
+<!-- Invoice Details Bento -->
+<section class="grid grid-cols-1 gap-stack-gap mb-section-gap">
+<div class="bg-surface-container-low rounded-xl p-card-padding flex justify-between items-center group active:bg-surface-container transition-colors">
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant mb-1">Nomor Invoice</p>
+<p class="font-body-lg text-body-lg text-on-surface font-semibold">#INV-2024-0892</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant">content_copy</span>
+</div>
+<div class="grid grid-cols-2 gap-stack-gap">
+<div class="bg-surface-container-low rounded-xl p-card-padding">
+<p class="font-label-md text-label-md text-on-surface-variant mb-1">Layanan</p>
+<p class="font-body-md text-body-md text-on-surface font-semibold">Cloud &amp; Maintenance</p>
+</div>
+<div class="bg-surface-container-low rounded-xl p-card-padding">
+<p class="font-label-md text-label-md text-on-surface-variant mb-1">Jatuh Tempo</p>
+<p class="font-body-md text-body-md text-on-surface font-semibold">24 Aug 2024</p>
+</div>
+</div>
+</section>
+<!-- Payment Method Selection -->
+<section class="mb-section-gap">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-4">Metode Pembayaran</h3>
+<div class="bg-surface-container-lowest rounded-xl border-2 border-primary p-card-padding flex items-center gap-4 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-2">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="w-12 h-12 bg-primary-container rounded-lg flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<div class="flex-1">
+<p class="font-body-lg text-body-lg text-on-surface font-semibold">Saldo Rekening Laksanasoft</p>
+<p class="font-body-md text-body-md text-on-surface-variant">Tersedia: Rp45.200.000</p>
+</div>
+</div>
+<button class="w-full mt-stack-gap py-3 px-4 flex items-center justify-between bg-surface-container rounded-xl text-on-surface-variant hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">add_card</span>
+<span class="font-body-md text-body-md">Ganti Metode Pembayaran</span>
+</div>
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</section>
+<!-- Security Notice -->
+<div class="flex items-start gap-3 p-4 bg-secondary/5 rounded-xl border border-secondary/10 mb-8">
+<span class="material-symbols-outlined text-secondary text-sm">verified_user</span>
+<p class="text-[11px] leading-tight text-on-secondary-container">
+                Transaksi ini dilindungi oleh enkripsi SSL 256-bit dan otentikasi dua faktor untuk menjamin keamanan data finansial Anda.
+            </p>
+</div>
+</main>
+<!-- Bottom Action Shell -->
+<footer class="fixed bottom-0 w-full z-50 bg-surface-container-lowest dark:bg-surface-dim shadow-[0px_-4px_20px_rgba(0,0,0,0.05)] rounded-t-xl px-container-margin py-6 pb-safe">
+<div class="max-w-xl mx-auto flex flex-col gap-3">
+<button class="w-full h-12 bg-primary text-on-primary rounded-full font-body-lg font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform duration-150" id="payButton">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+                Bayar Sekarang
+            </button>
+<button class="w-full h-12 bg-transparent border-2 border-outline-variant text-primary rounded-full font-body-lg font-semibold hover:bg-surface-container-low transition-colors">
+                Batal
+            </button>
+</div>
+</footer>
+<!-- Processing Modal (Hidden by default) -->
+<div class="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm hidden flex items-center justify-center px-container-margin" id="loadingOverlay">
+<div class="bg-surface rounded-2xl p-8 w-full max-w-xs flex flex-col items-center shadow-xl">
+<div class="relative w-16 h-16 mb-6">
+<div class="absolute inset-0 border-4 border-primary-container rounded-full"></div>
+<div class="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin"></div>
+</div>
+<h4 class="font-headline-md text-headline-md text-on-surface mb-2">Memproses...</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-center">Mohon jangan tutup aplikasi atau tekan tombol kembali.</p>
+</div>
+</div>
+<script>
+        const payButton = document.getElementById('payButton');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+
+        payButton.addEventListener('click', () => {
+            loadingOverlay.classList.remove('hidden');
+            
+            // Simulating API call
+            setTimeout(() => {
+                loadingOverlay.innerHTML = `
+                    <div class="bg-surface rounded-2xl p-8 w-full max-w-xs flex flex-col items-center shadow-xl scale-100 transition-transform duration-500">
+                        <div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center mb-6 text-on-primary">
+                            <span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">check</span>
+                        </div>
+                        <h4 class="font-headline-md text-headline-md text-on-surface mb-2">Berhasil!</h4>
+                        <p class="font-body-md text-body-md text-on-surface-variant text-center mb-6">Pembayaran Anda telah diterima oleh Laksanasoft Indonesia.</p>
+                        <button onclick="window.location.reload()" class="w-full py-3 bg-primary-container text-on-primary-container rounded-full font-semibold">Selesai</button>
+                    </div>
+                `;
+            }, 2000);
+        });
+    </script>
+</body></html>

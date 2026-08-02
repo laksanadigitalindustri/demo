@@ -1,0 +1,307 @@
+<!DOCTYPE html><html class="light" lang="id"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport">
+<title>Detail Invoice - Laksanasoft</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-highest": "#e0e3e5",
+                    "on-primary-fixed-variant": "#1f477b",
+                    "primary-fixed-dim": "#a7c8ff",
+                    "on-tertiary-fixed": "#0b1c30",
+                    "inverse-surface": "#2d3133",
+                    "tertiary-fixed-dim": "#b7c8e1",
+                    "error": "#ba1a1a",
+                    "on-primary": "#ffffff",
+                    "on-primary-fixed": "#001b3c",
+                    "primary": "#001e40",
+                    "surface-container": "#eceef0",
+                    "surface-tint": "#3a5f94",
+                    "surface-dim": "#d8dadc",
+                    "surface-bright": "#f7f9fb",
+                    "secondary": "#00658d",
+                    "background": "#f7f9fb",
+                    "on-tertiary": "#ffffff",
+                    "surface": "#f7f9fb",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-container": "#41befd",
+                    "primary-container": "#003366",
+                    "on-secondary-fixed": "#001e2d",
+                    "surface-variant": "#e0e3e5",
+                    "outline": "#737780",
+                    "on-tertiary-container": "#8c9cb5",
+                    "surface-container-high": "#e6e8ea",
+                    "inverse-on-surface": "#eff1f3",
+                    "secondary-fixed": "#c6e7ff",
+                    "outline-variant": "#c3c6d1",
+                    "on-surface": "#191c1e",
+                    "on-secondary": "#ffffff",
+                    "secondary-fixed-dim": "#81cfff",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#a7c8ff",
+                    "tertiary": "#0e1f32",
+                    "surface-container-low": "#f2f4f6",
+                    "primary-fixed": "#d5e3ff",
+                    "on-primary-container": "#799dd6",
+                    "on-surface-variant": "#43474f",
+                    "on-secondary-fixed-variant": "#004c6b",
+                    "error-container": "#ffdad6",
+                    "on-secondary-container": "#004b69",
+                    "tertiary-container": "#243448",
+                    "on-tertiary-fixed-variant": "#38485d",
+                    "on-background": "#191c1e",
+                    "tertiary-fixed": "#d3e4fe",
+                    "on-error": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-gap": "0.75rem",
+                    "container-margin": "1rem",
+                    "section-gap": "1.5rem",
+                    "inline-gutter": "0.5rem",
+                    "card-padding": "1rem"
+            },
+            "fontFamily": {
+                    "label-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "30px", "fontWeight": "700"}],
+                    "headline-lg": ["28px", {"lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["20px", {"lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .tonal-card {
+            background: white;
+            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        .bg-glass {
+            backdrop-filter: blur(8px);
+            background: rgba(255, 255, 255, 0.85);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-container-margin h-16 bg-surface shadow-sm">
+<div class="flex items-center gap-4">
+<button class="active:scale-95 duration-100 transition-colors hover:bg-surface-container-high rounded-full p-2">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-primary">Detail Invoice</h1>
+</div>
+<div class="flex items-center gap-2">
+<button class="material-symbols-outlined text-primary hover:bg-surface-container-high p-2 rounded-full transition-colors active:scale-95 duration-100">share</button>
+<div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a corporate client in a modern setting, with soft focus on a sleek office background. The lighting is crisp and high-key, aligning with a light-mode banking application aesthetic. The style is clean, photographic, and emphasizes institutional trust and professionalism." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtp7_UvMDYlTcvACjjc0n6j_6eztMAzlyieNKvHfn_ILTz8w_A1C4-LnNjjkZamf6aiJr7oimiSrnLrqR2ORvugIMOTP5hSOUYPvM3zn1ofqDOR6-C7MVPYphDdK4Ibo0rM-4eQVDatEtThpasZ97hEaUGI4WxMmVy6TguaREAYfFDhi-YJy4a5oujvy_1tgOmMNz1kF9TTPple545PGD0ukg8CNOBCii0wmuSYazcJHiUGTx34nBWcw">
+</div>
+</div>
+</header>
+<main class="pt-20 pb-28 px-container-margin max-w-3xl mx-auto flex flex-col gap-section-gap">
+<!-- Invoice Header Card -->
+<section class="tonal-card rounded-xl p-card-padding flex flex-col gap-stack-gap border-t-4 border-primary">
+<div class="flex justify-between items-start">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface-variant">NOMOR INVOICE</span>
+<h2 class="font-headline-md text-headline-md text-primary">#INV-2024-0892</h2>
+</div>
+<div class="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-[11px] font-bold uppercase tracking-wider flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+                    Menunggu Pembayaran
+                </div>
+</div>
+<div class="grid grid-cols-2 gap-4 pt-2 border-t border-outline-variant">
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant">TANGGAL TERBIT</p>
+<p class="font-body-md text-body-md font-semibold text-on-surface">12 Oktober 2024</p>
+</div>
+<div class="text-right">
+<p class="font-label-md text-label-md text-on-surface-variant">JATUH TEMPO</p>
+<p class="font-body-md text-body-md font-semibold text-error">26 Oktober 2024</p>
+</div>
+</div>
+</section>
+<!-- Sender & Client Info Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<section class="tonal-card rounded-xl p-card-padding">
+<p class="font-label-md text-label-md text-on-surface-variant mb-2">DARI</p>
+<h3 class="font-body-lg text-body-lg font-bold text-primary">Laksanasoft Indonesia</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+                    Jl. Teknologi Modern No. 88<br>
+                    Sudirman Central Business District<br>
+                    Jakarta Selatan, 12190
+                </p>
+</section>
+<section class="tonal-card rounded-xl p-card-padding">
+<p class="font-label-md text-label-md text-on-surface-variant mb-2">UNTUK</p>
+<h3 class="font-body-lg text-body-lg font-bold text-on-surface">PT Sinergi Kreatif Digital</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+                    The Plaza Office Tower, 24th Floor<br>
+                    Menteng, Jakarta Pusat<br>
+                    admin@sinergikreatif.com
+                </p>
+</section>
+</div>
+<!-- Line Items Table -->
+<section class="tonal-card rounded-xl overflow-hidden">
+<div class="bg-surface-container-low px-card-padding py-3">
+<h3 class="font-label-md text-label-md text-on-surface">RINCIAN LAYANAN</h3>
+</div>
+<div class="p-card-padding flex flex-col gap-4">
+<!-- Item 1 -->
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/30">
+<div class="flex flex-col gap-1">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface">Cloud Hosting Pro</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Paket Tahunan - Enterprise Level</span>
+</div>
+<div class="text-right">
+<span class="font-body-lg text-body-lg font-bold text-on-surface">Rp 12.000.000</span>
+<p class="font-label-md text-label-md text-on-surface-variant">Qty: 1</p>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="flex justify-between items-center py-2 border-b border-outline-variant/30">
+<div class="flex flex-col gap-1">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface">API Integration Module</span>
+<span class="font-label-md text-label-md text-on-surface-variant">3rd Party Bank Endpoints</span>
+</div>
+<div class="text-right">
+<span class="font-body-lg text-body-lg font-bold text-on-surface">Rp 4.500.000</span>
+<p class="font-label-md text-label-md text-on-surface-variant">Qty: 2</p>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="flex justify-between items-center py-2">
+<div class="flex flex-col gap-1">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface">SSL Certificate Wildcard</span>
+<span class="font-label-md text-label-md text-on-surface-variant">2-Year Validity GlobalSign</span>
+</div>
+<div class="text-right">
+<span class="font-body-lg text-body-lg font-bold text-on-surface">Rp 2.250.000</span>
+<p class="font-label-md text-label-md text-on-surface-variant">Qty: 1</p>
+</div>
+</div>
+</div>
+<!-- Financial Summary -->
+<div class="bg-surface-container-low p-card-padding flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">Subtotal</span>
+<span class="font-body-md text-body-md font-semibold text-on-surface">Rp 18.750.000</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">PPN (11%)</span>
+<span class="font-body-md text-body-md font-semibold text-on-surface">Rp 2.062.500</span>
+</div>
+<div class="flex justify-between items-center mt-2 pt-2 border-t border-outline-variant">
+<span class="font-headline-md text-headline-md text-primary">Total Bayar</span>
+<span class="font-headline-md text-headline-md text-primary">Rp 20.812.500</span>
+</div>
+</div>
+</section>
+<!-- Payment Method -->
+<section class="tonal-card rounded-xl p-card-padding flex flex-col gap-stack-gap">
+<h3 class="font-label-md text-label-md text-on-surface-variant">METODE PEMBAYARAN</h3>
+<div class="flex items-center gap-4 p-3 rounded-lg border border-outline-variant bg-surface-bright">
+<div class="w-10 h-10 bg-primary-container rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container">account_balance</span>
+</div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-bold text-primary">Bank Central Asia (BCA)</span>
+<span class="font-label-md text-label-md text-on-surface-variant">8022 1992 000 (Laksanasoft Indonesia)</span>
+</div>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant italic">
+                *Sertakan nomor invoice pada kolom berita transfer untuk mempercepat proses verifikasi otomatis.
+            </p>
+</section>
+<!-- Action Buttons -->
+<div class="flex flex-col gap-3 mb-4">
+<button class="w-full h-12 bg-primary text-on-primary font-body-lg font-bold rounded-xl active:scale-95 transition-all shadow-md flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">payments</span>
+                Bayar Sekarang
+            </button>
+<button class="w-full h-12 border-2 border-primary text-primary font-body-lg font-bold rounded-xl active:scale-95 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">download</span>
+                Unduh PDF
+            </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<button class="fixed bottom-24 right-4 w-14 h-14 bg-primary-container text-on-primary-container rounded-full shadow-md flex items-center justify-center z-50 active:scale-95 transition-all duration-100 hover:bg-primary hover:text-on-primary">
+  <span class="material-symbols-outlined">chat</span>
+</button><nav class="fixed bottom-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-surface-container-lowest shadow-[0px_-4px_20px_rgba(0,0,0,0.05)] rounded-t-xl">
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md text-label-md">Beranda</span>
+</button>
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1">
+<span class="material-symbols-outlined">description</span>
+<span class="font-label-md text-label-md">Tagihan</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined">history</span>
+<span class="font-label-md text-label-md">Riwayat</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant px-4 py-1 hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md text-label-md">Profil</span>
+</button>
+</nav>
+<script>
+        // Simple micro-interaction for the active button
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const icon = this.querySelector('.material-symbols-outlined');
+                if(icon) {
+                    icon.style.transform = 'scale(1.2)';
+                    setTimeout(() => {
+                        icon.style.transform = 'scale(1)';
+                    }, 150);
+                }
+            });
+        });
+
+        // Toggle visibility on scroll for cleaner reading?
+        let lastScrollTop = 0;
+        const topBar = document.querySelector('header');
+        window.addEventListener('scroll', function() {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                topBar.style.transform = 'translateY(-100%)';
+            } else {
+                topBar.style.transform = 'translateY(0)';
+            }
+            topBar.style.transition = 'transform 0.3s ease';
+            lastScrollTop = scrollTop;
+        });
+    </script>
+
+
+</body></html>

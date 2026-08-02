@@ -36,10 +36,21 @@
       </div>
     </div>
 
-    <button onclick="mobileApp.switchToDesktop()" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-[10px] font-bold flex items-center gap-1 border border-slate-200">
-      <span class="material-symbols-outlined text-xs">desktop_windows</span> Versi Desktop
-    </button>
+    <div class="flex items-center gap-1.5">
+      <button onclick="mobileApp.refreshData()" class="p-1.5 rounded-lg text-slate-700 hover:bg-slate-100" title="Refresh Data">
+        <span class="material-symbols-outlined text-lg">sync</span>
+      </button>
+      <button onclick="mobileApp.switchToDesktop()" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-[10px] font-bold flex items-center gap-1 border border-slate-200">
+        <span class="material-symbols-outlined text-xs">desktop_windows</span> Versi Desktop
+      </button>
+    </div>
   </header>
+
+  <!-- PULL TO REFRESH TOUCH INDICATOR -->
+  <div id="mobile-pull-indicator" class="mobile-pull-indicator">
+    <span id="pull-refresh-icon" class="material-symbols-outlined text-base spinner-icon transition-transform">sync</span>
+    <span id="pull-refresh-label">Tarik ke bawah untuk memperbarui data...</span>
+  </div>
 
   <!-- MAIN MOBILE CONTENT CONTAINER -->
   <main class="p-4">

@@ -1,6 +1,6 @@
 /* ==========================================================================
    Laksanasoft Mobile App - Dedicated Smartphone Application Engine
-   Includes Device Hardware/Browser Back Button Navigation (Undo/PopState)
+   Includes Pull-To-Refresh Touch Gesture & Hardware Back Button Navigation
    ========================================================================== */
 
 (function () {
@@ -30,10 +30,8 @@
     qrisTimerSeconds: 899
   };
 
-  // Tab Stack History for Device Back Button Handling
   const navigationStack = ['home'];
 
-  // Property Normalizers
   function normalizeInvoice(inv) {
     if (!inv) return null;
     let parsedItems = [];
@@ -158,6 +156,72 @@
     }, 3500);
   }
 
+  // --- PULL TO REFRESH TOUCH GESTURE ---
+  function initPullToRefresh() {
+    let startY = 0;
+    let currentY = 0;
+    let isPulling = false;
+    const threshold = 65;
+    const indicator = document.getElementById('mobile-pull-indicator');
+    const label = document.getElementById('pull-refresh-label');
+    const icon = document.getElementById('pull-refresh-icon');
+
+    if (!indicator) return;
+
+    window.addEventListener('touchstart', function (e) {
+      if (window.scrollY === 0) {
+        startY = e.touches[0].clientY;
+        isPulling = true;
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchmove', function (e) {
+      if (!isPulling || window.scrollY > 0) return;
+      currentY = e.touches[0].clientY;
+      const pullDist = Math.max(0, (currentY - startY) * 0.45);
+
+      if (pullDist > 10) {
+        indicator.style.height = `${Math.min(pullDist, 75)}px`;
+        indicator.classList.add('pulling');
+
+        if (pullDist >= threshold) {
+          if (label) label.textContent = 'Lepaskan untuk memperbarui data...';
+          if (icon) icon.style.transform = 'rotate(180deg)';
+        } else {
+          if (label) label.textContent = 'Tarik ke bawah untuk memperbarui data...';
+          if (icon) icon.style.transform = 'rotate(0deg)';
+        }
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchend', async function () {
+      if (!isPulling) return;
+      isPulling = false;
+
+      const pullDist = (currentY - startY) * 0.45;
+      if (pullDist >= threshold && window.scrollY === 0) {
+        indicator.style.height = '50px';
+        indicator.classList.add('refreshing');
+        if (label) label.textContent = 'Memuat data terbaru dari server...';
+
+        await initMobileStore();
+        renderCurrentTabContent();
+        showMobileToast('Data berhasil diperbarui dari Google Sheets!', 'success');
+
+        setTimeout(() => {
+          indicator.style.height = '0';
+          indicator.classList.remove('pulling', 'refreshing');
+        }, 500);
+      } else {
+        indicator.style.height = '0';
+        indicator.classList.remove('pulling');
+      }
+
+      startY = 0;
+      currentY = 0;
+    });
+  }
+
   // --- ROUTER WITH DEVICE BACK BUTTON SUPPORT ---
   function switchMobileTab(tabName, pushToHistory = true) {
     if (store.currentTab === tabName && pushToHistory) return;
@@ -173,17 +237,13 @@
     const activeBtn = document.getElementById(`nav-btn-${tabName}`);
     if (activeBtn) activeBtn.classList.add('active');
 
-    // Header Back Button Toggle
     const backBtn = document.getElementById('header-back-btn');
     if (backBtn) {
       if (tabName !== 'home') backBtn.classList.remove('hidden');
       else backBtn.classList.add('hidden');
     }
 
-    if (tabName === 'home') renderMobileHome();
-    else if (tabName === 'proposals') renderMobileProposals();
-    else if (tabName === 'history') renderMobileHistory();
-    else if (tabName === 'profile') renderMobileProfile();
+    renderCurrentTabContent();
 
     if (pushToHistory) {
       navigationStack.push(tabName);
@@ -193,17 +253,22 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  function renderCurrentTabContent() {
+    if (store.currentTab === 'home') renderMobileHome();
+    else if (store.currentTab === 'proposals') renderMobileProposals();
+    else if (store.currentTab === 'history') renderMobileHistory();
+    else if (store.currentTab === 'profile') renderMobileProfile();
+  }
+
   function goBackToPreviousTab() {
-    // 1. If any sheet modal is open, close it (Undo modal)
     const openSheetEl = document.querySelector('.mobile-bottom-sheet.open');
     if (openSheetEl) {
       openSheetEl.classList.remove('open');
       return;
     }
 
-    // 2. Otherwise navigate to previous tab
     if (navigationStack.length > 1) {
-      navigationStack.pop(); // remove current
+      navigationStack.pop();
       const prevTab = navigationStack[navigationStack.length - 1];
       switchMobileTab(prevTab, false);
     } else {
@@ -211,8 +276,7 @@
     }
   }
 
-  // Intercept Device Hardware Back Button (Popstate Listener)
-  window.addEventListener('popstate', function (e) {
+  window.addEventListener('popstate', function () {
     const openSheetEl = document.querySelector('.mobile-bottom-sheet.open');
     if (openSheetEl) {
       openSheetEl.classList.remove('open');
@@ -488,7 +552,6 @@
     }
   }
 
-  // Keyboard Physical listener for mobile PIN
   document.addEventListener('keydown', function(e) {
     const sheet = document.getElementById('sheet-pin');
     if (!sheet || !sheet.classList.contains('open')) return;
@@ -502,10 +565,17 @@
   window.mobileApp = {
     init: async function () {
       await initMobileStore();
+      initPullToRefresh();
       switchMobileTab('home', false);
     },
     switchTab: switchMobileTab,
     goBack: goBackToPreviousTab,
+    refreshData: async function () {
+      showMobileToast('Memuat data terbaru...', 'info');
+      await initMobileStore();
+      renderCurrentTabContent();
+      showMobileToast('Data berhasil diperbarui!', 'success');
+    },
     startPay: startPay,
     proceedToPin: proceedToPin,
     pinInput: pinInput,

@@ -3,7 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Laksanasoft" />
   <title>Laksanasoft Mobile Portal</title>
+  
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json" />
   
   <!-- Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,6 +20,9 @@
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- jsPDF Library for Direct Native Vector PDF Generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <!-- Mobile Custom Stylesheet -->
   <link rel="stylesheet" href="mobile_styles.css" />
@@ -70,24 +80,34 @@
       </div>
 
       <!-- Quick Action Buttons -->
-      <div class="grid grid-cols-2 gap-3">
-        <button type="button" onclick="mobileApp.switchTab('proposals')" class="p-3 bg-white border border-slate-200 rounded-xl flex items-center gap-2.5 shadow-sm active:bg-slate-50">
-          <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
-            <span class="material-symbols-outlined text-lg">request_quote</span>
+      <div class="grid grid-cols-3 gap-2">
+        <button type="button" onclick="mobileApp.switchTab('proposals')" class="p-2.5 bg-white border border-slate-200 rounded-xl flex items-center gap-2 shadow-sm active:bg-slate-50">
+          <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+            <span class="material-symbols-outlined text-base">request_quote</span>
           </div>
-          <div class="text-left">
+          <div class="text-left leading-tight">
             <span class="font-extrabold text-xs text-slate-900 block">Penawaran</span>
-            <span class="text-[10px] text-slate-400">Persetujuan & Negosiasi</span>
+            <span class="text-[9px] text-slate-400">Negosiasi</span>
           </div>
         </button>
 
-        <button type="button" onclick="mobileApp.switchTab('history')" class="p-3 bg-white border border-slate-200 rounded-xl flex items-center gap-2.5 shadow-sm active:bg-slate-50">
-          <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
-            <span class="material-symbols-outlined text-lg">history</span>
+        <button type="button" onclick="mobileApp.switchTab('requests')" class="p-2.5 bg-white border border-slate-200 rounded-xl flex items-center gap-2 shadow-sm active:bg-slate-50">
+          <div class="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+            <span class="material-symbols-outlined text-base">assignment_add</span>
           </div>
-          <div class="text-left">
+          <div class="text-left leading-tight">
+            <span class="font-extrabold text-xs text-slate-900 block">Permintaan</span>
+            <span class="text-[9px] text-slate-400">Pengajuan</span>
+          </div>
+        </button>
+
+        <button type="button" onclick="mobileApp.switchTab('history')" class="p-2.5 bg-white border border-slate-200 rounded-xl flex items-center gap-2 shadow-sm active:bg-slate-50">
+          <div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+            <span class="material-symbols-outlined text-base">history</span>
+          </div>
+          <div class="text-left leading-tight">
             <span class="font-extrabold text-xs text-slate-900 block">Riwayat</span>
-            <span class="text-[10px] text-slate-400">Bukti Pembayaran</span>
+            <span class="text-[9px] text-slate-400">Resi Pembayaran</span>
           </div>
         </button>
       </div>
@@ -97,7 +117,7 @@
         <h3 class="font-extrabold text-xs text-slate-900 uppercase tracking-wider">Daftar Tagihan Korporat</h3>
       </div>
 
-      <!-- Invoice List Container (with Skeleton Loading Shimmer) -->
+      <!-- Invoice List Container -->
       <div id="mobile-invoice-list"></div>
     </div>
 
@@ -109,41 +129,23 @@
       <div id="mobile-proposals-list"></div>
     </div>
 
-    <!-- 3. HISTORY TAB CONTENT -->
+    <!-- 3. PERMINTAAN TAB CONTENT -->
+    <div id="tab-requests" class="mobile-tab-content space-y-4 hidden">
+      <div class="flex items-center justify-between">
+        <h3 class="font-extrabold text-sm text-slate-900">Permintaan & Pengajuan Layanan</h3>
+        <button type="button" onclick="mobileApp.openNewRequestModal()" class="px-3 py-1.5 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-1">
+          <span class="material-symbols-outlined text-sm">add</span> Buat Permintaan
+        </button>
+      </div>
+      <div id="mobile-requests-list"></div>
+    </div>
+
+    <!-- 4. HISTORY TAB CONTENT -->
     <div id="tab-history" class="mobile-tab-content space-y-4 hidden">
       <div class="flex items-center justify-between">
         <h3 class="font-extrabold text-sm text-slate-900">Riwayat Pembayaran Lunas</h3>
       </div>
       <div id="mobile-history-list"></div>
-    </div>
-
-    <!-- 4. PROFILE TAB CONTENT -->
-    <div id="tab-profile" class="mobile-tab-content space-y-4 hidden">
-      <div class="mobile-card text-center p-6 space-y-3">
-        <div class="w-16 h-16 rounded-full bg-slate-900 text-white font-extrabold text-xl flex items-center justify-center mx-auto shadow-md">
-          ADM
-        </div>
-        <div>
-          <h3 id="mobile-prof-name" class="font-extrabold text-base text-slate-900">Administrator</h3>
-          <p id="mobile-prof-corp" class="text-xs text-slate-500 mt-0.5">PT Laksana Software Solutions</p>
-        </div>
-        <span class="inline-block px-3 py-1 bg-emerald-100 text-emerald-800 text-[10px] font-bold rounded-full">Super Admin Korporat</span>
-      </div>
-
-      <div class="mobile-card divide-y divide-slate-100 text-xs">
-        <div class="py-3 flex justify-between">
-          <span class="text-slate-500">Corporate ID:</span>
-          <strong class="text-slate-900">admin</strong>
-        </div>
-        <div class="py-3 flex justify-between">
-          <span class="text-slate-500">User ID:</span>
-          <strong class="text-slate-900">admin</strong>
-        </div>
-        <div class="py-3 flex justify-between">
-          <span class="text-slate-500">PIN Transaksi:</span>
-          <strong class="text-slate-900">123456</strong>
-        </div>
-      </div>
     </div>
 
   </main>
@@ -158,15 +160,116 @@
       <span class="material-symbols-outlined text-xl">request_quote</span>
       <span>Penawaran</span>
     </button>
+    <button type="button" id="nav-btn-requests" onclick="mobileApp.switchTab('requests')" class="mobile-nav-item">
+      <span class="material-symbols-outlined text-xl">assignment_add</span>
+      <span>Permintaan</span>
+    </button>
     <button type="button" id="nav-btn-history" onclick="mobileApp.switchTab('history')" class="mobile-nav-item">
       <span class="material-symbols-outlined text-xl">history</span>
       <span>Riwayat</span>
     </button>
-    <button type="button" id="nav-btn-profile" onclick="mobileApp.switchTab('profile')" class="mobile-nav-item">
-      <span class="material-symbols-outlined text-xl">person</span>
-      <span>Profil</span>
-    </button>
   </nav>
+
+  <!-- BOTTOM SHEET: BUAT PERMINTAAN BARU FORM -->
+  <div id="sheet-new-request" class="mobile-bottom-sheet">
+    <div class="mobile-sheet-content space-y-4">
+      <div class="sheet-handle"></div>
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-extrabold text-sm text-slate-900">Pengajuan Permintaan Layanan Baru</h3>
+        <button type="button" onclick="mobileApp.closeSheet('sheet-new-request')" class="text-slate-400">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">Judul Permintaan:</label>
+          <input type="text" id="req-title-input" placeholder="Misal: Permintaan Upgrade Kapasitas Cloud Server" class="w-full p-2.5 border border-slate-200 rounded-xl font-medium focus:outline-none focus:border-slate-900" />
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">Kategori Layanan:</label>
+          <select id="req-cat-input" class="w-full p-2.5 border border-slate-200 rounded-xl font-medium bg-white focus:outline-none focus:border-slate-900">
+            <option value="Cloud Infrastructure">Cloud Infrastructure & Server</option>
+            <option value="Software License">Lisensi Software Enterprise</option>
+            <option value="Security & Network">Network & Cyber Security</option>
+            <option value="Technical Support">Dukungan Teknis SLA</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">Tingkat Prioritas:</label>
+          <select id="req-priority-input" class="w-full p-2.5 border border-slate-200 rounded-xl font-medium bg-white focus:outline-none focus:border-slate-900">
+            <option value="NORMAL">Normal (Standard Processing)</option>
+            <option value="HIGH">High (Prioritas Tinggi)</option>
+            <option value="URGENT">Urgent (Segera / SLA 24 Jam)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">Catatan Detail Kebutuhan:</label>
+          <textarea id="req-desc-input" rows="3" placeholder="Jelaskan kebutuhan rincian spesifikasi layanan yang diajukan..." class="w-full p-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900"></textarea>
+        </div>
+      </div>
+
+      <button type="button" onclick="mobileApp.submitNewRequest()" class="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-md active:scale-95 transition-transform">
+        Kirim Pengajuan Permintaan
+      </button>
+    </div>
+  </div>
+
+  <!-- BOTTOM SHEET: INVOICE DETAIL BREAKDOWN -->
+  <div id="sheet-invoice-detail" class="mobile-bottom-sheet">
+    <div class="mobile-sheet-content space-y-4">
+      <div class="sheet-handle"></div>
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div>
+          <h3 class="font-extrabold text-sm text-slate-900">Rincian Layanan Tagihan</h3>
+          <span id="detail-inv-id" class="text-[10px] text-slate-400 font-mono">-</span>
+        </div>
+        <button type="button" onclick="mobileApp.closeSheet('sheet-invoice-detail')" class="text-slate-400">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-2 text-xs">
+        <div class="flex justify-between text-slate-500">
+          <span>Vendor:</span>
+          <strong id="detail-inv-vendor" class="text-slate-900">-</strong>
+        </div>
+        <div class="flex justify-between text-slate-500">
+          <span>Kategori:</span>
+          <span id="detail-inv-category" class="text-slate-900 font-semibold">-</span>
+        </div>
+        <div class="flex justify-between text-slate-500">
+          <span>Jatuh Tempo:</span>
+          <span id="detail-inv-due" class="text-slate-900 font-semibold">-</span>
+        </div>
+        <div class="flex justify-between text-slate-500">
+          <span>Deskripsi:</span>
+          <span id="detail-inv-desc" class="text-slate-900">-</span>
+        </div>
+      </div>
+
+      <!-- Itemized Table -->
+      <div class="border-t border-slate-100 pt-2 space-y-1">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Rincian Item:</span>
+        <div id="detail-inv-items" class="bg-slate-50 p-3 rounded-xl divide-y divide-slate-200"></div>
+      </div>
+
+      <div class="flex justify-between items-center pt-2 border-t border-slate-100">
+        <span class="text-xs text-slate-500 font-bold">Total Nominal:</span>
+        <span id="detail-inv-amount" class="text-base font-black text-slate-900">Rp 0</span>
+      </div>
+
+      <!-- Direct PDF Vector Download Button -->
+      <button type="button" id="detail-download-pdf-btn" class="w-full py-2.5 bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm active:scale-95 transition-transform">
+        <span class="material-symbols-outlined text-base">picture_as_pdf</span> Unduh File Invoice PDF Langsung
+      </button>
+
+      <div id="detail-inv-pay-btn-box"></div>
+    </div>
+  </div>
 
   <!-- STEP 1: SELECT PAYMENT METHOD BOTTOM SHEET -->
   <div id="sheet-payment-method" class="mobile-bottom-sheet">
@@ -414,7 +517,7 @@
         </div>
       </div>
 
-      <div id="status-drive-container"></div>
+      <div id="status-drive-container" class="space-y-2"></div>
 
       <button type="button" onclick="mobileApp.closeSheet('sheet-payment-status')" class="w-full py-3 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-md">
         Selesai & Kembali ke Beranda
@@ -422,7 +525,7 @@
     </div>
   </div>
 
-  <!-- BOTTOM SHEET 5: TRANSACTION DETAIL -->
+  <!-- BOTTOM SHEET: TRANSACTION DETAIL -->
   <div id="sheet-trx-detail" class="mobile-bottom-sheet">
     <div class="mobile-sheet-content space-y-4">
       <div class="sheet-handle"></div>
@@ -452,7 +555,7 @@
         </div>
       </div>
 
-      <div id="mobile-trx-drive"></div>
+      <div id="mobile-trx-drive" class="space-y-2"></div>
 
       <button type="button" onclick="mobileApp.closeSheet('sheet-trx-detail')" class="w-full py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold">
         Tutup
@@ -460,7 +563,7 @@
     </div>
   </div>
 
-  <!-- BOTTOM SHEET 6: NEGOTIATION FORM -->
+  <!-- BOTTOM SHEET: NEGOTIATION FORM -->
   <div id="sheet-nego" class="mobile-bottom-sheet">
     <div class="mobile-sheet-content space-y-4">
       <div class="sheet-handle"></div>
@@ -479,7 +582,26 @@
     </div>
   </div>
 
-  <!-- TOAST NOTIFICATION -->
+  <!-- BOTTOM SHEET: PROPOSAL REJECTION FORM -->
+  <div id="sheet-reject" class="mobile-bottom-sheet">
+    <div class="mobile-sheet-content space-y-4">
+      <div class="sheet-handle"></div>
+      <h3 class="font-extrabold text-sm text-slate-900">Tolak Penawaran Vendor</h3>
+      <span id="mobile-reject-id" class="text-xs font-bold text-rose-700 font-mono block">-</span>
+      
+      <div class="space-y-1">
+        <label class="text-[11px] font-bold text-slate-600">Alasan Penolakan:</label>
+        <textarea id="mobile-reject-reason-input" rows="3" placeholder="Masukkan alasan penolakan penawaran ini..." class="w-full p-2.5 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-slate-900"></textarea>
+      </div>
+
+      <div class="flex items-center gap-2 pt-2">
+        <button type="button" onclick="mobileApp.closeSheet('sheet-reject')" class="flex-1 py-2.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-xl">Batal</button>
+        <button type="button" onclick="mobileApp.confirmRejectProposal()" class="flex-1 py-2.5 bg-rose-600 text-white text-xs font-bold rounded-xl shadow-md">Konfirmasi Tolak</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION (Auto-dismiss in exactly 2 seconds) -->
   <div id="mobile-toast" class="fixed top-4 left-4 right-4 z-50 p-3.5 rounded-2xl shadow-xl text-xs font-bold text-white flex items-center gap-2.5 transition-all duration-300 transform -translate-y-12 opacity-0 pointer-events-none">
     <span class="material-symbols-outlined text-base">info</span>
     <span id="mobile-toast-msg">Pemberitahuan</span>
@@ -488,5 +610,20 @@
   <!-- Shared Backend API Bridge & Mobile Engine -->
   <script src="../assets/js/backend_service.js"></script>
   <script src="mobile_app.js"></script>
+
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('./sw.js')
+          .then(function(reg) {
+            console.log('PWA ServiceWorker registered with scope:', reg.scope);
+          })
+          .catch(function(err) {
+            console.warn('PWA ServiceWorker registration failed:', err);
+          });
+      });
+    }
+  </script>
 </body>
 </html>

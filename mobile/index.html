@@ -29,10 +29,54 @@
 </head>
 <body class="mobile-body">
 
-  <!-- CONSTRAINED SMARTPHONE APP FRAME WRAPPER -->
-  <div class="mobile-app-wrapper">
+  <!-- 1. MOBILE LOGIN SCREEN VIEW (Appears when not logged in) -->
+  <div id="view-login" class="mobile-app-wrapper flex flex-col justify-center p-6 space-y-6 bg-slate-900 text-white min-h-screen">
+    <div class="text-center space-y-3">
+      <div class="w-16 h-16 rounded-2xl bg-white text-slate-900 font-black text-2xl flex items-center justify-center mx-auto shadow-xl">
+        LKS
+      </div>
+      <div>
+        <h2 class="text-xl font-extrabold tracking-tight">Laksanasoft</h2>
+        <p class="text-xs text-emerald-400 font-bold uppercase mt-0.5">Corporate Payment Portal</p>
+      </div>
+    </div>
 
-    <!-- MOBILE TOP APP BAR WITH BACK BUTTON -->
+    <form id="mobile-login-form" onsubmit="mobileApp.handleLogin(event)" class="bg-slate-800/80 backdrop-blur-md p-5 rounded-3xl border border-slate-700/60 space-y-4 shadow-2xl">
+      <div class="text-center pb-1">
+        <h3 class="font-extrabold text-sm text-white">Masuk ke Akun Korporat</h3>
+        <p class="text-[11px] text-slate-400">Gunakan Username & Password spreadsheet</p>
+      </div>
+
+      <div class="space-y-1 text-left">
+        <label class="text-xs font-bold text-slate-300 block">Username / ID Korporat:</label>
+        <div class="relative">
+          <span class="material-symbols-outlined absolute left-3 top-3 text-slate-400 text-sm">person</span>
+          <input type="text" id="login-username" placeholder="Masukkan Username (e.g. admin)" required class="w-full pl-9 pr-3 py-2.5 bg-slate-900/90 border border-slate-700 rounded-xl text-xs font-semibold text-white focus:outline-none focus:border-emerald-500" />
+        </div>
+      </div>
+
+      <div class="space-y-1 text-left">
+        <label class="text-xs font-bold text-slate-300 block">Kata Sandi / Password:</label>
+        <div class="relative">
+          <span class="material-symbols-outlined absolute left-3 top-3 text-slate-400 text-sm">lock</span>
+          <input type="password" id="login-password" placeholder="Masukkan Password (e.g. admin)" required class="w-full pl-9 pr-3 py-2.5 bg-slate-900/90 border border-slate-700 rounded-xl text-xs font-semibold text-white focus:outline-none focus:border-emerald-500" />
+        </div>
+      </div>
+
+      <button type="submit" id="login-submit-btn" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl text-xs font-extrabold shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-base">login</span> Masuk Portal Korporat
+      </button>
+    </form>
+
+    <div class="bg-slate-800/40 p-3 rounded-2xl border border-slate-800 text-[10px] text-slate-400 text-center">
+      Demo Login: Username: <strong class="text-white">admin</strong> • Password: <strong class="text-white">admin</strong>
+    </div>
+  </div>
+
+  <!-- 2. MAIN MOBILE APPLICATION DASHBOARD VIEW (Appears when logged in) -->
+  <div id="view-app" class="mobile-app-wrapper hidden">
+
+    <!-- MOBILE TOP APP BAR WITH BACK & LOGOUT BUTTONS -->
     <header class="mobile-app-header">
       <div class="flex items-center gap-2 min-w-0">
         <!-- Device/UI Back Button -->
@@ -49,9 +93,12 @@
         </div>
       </div>
 
-      <div class="flex items-center gap-1.5 flex-shrink-0">
+      <div class="flex items-center gap-1">
         <button type="button" onclick="mobileApp.refreshData()" class="p-1.5 rounded-lg text-slate-700 hover:bg-slate-100" title="Refresh Data">
           <span class="material-symbols-outlined text-lg">sync</span>
+        </button>
+        <button type="button" onclick="mobileApp.logout()" class="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50" title="Keluar / Logout">
+          <span class="material-symbols-outlined text-lg">logout</span>
         </button>
         <button type="button" onclick="mobileApp.switchToDesktop()" class="px-2 py-1 bg-slate-100 text-slate-700 rounded-lg text-[10px] font-bold flex items-center gap-1 border border-slate-200">
           <span class="material-symbols-outlined text-xs">desktop_windows</span>
@@ -74,7 +121,10 @@
         <!-- Mobile Hero Summary Card -->
         <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-4 sm:p-5 rounded-2xl shadow-lg relative overflow-hidden">
           <div class="relative z-10 space-y-2.5">
-            <span class="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">Total Tagihan Belum Dibayar</span>
+            <div class="flex justify-between items-center">
+              <span class="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">Total Tagihan Belum Dibayar</span>
+              <span id="mobile-user-badge" class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-bold flex-shrink-0">admin</span>
+            </div>
             <h2 id="mobile-unpaid-total" class="text-2xl sm:text-3xl font-black text-white">Rp 0</h2>
             <div class="flex items-center justify-between pt-2 border-t border-slate-700/60 text-xs">
               <span id="mobile-unpaid-count" class="text-slate-300 font-semibold truncate">0 Tagihan Belum Dibayar</span>

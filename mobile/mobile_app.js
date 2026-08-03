@@ -1,6 +1,6 @@
 /* ==========================================================================
    Laksanasoft Mobile App - Dedicated Smartphone Application Engine
-   Includes Telegram Bot Integration (@laksanasoft_bot)
+   Includes Login Authentication & Persistent Session Management
    ========================================================================== */
 
 (function () {
@@ -8,12 +8,12 @@
 
   const store = {
     user: {
-      corpId: 'admin',
-      userId: 'admin',
-      name: 'Administrator',
-      company: 'PT Laksana Software Solutions',
-      role: 'Super Admin Korporat',
-      isLoggedIn: true,
+      corpId: '',
+      userId: '',
+      name: '',
+      company: '',
+      role: '',
+      isLoggedIn: false,
       pin: '123456'
     },
     invoices: [],
@@ -68,6 +68,102 @@
     } catch (e) {
       console.warn("Telegram notification error:", e);
     }
+  }
+
+  // SESSION MANAGEMENT: Require login unless previously logged in
+  function checkUserSession() {
+    const savedSession = localStorage.getItem('laksanasoft_mobile_session');
+    const loginView = document.getElementById('view-login');
+    const appView = document.getElementById('view-app');
+
+    if (savedSession) {
+      try {
+        const userData = JSON.parse(savedSession);
+        store.user = userData;
+        store.user.isLoggedIn = true;
+
+        if (loginView) loginView.classList.add('hidden');
+        if (appView) appView.classList.remove('hidden');
+
+        const badgeEl = document.getElementById('mobile-user-badge');
+        if (badgeEl) badgeEl.textContent = store.user.userId || 'admin';
+
+        initMobileStore();
+        return true;
+      } catch (e) {
+        localStorage.removeItem('laksanasoft_mobile_session');
+      }
+    }
+
+    // Show Login View if no session exists
+    if (loginView) loginView.classList.remove('hidden');
+    if (appView) appView.classList.add('hidden');
+    return false;
+  }
+
+  async function handleLogin(e) {
+    if (e) e.preventDefault();
+    const uInput = document.getElementById('login-username')?.value.trim();
+    const pInput = document.getElementById('login-password')?.value.trim();
+
+    if (!uInput || !pInput) {
+      showMobileToast("Harap isi Username dan Password.", "error");
+      return;
+    }
+
+    showMobileToast("Memverifikasi akun korporat...", "info");
+
+    let authenticatedUser = null;
+
+    if (window.GoogleBackend && window.GoogleBackend.isConfigured()) {
+      authenticatedUser = await window.GoogleBackend.loginUser(uInput, pInput);
+    }
+
+    // Fallback authentication check if offline or demo
+    if (!authenticatedUser) {
+      if ((uInput.toLowerCase() === 'admin' && pInput === 'admin') || (uInput.toLowerCase() === 'superadmin' && pInput === 'admin123')) {
+        authenticatedUser = {
+          corpId: uInput,
+          userId: uInput,
+          name: 'Administrator Korporat',
+          company: 'PT Laksana Software Solutions',
+          role: 'Super Admin Korporat',
+          pin: '123456'
+        };
+      }
+    }
+
+    if (authenticatedUser) {
+      store.user = authenticatedUser;
+      store.user.isLoggedIn = true;
+
+      localStorage.setItem('laksanasoft_mobile_session', JSON.stringify(authenticatedUser));
+      showMobileToast(`Login Berhasil! Selamat datang, ${authenticatedUser.name}`, "success");
+
+      const loginView = document.getElementById('view-login');
+      const appView = document.getElementById('view-app');
+      if (loginView) loginView.classList.add('hidden');
+      if (appView) appView.classList.remove('hidden');
+
+      const badgeEl = document.getElementById('mobile-user-badge');
+      if (badgeEl) badgeEl.textContent = store.user.userId || 'admin';
+
+      initMobileStore();
+    } else {
+      showMobileToast("Username atau Password Salah! Periksa data spreadsheet.", "error");
+    }
+  }
+
+  function logout() {
+    localStorage.removeItem('laksanasoft_mobile_session');
+    store.user.isLoggedIn = false;
+
+    showMobileToast("Anda telah keluar dari akun korporat.", "info");
+
+    const loginView = document.getElementById('view-login');
+    const appView = document.getElementById('view-app');
+    if (loginView) loginView.classList.remove('hidden');
+    if (appView) appView.classList.add('hidden');
   }
 
   // Normalizers
@@ -294,7 +390,6 @@
     const tax = inv.tax || (inv.amount - subtotal);
     const isPaid = inv.status === 'PAID';
 
-    // Header & Vector Elements
     doc.setFillColor(15, 23, 42);
     doc.rect(30, 30, 535, 60, 'F');
 
@@ -337,7 +432,7 @@
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(71, 85, 105);
-    doc.text("Corporate ID: admin  •  Super Admin Korporat", 40, 150);
+    doc.text(`Corporate ID: ${store.user.userId || 'admin'}  •  ${store.user.role || 'Super Admin Korporat'}`, 40, 150);
 
     doc.setTextColor(100, 116, 139);
     doc.text("No. Invoice:", 380, 120);
@@ -715,7 +810,7 @@
     `).join('');
   }
 
-  // 3. Mobile Requests View (PERMINTAAN LAYANAN TAB)
+  // 3. Mobile Requests View
   function renderMobileRequests() {
     const container = document.getElementById('mobile-requests-list');
     if (!container) return;
@@ -789,7 +884,6 @@
     closeSheet('sheet-new-request');
     showMobileToast(`Permintaan ${newReq.id} berhasil diajukan!`, "success");
 
-    // Telegram Bot Notification Trigger
     const telegramMsg = `<b>📥 NOTIFIKASI PERMINTAAN LAYANAN BARU</b>\n\n` +
       `• <b>ID Permintaan:</b> ${newReq.id}\n` +
       `• <b>Judul:</b> ${newReq.title}\n` +
@@ -916,7 +1010,6 @@
       await window.GoogleBackend.updateProposalStatus({ proposalId: quo.id, status: 'REJECTED', historyItem: historyNote });
     }
 
-    // Telegram Bot Notification Trigger for Rejected Proposal
     const telegramMsg = `<b>❌ NOTIFIKASI PENAWARAN DITOLAK</b>\n\n` +
       `• <b>ID Penawaran:</b> ${quo.id}\n` +
       `• <b>Vendor:</b> ${quo.vendor}\n` +
@@ -1122,7 +1215,6 @@
         `;
       }
 
-      // Telegram Bot Alert Trigger for Successful Payment
       const telegramMsg = `<b>🔔 NOTIFIKASI PEMBAYARAN MASUK</b>\n\n` +
         `• <b>No. Invoice:</b> ${inv.id}\n` +
         `• <b>Vendor:</b> ${inv.vendor}\n` +
@@ -1172,11 +1264,13 @@
 
   // Expose API Object Immediately
   window.mobileApp = {
-    init: async function () {
+    init: function () {
       initPullToRefresh();
       switchMobileTab('home', false);
-      await initMobileStore();
+      checkUserSession();
     },
+    handleLogin: handleLogin,
+    logout: logout,
     switchTab: switchMobileTab,
     goBack: goBackToPreviousTab,
     refreshData: async function () {
@@ -1233,7 +1327,6 @@
         await window.GoogleBackend.updateProposalStatus({ proposalId: quo.id, status: 'APPROVED' });
       }
 
-      // Telegram Bot Alert Trigger for Approved Proposal
       const telegramMsg = `<b>✅ NOTIFIKASI PENAWARAN DISETUJUI</b>\n\n` +
         `• <b>ID Penawaran:</b> ${quo.id}\n` +
         `• <b>Vendor:</b> ${quo.vendor}\n` +
@@ -1263,7 +1356,6 @@
         await window.GoogleBackend.updateProposalStatus({ proposalId: quo.id, status: 'NEGOTIATING', counterPrice: counter });
       }
 
-      // Telegram Bot Alert Trigger for Negotiating Proposal
       const telegramMsg = `<b>🔄 NOTIFIKASI NEGOSIASI PENAWARAN</b>\n\n` +
         `• <b>ID Penawaran:</b> ${quo.id}\n` +
         `• <b>Vendor:</b> ${quo.vendor}\n` +

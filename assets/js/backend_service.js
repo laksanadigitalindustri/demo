@@ -170,6 +170,31 @@
         console.error("Gagal mengupdate Proposal di Google Sheets:", err);
         return null;
       }
+    },
+
+    // 6. User Login Authentication with API Security Token
+    loginUser: async function (username, password) {
+      if (!this.isConfigured()) return null;
+      try {
+        const res = await fetch(GOOGLE_WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            token: API_SECRET_TOKEN,
+            action: "loginUser",
+            username: username,
+            password: password
+          })
+        });
+        const json = await res.json();
+        if (json.status === "SUCCESS" && json.user) {
+          return json.user;
+        }
+        return null;
+      } catch (err) {
+        console.error("Gagal otentikasi login dengan Google Sheets:", err);
+        return null;
+      }
     }
   };
 

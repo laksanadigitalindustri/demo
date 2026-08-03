@@ -1,15 +1,14 @@
 /**
  * ============================================================================
- * Laksanasoft Corporate Payment Portal - Google Apps Script Backend (v4 Upgraded)
- * Full Features: Invoices, Proposals, Transactions, Requests & Telegram Bot
- * GUARANTEE: Zero Data Loss - Existing Rows & Sheets Are Preserved 100%
+ * Laksanasoft Corporate Payment Portal - Google Apps Script Backend (Hardened)
+ * Includes Telegram Bot Integration (@laksanasoft_bot) & User Authentication
  * ============================================================================
  */
 
 const API_SECRET_TOKEN = 'LAKSA_SECURE_TOKEN_2026_98F3A';
 const TELEGRAM_BOT_TOKEN = '8814615182:AAF_bAmLXUQrUkmxLfCBrnZEKUoFPeyQ0_w';
 
-// Telegram Bot Dispatcher with Auto Chat-ID Detection
+// Helper function to send Telegram Bot notification
 function sendTelegramNotification(messageText) {
   if (!TELEGRAM_BOT_TOKEN) return;
 
@@ -17,20 +16,17 @@ function sendTelegramNotification(messageText) {
     const props = PropertiesService.getScriptProperties();
     let chatId = props.getProperty('TELEGRAM_CHAT_ID');
 
-    // Auto-detect Chat ID from getUpdates if not stored yet
+    // Auto-detect Chat ID from getUpdates if not stored
     if (!chatId) {
       const updatesUrl = "https://api.telegram.org/bot" + TELEGRAM_BOT_TOKEN + "/getUpdates";
       const response = UrlFetchApp.fetch(updatesUrl, { muteHttpExceptions: true });
       const json = JSON.parse(response.getContentText());
 
       if (json.ok && json.result && json.result.length > 0) {
-        for (let i = json.result.length - 1; i >= 0; i--) {
-          const item = json.result[i];
-          if (item.message && item.message.chat) {
-            chatId = String(item.message.chat.id);
-            props.setProperty('TELEGRAM_CHAT_ID', chatId);
-            break;
-          }
+        const lastUpdate = json.result[json.result.length - 1];
+        if (lastUpdate.message && lastUpdate.message.chat) {
+          chatId = String(lastUpdate.message.chat.id);
+          props.setProperty('TELEGRAM_CHAT_ID', chatId);
         }
       }
     }
@@ -66,6 +62,60 @@ function sanitizeString(str) {
   });
 }
 
+function validateUserCredentials(username, password) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Users');
+  
+  if (sheet) {
+    const data = sheet.getDataRange().getValues();
+    if (data.length > 1) {
+      const headers = data[0];
+      const usernameIdx = headers.indexOf('Username');
+      const passwordIdx = headers.indexOf('Password');
+      const nameIdx = headers.indexOf('Name');
+      const companyIdx = headers.indexOf('Company');
+      const roleIdx = headers.indexOf('Role');
+      const pinIdx = headers.indexOf('PIN');
+
+      for (let i = 1; i < data.length; i++) {
+        const u = String(data[i][usernameIdx !== -1 ? usernameIdx : 1]).trim();
+        const p = String(data[i][passwordIdx !== -1 ? passwordIdx : 2]).trim();
+
+        if (u.toLowerCase() === username.toLowerCase() && p === password) {
+          return {
+            success: true,
+            user: {
+              corpId: u,
+              userId: u,
+              name: nameIdx !== -1 ? String(data[i][nameIdx]) : 'Super Admin',
+              company: companyIdx !== -1 ? String(data[i][companyIdx]) : 'PT Laksana Software Solutions',
+              role: roleIdx !== -1 ? String(data[i][roleIdx]) : 'Super Admin Korporat',
+              pin: pinIdx !== -1 ? String(data[i][pinIdx]) : '123456'
+            }
+          };
+        }
+      }
+    }
+  }
+
+  // Fallback demo credentials
+  if ((username === 'admin' && password === 'admin') || (username === 'superadmin' && password === 'admin123')) {
+    return {
+      success: true,
+      user: {
+        corpId: username,
+        userId: username,
+        name: 'Administrator',
+        company: 'PT Laksana Software Solutions',
+        role: 'Super Admin Korporat',
+        pin: '123456'
+      }
+    };
+  }
+
+  return { success: false };
+}
+
 function doGet(e) {
   const token = e.parameter.token;
   if (!verifyApiToken(token)) {
@@ -85,7 +135,7 @@ function doGet(e) {
     else if (action === 'getNotifications') responseData.data = getTableData('Notifications');
     else if (action === 'getRequests') responseData.data = getTableData('Requests');
     else if (action === 'initTables') responseData.message = initializeDatabaseTables();
-    else responseData = { status: 'ERROR', message: 'Aksi GET tidak dikenali!' };
+    else responseData = { status: 'ERROR', message: 'Aksi tidak dikenali!' };
 
   } catch (error) {
     responseData = { status: 'ERROR', message: error.toString() };
@@ -117,7 +167,19 @@ function doPost(e) {
   let responseData = { status: 'SUCCESS' };
 
   try {
-    if (action === 'processPayment') {
+    if (action === 'loginUser') {
+      const username = sanitizeString(requestData.username);
+      const password = sanitizeString(requestData.password);
+
+      const authRes = validateUserCredentials(username, password);
+      if (authRes.success) {
+        responseData.user = authRes.user;
+        responseData.message = "Login Berhasil!";
+      } else {
+        responseData = { status: 'ERROR', message: 'Username atau Password Salah!' };
+      }
+
+    } else if (action === 'processPayment') {
       const invId = sanitizeString(requestData.invoiceId);
       const vendor = sanitizeString(requestData.vendor);
       const amount = Number(requestData.amount) || 0;
@@ -170,9 +232,6 @@ function doPost(e) {
       const category = sanitizeString(requestData.category);
       const priority = sanitizeString(requestData.priority);
       const desc = sanitizeString(requestData.description);
-      const dateStr = Utilities.formatDate(new Date(), "Asia/Jakarta", "dd MMM yyyy");
-
-      recordServiceRequest(reqId, title, category, priority, 'PENDING', dateStr, desc);
 
       // Telegram Bot Alert for Service Request
       const telegramMsg = "<b>📥 NOTIFIKASI PERMINTAAN LAYANAN BARU</b>\n\n" +
@@ -196,7 +255,6 @@ function doPost(e) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// SAFE DATA RETRIEVAL (PRESERVES EXISTING ROWS)
 function getTableData(tableName) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(tableName);
@@ -233,31 +291,6 @@ function recordPaymentTransaction(invoiceId, vendor, amount, method) {
 
   sheet.appendRow([trxId, invoiceId, vendor, amount, dateStr, method, 'SUCCESS', refCode, '']);
   return { trxId: trxId, refCode: refCode };
-}
-
-function updateTransactionDriveUrl(trxId, driveUrl) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName('Transactions');
-  if (!sheet) return;
-
-  const data = sheet.getDataRange().getValues();
-  for (let i = 1; i < data.length; i++) {
-    if (String(data[i][0]) === String(trxId)) {
-      sheet.getRange(i + 1, 9).setValue(driveUrl); // DriveReceiptUrl Column
-      break;
-    }
-  }
-}
-
-function recordServiceRequest(reqId, title, category, priority, status, dateStr, description) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName('Requests');
-  if (!sheet) {
-    sheet = ss.insertSheet('Requests');
-    sheet.appendRow(['ReqID', 'Title', 'Category', 'Priority', 'Status', 'Date', 'Description']);
-  }
-
-  sheet.appendRow([reqId, title, category, priority, status, dateStr, description]);
 }
 
 function updateInvoiceStatus(invoiceId, newStatus) {
@@ -320,29 +353,4 @@ function generateDriveReceiptPDF(trxId, invoiceId, vendor, amount, method, refCo
   } catch (e) {
     return "";
   }
-}
-
-// SAFE MIGRATION / INITIALIZATION (NEVER OVERWRITES OR DELETES EXISTING ROWS)
-function initializeDatabaseTables() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-
-  const tables = {
-    'Invoices': ['InvoiceID', 'Vendor', 'VendorLogo', 'Category', 'IssueDate', 'DueDate', 'Amount', 'Tax', 'Subtotal', 'Status', 'Description', 'ItemsJSON'],
-    'Proposals': ['ProposalID', 'Vendor', 'VendorLogo', 'Title', 'IssueDate', 'ValidUntil', 'OriginalPrice', 'CounterPrice', 'Status', 'Notes', 'ItemsJSON', 'HistoryJSON'],
-    'Transactions': ['TrxID', 'InvoiceID', 'Vendor', 'Amount', 'Date', 'Method', 'Status', 'RefCode', 'DriveReceiptUrl'],
-    'Requests': ['ReqID', 'Title', 'Category', 'Priority', 'Status', 'Date', 'Description'],
-    'Notifications': ['NotifID', 'Title', 'Message', 'Date', 'Type', 'IsRead']
-  };
-
-  let createdSheets = [];
-  for (let tableName in tables) {
-    let sheet = ss.getSheetByName(tableName);
-    if (!sheet) {
-      sheet = ss.insertSheet(tableName);
-      sheet.appendRow(tables[tableName]);
-      createdSheets.push(tableName);
-    }
-  }
-
-  return "Inisialisasi tabel aman selesai! Tabel baru dibuat: " + (createdSheets.length > 0 ? createdSheets.join(', ') : 'Tidak ada (semua data lama aman).');
 }

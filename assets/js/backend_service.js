@@ -98,6 +98,22 @@
       }
     },
 
+    // 3. Fetch Users with API Security Token
+    fetchUsers: async function () {
+      if (!this.isConfigured()) return null;
+      try {
+        const res = await fetch(`${GOOGLE_WEB_APP_URL}?action=getUsers&token=${encodeURIComponent(API_SECRET_TOKEN)}`);
+        const json = await res.json();
+        if (json.status === "SUCCESS" && Array.isArray(json.data)) {
+          return json.data;
+        }
+        return null;
+      } catch (err) {
+        console.warn("Gagal terhubung ke Google Sheets Users API:", err);
+        return null;
+      }
+    },
+
     // 3. Fetch Transactions with API Security Token
     fetchTransactions: async function () {
       if (!this.isConfigured()) return null;

@@ -1,7 +1,7 @@
 /**
  * ============================================================================
  * Laksanasoft Corporate Payment Portal - Google Apps Script Backend (Hardened)
- * Includes Telegram Bot Integration (@laksanasoft_bot) & User Authentication
+ * Includes Flexible Sheet User Authentication & Telegram Bot Integration
  * ============================================================================
  */
 
@@ -62,35 +62,64 @@ function sanitizeString(str) {
   });
 }
 
-function validateUserCredentials(username, password) {
+function findSheetFlexible(ss, targetNames) {
+  const sheets = ss.getSheets();
+  for (let i = 0; i < sheets.length; i++) {
+    const name = sheets[i].getName().trim().toLowerCase();
+    for (let j = 0; j < targetNames.length; j++) {
+      if (name === targetNames[j].toLowerCase()) return sheets[i];
+    }
+  }
+  return null;
+}
+
+function findHeaderIdx(headers, aliases) {
+  for (let i = 0; i < headers.length; i++) {
+    const h = String(headers[i]).trim().toLowerCase();
+    for (let j = 0; j < aliases.length; j++) {
+      if (h === aliases[j].toLowerCase()) return i;
+    }
+  }
+  return -1;
+}
+
+function validateUserCredentials(usernameInput, passwordInput) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName('Users');
+  const sheet = findSheetFlexible(ss, ['Users', 'User', 'users', 'Data User', 'Pengguna']);
   
+  const cleanUsername = String(usernameInput || '').trim().toLowerCase();
+  const cleanPassword = String(passwordInput || '').trim();
+
   if (sheet) {
     const data = sheet.getDataRange().getValues();
     if (data.length > 1) {
       const headers = data[0];
-      const usernameIdx = headers.indexOf('Username');
-      const passwordIdx = headers.indexOf('Password');
-      const nameIdx = headers.indexOf('Name');
-      const companyIdx = headers.indexOf('Company');
-      const roleIdx = headers.indexOf('Role');
-      const pinIdx = headers.indexOf('PIN');
+      const usernameIdx = findHeaderIdx(headers, ['Username', 'User', 'UserID', 'ID', 'Nama User']);
+      const passwordIdx = findHeaderIdx(headers, ['Password', 'Pass', 'Pwd', 'Kata Sandi']);
+      const nameIdx = findHeaderIdx(headers, ['Name', 'Nama', 'FullName', 'Nama Lengkap']);
+      const companyIdx = findHeaderIdx(headers, ['Company', 'Perusahaan', 'Instansi', 'PT']);
+      const roleIdx = findHeaderIdx(headers, ['Role', 'Jabatan', 'Level', 'Akses']);
+      const pinIdx = findHeaderIdx(headers, ['PIN', 'Pin', 'PIN Transaksi']);
 
       for (let i = 1; i < data.length; i++) {
-        const u = String(data[i][usernameIdx !== -1 ? usernameIdx : 1]).trim();
-        const p = String(data[i][passwordIdx !== -1 ? passwordIdx : 2]).trim();
+        const uVal = String(data[i][usernameIdx !== -1 ? usernameIdx : 0] || '').trim();
+        const pVal = String(data[i][passwordIdx !== -1 ? passwordIdx : 1] || '').trim();
 
-        if (u.toLowerCase() === username.toLowerCase() && p === password) {
+        if (uVal.toLowerCase() === cleanUsername && pVal === cleanPassword) {
+          const nameVal = nameIdx !== -1 ? String(data[i][nameIdx]).trim() : uVal;
+          const companyVal = companyIdx !== -1 ? String(data[i][companyIdx]).trim() : 'PT Laksana Software Solutions';
+          const roleVal = roleIdx !== -1 ? String(data[i][roleIdx]).trim() : 'Super Admin Korporat';
+          const pinVal = pinIdx !== -1 ? String(data[i][pinIdx]).trim() : '123456';
+
           return {
             success: true,
             user: {
-              corpId: u,
-              userId: u,
-              name: nameIdx !== -1 ? String(data[i][nameIdx]) : 'Super Admin',
-              company: companyIdx !== -1 ? String(data[i][companyIdx]) : 'PT Laksana Software Solutions',
-              role: roleIdx !== -1 ? String(data[i][roleIdx]) : 'Super Admin Korporat',
-              pin: pinIdx !== -1 ? String(data[i][pinIdx]) : '123456'
+              corpId: uVal,
+              userId: uVal,
+              name: nameVal || uVal,
+              company: companyVal || 'PT Laksana Software Solutions',
+              role: roleVal || 'Super Admin Korporat',
+              pin: pinVal || '123456'
             }
           };
         }
@@ -99,12 +128,12 @@ function validateUserCredentials(username, password) {
   }
 
   // Fallback demo credentials
-  if ((username === 'admin' && password === 'admin') || (username === 'superadmin' && password === 'admin123')) {
+  if ((cleanUsername === 'admin' && cleanPassword === 'admin') || (cleanUsername === 'superadmin' && cleanPassword === 'admin123')) {
     return {
       success: true,
       user: {
-        corpId: username,
-        userId: username,
+        corpId: cleanUsername,
+        userId: cleanUsername,
         name: 'Administrator',
         company: 'PT Laksana Software Solutions',
         role: 'Super Admin Korporat',
@@ -134,6 +163,7 @@ function doGet(e) {
     else if (action === 'getTransactions') responseData.data = getTableData('Transactions');
     else if (action === 'getNotifications') responseData.data = getTableData('Notifications');
     else if (action === 'getRequests') responseData.data = getTableData('Requests');
+    else if (action === 'getUsers') responseData.data = getTableData('Users');
     else if (action === 'initTables') responseData.message = initializeDatabaseTables();
     else responseData = { status: 'ERROR', message: 'Aksi tidak dikenali!' };
 
@@ -257,7 +287,7 @@ function doPost(e) {
 
 function getTableData(tableName) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(tableName);
+  const sheet = findSheetFlexible(ss, [tableName, tableName.slice(0, -1), 'Data ' + tableName]);
   if (!sheet) return [];
 
   const data = sheet.getDataRange().getValues();
@@ -269,9 +299,7 @@ function getTableData(tableName) {
   return rows.map(row => {
     let obj = {};
     headers.forEach((header, index) => {
-      if (header !== 'PasswordHash' && header !== 'PINHash') {
-        obj[header] = row[index];
-      }
+      obj[header] = row[index];
     });
     return obj;
   });
@@ -279,7 +307,7 @@ function getTableData(tableName) {
 
 function recordPaymentTransaction(invoiceId, vendor, amount, method) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName('Transactions');
+  let sheet = findSheetFlexible(ss, ['Transactions', 'Transaction', 'Data Transactions']);
   if (!sheet) {
     sheet = ss.insertSheet('Transactions');
     sheet.appendRow(['TrxID', 'InvoiceID', 'Vendor', 'Amount', 'Date', 'Method', 'Status', 'RefCode', 'DriveReceiptUrl']);
@@ -295,13 +323,13 @@ function recordPaymentTransaction(invoiceId, vendor, amount, method) {
 
 function updateInvoiceStatus(invoiceId, newStatus) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName('Invoices');
+  const sheet = findSheetFlexible(ss, ['Invoices', 'Invoice', 'Data Invoices']);
   if (!sheet) return;
 
   const data = sheet.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
     if (String(data[i][0]) === String(invoiceId)) {
-      sheet.getRange(i + 1, 7).setValue(newStatus); // Status Column
+      sheet.getRange(i + 1, 7).setValue(newStatus);
       break;
     }
   }
@@ -309,13 +337,13 @@ function updateInvoiceStatus(invoiceId, newStatus) {
 
 function updateProposalRecord(proposalId, newStatus, counterPrice, historyItem) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName('Proposals');
+  const sheet = findSheetFlexible(ss, ['Proposals', 'Proposal', 'Data Proposals']);
   if (!sheet) return;
 
   const data = sheet.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
     if (String(data[i][0]) === String(proposalId)) {
-      sheet.getRange(i + 1, 7).setValue(newStatus); // Status Column
+      sheet.getRange(i + 1, 7).setValue(newStatus);
       if (counterPrice) sheet.getRange(i + 1, 6).setValue(counterPrice);
 
       if (historyItem) {

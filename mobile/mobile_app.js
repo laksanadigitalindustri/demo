@@ -117,6 +117,27 @@
 
     if (window.GoogleBackend && window.GoogleBackend.isConfigured()) {
       authenticatedUser = await window.GoogleBackend.loginUser(uInput, pInput);
+
+      if (!authenticatedUser) {
+        const remoteUsers = await window.GoogleBackend.fetchUsers();
+        if (remoteUsers && Array.isArray(remoteUsers)) {
+          const matched = remoteUsers.find(row => {
+            const u = String(row.Username || row.username || row.User || row.UserID || row.ID || '').trim().toLowerCase();
+            const p = String(row.Password || row.password || row.Pass || row.Pwd || '').trim();
+            return u === uInput.toLowerCase() && p === pInput;
+          });
+          if (matched) {
+            authenticatedUser = {
+              corpId: String(matched.Username || matched.username || matched.User || uInput),
+              userId: String(matched.Username || matched.username || matched.User || uInput),
+              name: String(matched.Name || matched.name || matched.Nama || uInput),
+              company: String(matched.Company || matched.company || matched.Perusahaan || 'PT Laksana Software Solutions'),
+              role: String(matched.Role || matched.role || matched.Jabatan || 'Super Admin Korporat'),
+              pin: String(matched.PIN || matched.pin || matched.Pin || '123456')
+            };
+          }
+        }
+      }
     }
 
     // Fallback authentication check if offline or demo

@@ -1,7 +1,7 @@
 /**
  * ============================================================================
- * Laksanasoft Corporate Payment Portal - Google Apps Script Backend (Hardened)
- * Real-Time Chat Engine, Per-User Strict Data Isolation & Admin Management
+ * Laksanasoft Corporate Payment Portal - Google Apps Script Backend (Hardened v3)
+ * Real-Time Chat Engine, Vendor/TargetUser Isolation & Full Admin Control Suite
  * ============================================================================
  */
 
@@ -83,7 +83,7 @@ function findHeaderIdx(headers, aliases) {
   return -1;
 }
 
-// Dedicated Single-User Account Roles System
+// System Roles DB
 const SYSTEM_ROLES_DB = [
   {
     username: 'admin',
@@ -95,7 +95,8 @@ const SYSTEM_ROLES_DB = [
       company: 'PT Laksana Software Solutions',
       role: 'Super Admin Korporat',
       roleType: 'ADMIN',
-      pin: '123456'
+      pin: '123456',
+      status: 'ACTIVE'
     }
   },
   {
@@ -108,7 +109,8 @@ const SYSTEM_ROLES_DB = [
       company: 'PT Laksana Digital Industri',
       role: 'Client Korporat',
       roleType: 'CLIENT',
-      pin: '123456'
+      pin: '123456',
+      status: 'ACTIVE'
     }
   },
   {
@@ -121,7 +123,8 @@ const SYSTEM_ROLES_DB = [
       company: 'PT Cloud Hostindo',
       role: 'Vendor / Supplier',
       roleType: 'VENDOR',
-      pin: '654321'
+      pin: '654321',
+      status: 'ACTIVE'
     }
   },
   {
@@ -134,7 +137,8 @@ const SYSTEM_ROLES_DB = [
       company: 'PT Mitra Digital Asia',
       role: 'Mitra Strategis',
       roleType: 'MITRA',
-      pin: '888888'
+      pin: '888888',
+      status: 'ACTIVE'
     }
   }
 ];
@@ -148,7 +152,7 @@ function validateUserCredentials(usernameInput, passwordInput) {
 
   // 1. Check Google Sheets Users Table
   if (sheet) {
-    const data = sheet.getDataRange().getValues();
+    const data = sheet.getDataRange().getDisplayValues();
     if (data.length > 1) {
       const headers = data[0];
       const usernameIdx = findHeaderIdx(headers, ['Username', 'User', 'UserID', 'ID', 'Nama User']);
@@ -157,6 +161,7 @@ function validateUserCredentials(usernameInput, passwordInput) {
       const companyIdx = findHeaderIdx(headers, ['Company', 'Perusahaan', 'Instansi', 'PT']);
       const roleIdx = findHeaderIdx(headers, ['Role', 'Jabatan', 'Level', 'Akses']);
       const pinIdx = findHeaderIdx(headers, ['PIN', 'Pin', 'PIN Transaksi']);
+      const statusIdx = findHeaderIdx(headers, ['Status', 'State', 'Kondisi']);
 
       for (let i = 1; i < data.length; i++) {
         const uVal = String(data[i][usernameIdx !== -1 ? usernameIdx : 0] || '').trim();
@@ -167,6 +172,11 @@ function validateUserCredentials(usernameInput, passwordInput) {
           const companyVal = companyIdx !== -1 ? String(data[i][companyIdx]).trim() : 'PT Laksana Software Solutions';
           let roleVal = roleIdx !== -1 ? String(data[i][roleIdx]).trim() : 'Client Korporat';
           const pinVal = pinIdx !== -1 ? String(data[i][pinIdx]).trim() : '123456';
+          const statusVal = statusIdx !== -1 ? String(data[i][statusIdx]).trim().toUpperCase() : 'ACTIVE';
+
+          if (statusVal === 'SUSPENDED' || statusVal === 'NONACTIVE') {
+            return { success: false, message: 'Akun Anda ditangguhkan oleh Super Admin.' };
+          }
 
           let roleType = 'CLIENT';
           if (roleVal.toLowerCase().includes('admin')) roleType = 'ADMIN';
@@ -182,7 +192,8 @@ function validateUserCredentials(usernameInput, passwordInput) {
               company: companyVal || 'PT Laksana Software Solutions',
               role: roleVal || 'Client Korporat',
               roleType: roleType,
-              pin: pinVal || '123456'
+              pin: pinVal || '123456',
+              status: statusVal
             }
           };
         }
@@ -190,7 +201,7 @@ function validateUserCredentials(usernameInput, passwordInput) {
     }
   }
 
-  // 2. Check Dedicated System Roles DB
+  // 2. Check System Roles DB
   for (let k = 0; k < SYSTEM_ROLES_DB.length; k++) {
     if (SYSTEM_ROLES_DB[k].username.toLowerCase() === cleanUsername && SYSTEM_ROLES_DB[k].password === cleanPassword) {
       return {
@@ -200,7 +211,7 @@ function validateUserCredentials(usernameInput, passwordInput) {
     }
   }
 
-  return { success: false };
+  return { success: false, message: 'Username atau Password Salah!' };
 }
 
 function doGet(e) {
@@ -234,8 +245,9 @@ function doGet(e) {
         responseData.data = allProposals;
       } else {
         responseData.data = allProposals.filter(quo => {
-          const u = String(quo.UserId || quo.userId || quo.Vendor || '').toLowerCase();
-          return u === userId.toLowerCase();
+          const u = String(quo.UserId || quo.userId || quo.TargetUserId || '').toLowerCase();
+          const v = String(quo.VendorId || quo.vendorId || quo.Vendor || '').toLowerCase();
+          return u === userId.toLowerCase() || v === userId.toLowerCase();
         });
       }
     } else if (action === 'getTransactions') {
@@ -253,9 +265,34 @@ function doGet(e) {
         });
       }
     } else if (action === 'getUsers') {
-      responseData.data = getTableData('Users');
+      const sheetUsers = getTableData('Users');
+      const map = new Map();
+      SYSTEM_ROLES_DB.forEach(s => map.set(s.username.toLowerCase(), s.userData));
+      sheetUsers.forEach(u => {
+        const uname = String(u.Username || u.username || u.User || '').toLowerCase();
+        if (uname) {
+          map.set(uname, {
+            corpId: uname,
+            userId: uname,
+            name: String(u.Name || u.name || uname),
+            company: String(u.Company || u.company || 'PT Laksana Digital Industri'),
+            role: String(u.Role || u.role || 'Client Korporat'),
+            roleType: String(u.Role || u.role || '').toLowerCase().includes('admin') ? 'ADMIN' : String(u.Role || '').toLowerCase().includes('vendor') ? 'VENDOR' : String(u.Role || '').toLowerCase().includes('mitra') ? 'MITRA' : 'CLIENT',
+            pin: String(u.PIN || u.pin || '123456'),
+            status: String(u.Status || u.status || 'ACTIVE').toUpperCase()
+          });
+        }
+      });
+      responseData.data = Array.from(map.values());
     } else if (action === 'getChats') {
       responseData.data = getTableData('Chats');
+    } else if (action === 'getUserDataFull') {
+      const targetUser = e.parameter.targetUserId || '';
+      responseData.data = {
+        invoices: getTableData('Invoices').filter(i => String(i.UserId || i.userId || '').toLowerCase() === targetUser.toLowerCase()),
+        proposals: getTableData('Proposals').filter(p => String(p.UserId || p.userId || '').toLowerCase() === targetUser.toLowerCase()),
+        requests: getTableData('Requests').filter(r => String(r.UserId || r.userId || '').toLowerCase() === targetUser.toLowerCase())
+      };
     } else if (action === 'initTables') {
       responseData.message = initializeDatabaseTables();
     } else {
@@ -301,7 +338,7 @@ function doPost(e) {
         responseData.user = authRes.user;
         responseData.message = "Login Berhasil!";
       } else {
-        responseData = { status: 'ERROR', message: 'Username atau Password Salah!' };
+        responseData = { status: 'ERROR', message: authRes.message || 'Username atau Password Salah!' };
       }
 
     } else if (action === 'sendChatMessage') {
@@ -313,9 +350,9 @@ function doPost(e) {
         sanitizeString(requestData.text)
       );
 
-      // Telegram Bot Alert
       const telegramMsg = "<b>💬 PESAN CHAT BARU DIPORTAL</b>\n\n" +
         "• <b>Pengirim:</b> " + sanitizeString(requestData.senderName) + " (" + sanitizeString(requestData.senderRole) + ")\n" +
+        "• <b>Tujuan:</b> " + sanitizeString(requestData.recipientId) + "\n" +
         "• <b>Pesan:</b> " + sanitizeString(requestData.text) + "\n" +
         "• <b>Waktu:</b> " + chatRes.timestamp;
       sendTelegramNotification(telegramMsg);
@@ -324,7 +361,7 @@ function doPost(e) {
       responseData.message = "Pesan terkirim!";
 
     } else if (action === 'createUser') {
-      const userRes = recordNewUser(
+      recordNewUser(
         sanitizeString(requestData.username),
         sanitizeString(requestData.password),
         sanitizeString(requestData.name),
@@ -334,10 +371,22 @@ function doPost(e) {
       );
       responseData.message = "Pengguna berhasil didaftarkan ke spreadsheet!";
 
+    } else if (action === 'updateUser') {
+      updateUserRecord(sanitizeString(requestData.username), requestData);
+      responseData.message = "Data pengguna berhasil diperbarui oleh Super Admin!";
+
+    } else if (action === 'deleteUser') {
+      deleteUserRecord(sanitizeString(requestData.username));
+      responseData.message = "Pengguna berhasil dihapus!";
+
     } else if (action === 'createInvoice') {
       const invRes = recordNewInvoice(requestData);
       responseData.invoiceId = invRes.invoiceId;
       responseData.message = "Invoice baru berhasil dibuat!";
+
+    } else if (action === 'deleteInvoice') {
+      deleteInvoiceRecord(sanitizeString(requestData.invoiceId));
+      responseData.message = "Invoice berhasil dihapus oleh Super Admin!";
 
     } else if (action === 'processPayment') {
       const invId = sanitizeString(requestData.invoiceId);
@@ -351,7 +400,6 @@ function doPost(e) {
       const receiptUrl = generateDriveReceiptPDF(trxResult.trxId, invId, vendor, amount, method, trxResult.refCode);
       updateTransactionDriveUrl(trxResult.trxId, receiptUrl);
 
-      // Telegram Bot Alert
       const telegramMsg = "<b>🔔 NOTIFIKASI PEMBAYARAN MASUK</b>\n\n" +
         "• <b>No. Invoice:</b> " + invId + "\n" +
         "• <b>Vendor:</b> " + vendor + "\n" +
@@ -374,7 +422,6 @@ function doPost(e) {
 
       updateProposalRecord(propId, newStatus, counterPrice, historyItem);
 
-      // Telegram Bot Alert for Proposals
       let statusIcon = newStatus === 'APPROVED' ? '✅' : newStatus === 'REJECTED' ? '❌' : '🔄';
       let telegramMsg = "<b>" + statusIcon + " NOTIFIKASI PENAWARAN VENDOR</b>\n\n" +
         "• <b>ID Penawaran:</b> " + propId + "\n" +
@@ -396,7 +443,6 @@ function doPost(e) {
 
       recordServiceRequest(reqId, title, category, priority, desc, userId);
 
-      // Telegram Bot Alert for Service Request
       const telegramMsg = "<b>📥 NOTIFIKASI PERMINTAAN LAYANAN BARU</b>\n\n" +
         "• <b>ID Permintaan:</b> " + reqId + "\n" +
         "• <b>Judul:</b> " + title + "\n" +
@@ -407,6 +453,13 @@ function doPost(e) {
       sendTelegramNotification(telegramMsg);
 
       responseData.message = "Permintaan layanan berhasil terkirim!";
+
+    } else if (action === 'updateRequestStatus') {
+      const reqId = sanitizeString(requestData.reqId);
+      const newStatus = sanitizeString(requestData.status);
+      updateRequestRecord(reqId, newStatus);
+      responseData.message = "Status permintaan berhasil diperbarui oleh Super Admin!";
+
     } else {
       responseData = { status: 'ERROR', message: 'Aksi POST tidak valid!' };
     }
@@ -418,12 +471,13 @@ function doPost(e) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
+// Uses getDisplayValues() to preserve strings, leading zeros, and clean dates
 function getTableData(tableName) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = findSheetFlexible(ss, [tableName, tableName.slice(0, -1), 'Data ' + tableName]);
   if (!sheet) return [];
 
-  const data = sheet.getDataRange().getValues();
+  const data = sheet.getDataRange().getDisplayValues();
   if (data.length <= 1) return [];
 
   const headers = data[0];
@@ -458,11 +512,45 @@ function recordNewUser(username, password, name, role, company, pin) {
   let sheet = findSheetFlexible(ss, ['Users', 'User', 'Data Users']);
   if (!sheet) {
     sheet = ss.insertSheet('Users');
-    sheet.appendRow(['Username', 'Password', 'Name', 'Role', 'Company', 'PIN']);
+    sheet.appendRow(['Username', 'Password', 'Name', 'Role', 'Company', 'PIN', 'Status']);
   }
 
-  sheet.appendRow([username, password, name, role, company || 'PT Laksana Digital Industri', pin || '123456']);
+  sheet.appendRow([username, password, name, role, company || 'PT Laksana Digital Industri', pin || '123456', 'ACTIVE']);
   return true;
+}
+
+function updateUserRecord(username, updateData) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = findSheetFlexible(ss, ['Users', 'User', 'Data Users']);
+  if (!sheet) return false;
+
+  const data = sheet.getDataRange().getDisplayValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim().toLowerCase() === String(username).trim().toLowerCase()) {
+      if (updateData.password) sheet.getRange(i + 1, 2).setValue(updateData.password);
+      if (updateData.name) sheet.getRange(i + 1, 3).setValue(updateData.name);
+      if (updateData.role) sheet.getRange(i + 1, 4).setValue(updateData.role);
+      if (updateData.company) sheet.getRange(i + 1, 5).setValue(updateData.company);
+      if (updateData.pin) sheet.getRange(i + 1, 6).setValue(updateData.pin);
+      if (updateData.status) sheet.getRange(i + 1, 7).setValue(updateData.status);
+      return true;
+    }
+  }
+  return false;
+}
+
+function deleteUserRecord(username) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = findSheetFlexible(ss, ['Users', 'User', 'Data Users']);
+  if (!sheet) return;
+
+  const data = sheet.getDataRange().getDisplayValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim().toLowerCase() === String(username).trim().toLowerCase()) {
+      sheet.deleteRow(i + 1);
+      break;
+    }
+  }
 }
 
 function recordNewInvoice(invData) {
@@ -492,6 +580,20 @@ function recordNewInvoice(invData) {
   return { invoiceId: invId };
 }
 
+function deleteInvoiceRecord(invoiceId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = findSheetFlexible(ss, ['Invoices', 'Invoice', 'Data Invoices']);
+  if (!sheet) return;
+
+  const data = sheet.getDataRange().getDisplayValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === String(invoiceId).trim()) {
+      sheet.deleteRow(i + 1);
+      break;
+    }
+  }
+}
+
 function recordServiceRequest(reqId, title, category, priority, desc, userId) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = findSheetFlexible(ss, ['Requests', 'Request', 'Data Requests']);
@@ -502,6 +604,20 @@ function recordServiceRequest(reqId, title, category, priority, desc, userId) {
 
   const dateStr = Utilities.formatDate(new Date(), "Asia/Jakarta", "yyyy-MM-dd");
   sheet.appendRow([reqId, title, category, priority, 'PENDING', dateStr, desc, userId || 'client1']);
+}
+
+function updateRequestRecord(reqId, newStatus) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = findSheetFlexible(ss, ['Requests', 'Request', 'Data Requests']);
+  if (!sheet) return;
+
+  const data = sheet.getDataRange().getDisplayValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === String(reqId).trim()) {
+      sheet.getRange(i + 1, 5).setValue(newStatus);
+      break;
+    }
+  }
 }
 
 function recordPaymentTransaction(invoiceId, vendor, amount, method) {
@@ -525,10 +641,24 @@ function updateInvoiceStatus(invoiceId, newStatus) {
   const sheet = findSheetFlexible(ss, ['Invoices', 'Invoice', 'Data Invoices']);
   if (!sheet) return;
 
-  const data = sheet.getDataRange().getValues();
+  const data = sheet.getDataRange().getDisplayValues();
   for (let i = 1; i < data.length; i++) {
     if (String(data[i][0]) === String(invoiceId)) {
-      sheet.getRange(i + 1, 10).setValue(newStatus); // Status Column
+      sheet.getRange(i + 1, 10).setValue(newStatus);
+      break;
+    }
+  }
+}
+
+function updateTransactionDriveUrl(trxId, driveUrl) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = findSheetFlexible(ss, ['Transactions', 'Transaction', 'Data Transactions']);
+  if (!sheet) return;
+
+  const data = sheet.getDataRange().getDisplayValues();
+  for (let i = 1; i < data.length; i++) {
+    if (String(data[i][0]) === String(trxId)) {
+      sheet.getRange(i + 1, 9).setValue(driveUrl);
       break;
     }
   }
@@ -539,7 +669,7 @@ function updateProposalRecord(proposalId, newStatus, counterPrice, historyItem) 
   const sheet = findSheetFlexible(ss, ['Proposals', 'Proposal', 'Data Proposals']);
   if (!sheet) return;
 
-  const data = sheet.getDataRange().getValues();
+  const data = sheet.getDataRange().getDisplayValues();
   for (let i = 1; i < data.length; i++) {
     if (String(data[i][0]) === String(proposalId)) {
       sheet.getRange(i + 1, 9).setValue(newStatus);
@@ -580,4 +710,47 @@ function generateDriveReceiptPDF(trxId, invoiceId, vendor, amount, method, refCo
   } catch (e) {
     return "";
   }
+}
+
+function initializeDatabaseTables() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  let uSheet = findSheetFlexible(ss, ['Users', 'User']);
+  if (!uSheet) {
+    uSheet = ss.insertSheet('Users');
+    uSheet.appendRow(['Username', 'Password', 'Name', 'Role', 'Company', 'PIN', 'Status']);
+    SYSTEM_ROLES_DB.forEach(s => uSheet.appendRow([s.username, s.password, s.userData.name, s.userData.role, s.userData.company, s.userData.pin, 'ACTIVE']));
+  }
+
+  let iSheet = findSheetFlexible(ss, ['Invoices', 'Invoice']);
+  if (!iSheet) {
+    iSheet = ss.insertSheet('Invoices');
+    iSheet.appendRow(['InvoiceID', 'Vendor', 'VendorLogo', 'Category', 'IssueDate', 'DueDate', 'Amount', 'Tax', 'Subtotal', 'Status', 'Description', 'UserId']);
+  }
+
+  let pSheet = findSheetFlexible(ss, ['Proposals', 'Proposal']);
+  if (!pSheet) {
+    pSheet = ss.insertSheet('Proposals');
+    pSheet.appendRow(['ProposalID', 'Vendor', 'VendorLogo', 'Title', 'IssueDate', 'ValidUntil', 'OriginalPrice', 'CounterPrice', 'Status', 'Notes', 'UserId', 'HistoryJSON']);
+  }
+
+  let rSheet = findSheetFlexible(ss, ['Requests', 'Request']);
+  if (!rSheet) {
+    rSheet = ss.insertSheet('Requests');
+    rSheet.appendRow(['ReqID', 'Title', 'Category', 'Priority', 'Status', 'Date', 'Description', 'UserId']);
+  }
+
+  let tSheet = findSheetFlexible(ss, ['Transactions', 'Transaction']);
+  if (!tSheet) {
+    tSheet = ss.insertSheet('Transactions');
+    tSheet.appendRow(['TrxID', 'InvoiceID', 'Vendor', 'Amount', 'Date', 'Method', 'Status', 'RefCode', 'DriveReceiptUrl']);
+  }
+
+  let cSheet = findSheetFlexible(ss, ['Chats', 'Chat']);
+  if (!cSheet) {
+    cSheet = ss.insertSheet('Chats');
+    cSheet.appendRow(['ChatID', 'SenderID', 'SenderName', 'SenderRole', 'RecipientID', 'MessageText', 'Timestamp', 'IsRead']);
+  }
+
+  return "Tabel Database Berhasil Diinisialisasi Lengkap!";
 }

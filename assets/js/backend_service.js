@@ -1,7 +1,7 @@
 /* ==========================================================================
    Laksanasoft Payment Portal - Hardened Google Backend Service API Client
    Engine: Google Sheets (Database) & Google Drive (File Storage)
-   Security: Secured with API Token & Real-Time Chat Synchronization
+   CORS Pre-Flight Bypass & Numeric Input Sanitizer
    ========================================================================== */
 
 (function () {
@@ -9,6 +9,13 @@
 
   const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzw_neGT6xgtp14s5NNZ7Q1xEJzfdCIA3BJCyQOjkYpBI8OiXF80eoRmcSBRXItVz5wdQ/exec";
   const API_SECRET_TOKEN = "LAKSA_SECURE_TOKEN_2026_98F3A";
+
+  function cleanNumber(val) {
+    if (typeof val === 'number') return val;
+    if (!val) return 0;
+    const str = String(val).replace(/[^0-9]/g, '');
+    return parseInt(str, 10) || 0;
+  }
 
   window.GoogleBackend = {
     isConfigured: function () {
@@ -38,9 +45,9 @@
               category: String(item.category || item.Category || ''),
               issueDate: String(item.issueDate || item.IssueDate || ''),
               dueDate: String(item.dueDate || item.DueDate || ''),
-              amount: Number(item.amount || item.Amount || 0),
-              tax: Number(item.tax || item.Tax || 0),
-              subtotal: Number(item.subtotal || item.Subtotal || 0),
+              amount: cleanNumber(item.amount || item.Amount),
+              tax: cleanNumber(item.tax || item.Tax),
+              subtotal: cleanNumber(item.subtotal || item.Subtotal),
               status: String(item.status || item.Status || 'UNPAID').toUpperCase(),
               description: String(item.description || item.Description || ''),
               userId: String(item.userId || item.UserId || item.CorpId || ''),
@@ -84,8 +91,8 @@
               title: String(item.title || item.Title || ''),
               issueDate: String(item.issueDate || item.IssueDate || ''),
               validUntil: String(item.validUntil || item.ValidUntil || ''),
-              originalPrice: Number(item.originalPrice || item.OriginalPrice || 0),
-              counterPrice: item.counterPrice || item.CounterPrice ? Number(item.counterPrice || item.CounterPrice) : null,
+              originalPrice: cleanNumber(item.originalPrice || item.OriginalPrice),
+              counterPrice: item.counterPrice || item.CounterPrice ? cleanNumber(item.counterPrice || item.CounterPrice) : null,
               status: String(item.status || item.Status || 'PENDING').toUpperCase(),
               notes: String(item.notes || item.Notes || ''),
               userId: String(item.userId || item.UserId || ''),
@@ -141,13 +148,13 @@
       }
     },
 
-    // 5. Send Real-time Chat Message
+    // 5. Send Real-time Chat Message (Uses text/plain to bypass CORS Pre-flight OPTIONS)
     sendChatMessage: async function (msgData) {
       if (!this.isConfigured()) return null;
       try {
         const res = await fetch(GOOGLE_WEB_APP_URL, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({
             token: API_SECRET_TOKEN,
             action: "sendChatMessage",
@@ -172,7 +179,7 @@
       try {
         const res = await fetch(GOOGLE_WEB_APP_URL, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({
             token: API_SECRET_TOKEN,
             action: "createUser",
@@ -192,19 +199,167 @@
       }
     },
 
-    // 7. Process Payment
+    // 7. Super Admin Update User
+    updateUser: async function (userData) {
+      if (!this.isConfigured()) return null;
+      try {
+        const res = await fetch(GOOGLE_WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            token: API_SECRET_TOKEN,
+            action: "updateUser",
+            username: userData.username,
+            password: userData.password || "",
+            name: userData.name || "",
+            role: userData.role || "",
+            company: userData.company || "",
+            pin: userData.pin || "",
+            status: userData.status || "ACTIVE"
+          })
+        });
+        const json = await res.json();
+        return json.status === "SUCCESS" ? json : null;
+      } catch (err) {
+        console.error("Gagal meng-update data user:", err);
+        return null;
+      }
+    },
+
+    // 8. Super Admin Delete User
+    deleteUser: async function (username) {
+      if (!this.isConfigured()) return null;
+      try {
+        const res = await fetch(GOOGLE_WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            token: API_SECRET_TOKEN,
+            action: "deleteUser",
+            username: username
+          })
+        });
+        const json = await res.json();
+        return json.status === "SUCCESS" ? json : null;
+      } catch (err) {
+        console.error("Gagal menghapus user:", err);
+        return null;
+      }
+    },
+
+    // 9. Super Admin Create Invoice
+    createInvoice: async function (invData) {
+      if (!this.isConfigured()) return null;
+      try {
+        const res = await fetch(GOOGLE_WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            token: API_SECRET_TOKEN,
+            action: "createInvoice",
+            id: invData.id,
+            vendor: invData.vendor,
+            vendorLogo: invData.vendorLogo || 'domain',
+            category: invData.category,
+            issueDate: invData.issueDate,
+            dueDate: invData.dueDate,
+            amount: cleanNumber(invData.amount),
+            tax: cleanNumber(invData.tax),
+            subtotal: cleanNumber(invData.subtotal),
+            description: invData.description,
+            userId: invData.userId
+          })
+        });
+        const json = await res.json();
+        return json.status === "SUCCESS" ? json : null;
+      } catch (err) {
+        console.error("Gagal membuat invoice baru di Google Sheets:", err);
+        return null;
+      }
+    },
+
+    // 10. Super Admin Delete Invoice
+    deleteInvoice: async function (invoiceId) {
+      if (!this.isConfigured()) return null;
+      try {
+        const res = await fetch(GOOGLE_WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            token: API_SECRET_TOKEN,
+            action: "deleteInvoice",
+            invoiceId: invoiceId
+          })
+        });
+        const json = await res.json();
+        return json.status === "SUCCESS" ? json : null;
+      } catch (err) {
+        console.error("Gagal menghapus invoice:", err);
+        return null;
+      }
+    },
+
+    // 11. Create Service Request
+    createServiceRequest: async function (reqData) {
+      if (!this.isConfigured()) return null;
+      try {
+        const res = await fetch(GOOGLE_WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            token: API_SECRET_TOKEN,
+            action: "createServiceRequest",
+            reqId: reqData.id,
+            title: reqData.title,
+            category: reqData.category,
+            priority: reqData.priority,
+            description: reqData.description,
+            userId: reqData.userId
+          })
+        });
+        const json = await res.json();
+        return json.status === "SUCCESS" ? json : null;
+      } catch (err) {
+        console.error("Gagal membuat permintaan layanan:", err);
+        return null;
+      }
+    },
+
+    // 12. Super Admin Update Request Status
+    updateRequestStatus: async function (reqId, status) {
+      if (!this.isConfigured()) return null;
+      try {
+        const res = await fetch(GOOGLE_WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            token: API_SECRET_TOKEN,
+            action: "updateRequestStatus",
+            reqId: reqId,
+            status: status
+          })
+        });
+        const json = await res.json();
+        return json.status === "SUCCESS" ? json : null;
+      } catch (err) {
+        console.error("Gagal meng-update status permintaan:", err);
+        return null;
+      }
+    },
+
+    // 13. Process Payment
     processPayment: async function (paymentData) {
       if (!this.isConfigured()) return null;
       try {
         const res = await fetch(GOOGLE_WEB_APP_URL, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({
             token: API_SECRET_TOKEN,
             action: "processPayment",
             invoiceId: paymentData.invoiceId,
             vendor: paymentData.vendor,
-            amount: paymentData.amount,
+            amount: cleanNumber(paymentData.amount),
             method: paymentData.method
           })
         });
@@ -216,19 +371,19 @@
       }
     },
 
-    // 8. Update Proposal Status
+    // 14. Update Proposal Status
     updateProposalStatus: async function (proposalData) {
       if (!this.isConfigured()) return null;
       try {
         const res = await fetch(GOOGLE_WEB_APP_URL, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({
             token: API_SECRET_TOKEN,
             action: "updateProposalStatus",
             proposalId: proposalData.proposalId,
             status: proposalData.status,
-            counterPrice: proposalData.counterPrice || "",
+            counterPrice: proposalData.counterPrice ? cleanNumber(proposalData.counterPrice) : "",
             historyItem: proposalData.historyItem || null
           })
         });
@@ -240,13 +395,13 @@
       }
     },
 
-    // 9. User Login Authentication
+    // 15. User Login Authentication
     loginUser: async function (username, password) {
       if (!this.isConfigured()) return null;
       try {
         const res = await fetch(GOOGLE_WEB_APP_URL, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({
             token: API_SECRET_TOKEN,
             action: "loginUser",

@@ -148,7 +148,7 @@
             </div>
             <span class="font-extrabold text-xs text-blue-300 uppercase tracking-wider">Super Admin Command Center</span>
           </div>
-          <span class="px-2 py-0.5 rounded-full bg-blue-500/30 text-blue-200 text-[9px] font-bold">LIVE AUDIT & ACC</span>
+          <span class="px-2 py-0.5 rounded-full bg-blue-500/30 text-blue-200 text-[9px] font-bold">FULL ADMIN CONTROL</span>
         </div>
 
         <div class="grid grid-cols-3 gap-2 text-center pt-1">
@@ -241,7 +241,7 @@
         <div id="mobile-requests-list" class="space-y-3"></div>
       </div>
 
-      <!-- 4. REAL-TIME LIVE CHAT TAB CONTENT (For Super Admin & All Users) -->
+      <!-- 4. REAL-TIME LIVE CHAT TAB CONTENT (For Super Admin Multi-User Routing & All Users) -->
       <div id="tab-chat" class="mobile-tab-content space-y-3 hidden">
         <div class="flex items-center justify-between border-b border-slate-200 pb-2">
           <div>
@@ -253,8 +253,20 @@
           </button>
         </div>
 
+        <!-- SUPER ADMIN DEDICATED USER CHAT THREAD SELECTOR (Appears for ADMIN) -->
+        <div id="admin-chat-thread-selector" class="hidden space-y-1 bg-slate-100 p-2.5 rounded-2xl border border-slate-200">
+          <span class="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider block">Pilih Percakapan Pengguna:</span>
+          <div id="admin-user-chat-buttons" class="flex gap-1.5 overflow-x-auto pb-1"></div>
+        </div>
+
+        <!-- ACTIVE CHAT RECIPIENT INDICATOR -->
+        <div id="active-chat-recipient-bar" class="hidden flex items-center justify-between bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-200 text-xs">
+          <span class="text-blue-900 font-bold text-[11px]" id="active-chat-recipient-label">Membalas ke: Semua Pengguna</span>
+          <span class="px-2 py-0.5 bg-blue-600 text-white font-extrabold text-[9px] rounded-full">1-on-1 Chat</span>
+        </div>
+
         <!-- Chat Thread Messages Display Box -->
-        <div id="tab-chat-messages" class="bg-slate-900 text-white p-3 rounded-2xl h-[340px] overflow-y-auto space-y-2.5 text-xs font-medium border border-slate-800 shadow-inner"></div>
+        <div id="tab-chat-messages" class="bg-slate-900 text-white p-3 rounded-2xl h-[320px] overflow-y-auto space-y-2.5 text-xs font-medium border border-slate-800 shadow-inner"></div>
 
         <!-- Quick Reply Suggestions -->
         <div class="flex gap-1.5 overflow-x-auto pb-1 text-[10px]">
@@ -325,11 +337,21 @@
           </div>
           <div>
             <h3 class="font-extrabold text-sm text-slate-900">Pusat ACC & Monitoring Admin</h3>
-            <span class="text-[10px] text-slate-400">Verifikasi manual & persetujuan audit</span>
+            <span class="text-[10px] text-slate-400">Verifikasi manual & pembuatan tagihan/penawaran</span>
           </div>
         </div>
         <button type="button" onclick="mobileApp.closeSheet('sheet-admin-control')" class="text-slate-400">
           <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <!-- SUPER ADMIN QUICK GENERATOR BUTTONS (BUAT INVOICE & BUAT PENAWARAN) -->
+      <div class="grid grid-cols-2 gap-2">
+        <button type="button" onclick="mobileApp.openAdminCreateInvoiceModal()" class="p-2.5 bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-transform">
+          <span class="material-symbols-outlined text-base">post_add</span> + Buat Invoice User
+        </button>
+        <button type="button" onclick="mobileApp.openAdminCreateProposalModal()" class="p-2.5 bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-transform">
+          <span class="material-symbols-outlined text-base">add_task</span> + Buat Penawaran
         </button>
       </div>
 
@@ -338,36 +360,152 @@
           <h4 class="font-extrabold text-slate-900 text-xs flex items-center gap-1.5">
             <span class="material-symbols-outlined text-sm text-emerald-600">verified</span> Daftar ACC Konfirmasi Pembayaran Tagihan:
           </h4>
-          <div id="admin-acc-payment-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+          <div id="admin-acc-payment-list" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
         </div>
 
         <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-2">
           <h4 class="font-extrabold text-slate-900 text-xs flex items-center gap-1.5">
             <span class="material-symbols-outlined text-sm text-purple-600">assignment_turned_in</span> ACC / Status Permintaan Layanan:
           </h4>
-          <div id="admin-acc-requests-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+          <div id="admin-acc-requests-list" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
         </div>
       </div>
 
       <button type="button" onclick="mobileApp.openAdminUserMgmtModal()" class="w-full py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5">
-        <span class="material-symbols-outlined text-sm">person_add</span> Kelola & Tambah Akun Pengguna Baru
+        <span class="material-symbols-outlined text-sm">manage_accounts</span> Kelola & Kontrol Penuh Pengguna
       </button>
     </div>
   </div>
 
-  <!-- SUPER ADMIN BOTTOM SHEET 3: KELOLA & TAMBAH PENGGUNA BARU -->
+  <!-- SUPER ADMIN BOTTOM SHEET: BUAT INVOICE BARU UNTUK USER SPESIFIK -->
+  <div id="sheet-admin-create-inv" class="mobile-bottom-sheet">
+    <div class="mobile-sheet-content space-y-4">
+      <div class="sheet-handle"></div>
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-extrabold text-sm text-slate-900">Terbitkan Invoice Baru untuk Pengguna</h3>
+        <button type="button" onclick="mobileApp.closeSheet('sheet-admin-create-inv')" class="text-slate-400">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="mobileApp.submitAdminNewInvoice(event)" class="space-y-3 text-xs bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">Pilih Pengguna Tujuan (Target User):</label>
+          <select id="admin-inv-target-user" required class="w-full p-2.5 border border-slate-200 rounded-xl bg-white focus:outline-none focus:border-slate-900 font-bold text-slate-900"></select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Vendor Penerbit:</label>
+            <input type="text" id="admin-inv-vendor" placeholder="PT Laksana Software" required class="w-full p-2 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900" />
+          </div>
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Nominal Tagihan (IDR):</label>
+            <input type="number" id="admin-inv-amount" placeholder="misal: 5000000" required class="w-full p-2 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 font-bold" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Kategori Layanan:</label>
+            <select id="admin-inv-category" class="w-full p-2 border border-slate-200 rounded-xl bg-white focus:outline-none focus:border-slate-900">
+              <option value="Cloud Infrastructure">Cloud Infrastructure</option>
+              <option value="Software License">Software License</option>
+              <option value="Security & Network">Security & Network</option>
+              <option value="Technical Support">Technical Support</option>
+            </select>
+          </div>
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Tanggal Jatuh Tempo:</label>
+            <input type="text" id="admin-inv-due" placeholder="misal: 25 Agt 2026" required class="w-full p-2 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900" />
+          </div>
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">Deskripsi Layanan:</label>
+          <textarea id="admin-inv-desc" rows="2" placeholder="Tuliskan rincian layanan tagihan..." required class="w-full p-2 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900"></textarea>
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-blue-700 text-white rounded-xl text-xs font-extrabold shadow-md active:scale-95 transition-transform">
+          Terbitkan Invoice ke Dashboard Pengguna
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SUPER ADMIN BOTTOM SHEET: BUAT PENAWARAN BARU UNTUK USER SPESIFIK -->
+  <div id="sheet-admin-create-quo" class="mobile-bottom-sheet">
+    <div class="mobile-sheet-content space-y-4">
+      <div class="sheet-handle"></div>
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-extrabold text-sm text-slate-900">Kirim Penawaran / Quotation Baru</h3>
+        <button type="button" onclick="mobileApp.closeSheet('sheet-admin-create-quo')" class="text-slate-400">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="mobileApp.submitAdminNewProposal(event)" class="space-y-3 text-xs bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">Pilih Pengguna Tujuan (Target User):</label>
+          <select id="admin-quo-target-user" required class="w-full p-2.5 border border-slate-200 rounded-xl bg-white focus:outline-none focus:border-slate-900 font-bold text-slate-900"></select>
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">Judul Penawaran:</label>
+          <input type="text" id="admin-quo-title" placeholder="misal: Penawaran Lisensi ERP Enterprise 2026" required class="w-full p-2 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Vendor Penerbit:</label>
+            <input type="text" id="admin-quo-vendor" placeholder="PT Laksana Software" required class="w-full p-2 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900" />
+          </div>
+          <div>
+            <label class="font-bold text-slate-700 block mb-1">Harga Penawaran (IDR):</label>
+            <input type="number" id="admin-quo-price" placeholder="misal: 15000000" required class="w-full p-2 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900 font-bold" />
+          </div>
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">Masa Berlaku:</label>
+          <input type="text" id="admin-quo-valid" placeholder="misal: 30 Agt 2026" required class="w-full p-2 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900" />
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-700 block mb-1">Catatan Penawaran:</label>
+          <textarea id="admin-quo-notes" rows="2" placeholder="Catatan atau syarat penawaran..." class="w-full p-2 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900"></textarea>
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-emerald-700 text-white rounded-xl text-xs font-extrabold shadow-md active:scale-95 transition-transform">
+          Kirim Penawaran ke Dashboard Pengguna
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SUPER ADMIN BOTTOM SHEET 3: KELOLA & KONTROL PENUH AKUN PENGGUNA -->
   <div id="sheet-admin-users" class="mobile-bottom-sheet">
     <div class="mobile-sheet-content space-y-4">
       <div class="sheet-handle"></div>
       <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-        <h3 class="font-extrabold text-sm text-slate-900">Kelola Akun Pengguna Portal</h3>
+        <div>
+          <h3 class="font-extrabold text-sm text-slate-900">Kontrol Penuh Pengguna Portal</h3>
+          <span class="text-[10px] text-slate-400">Super Admin User Management & Override</span>
+        </div>
         <button type="button" onclick="mobileApp.closeSheet('sheet-admin-users')" class="text-slate-400">
           <span class="material-symbols-outlined text-lg">close</span>
         </button>
       </div>
 
+      <!-- DAFTAR AKUN PENGGUNA TERDAFTAR WITH FULL CONTROL (EDIT, STATUS, RESET PIN, DELETE) -->
+      <div class="space-y-2 text-xs">
+        <span class="font-extrabold text-slate-900 text-xs block">Daftar Akun Pengguna Aktif & Kontrol Penuh:</span>
+        <div id="admin-registered-users-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+      </div>
+
+      <!-- FORM TAMBAH PENGGUNA BARU -->
       <form onsubmit="mobileApp.addNewUserAccount(event)" class="space-y-3 text-xs bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
-        <span class="font-extrabold text-slate-900 text-xs block">Tambah Pengguna Baru (Data Bersih Terpisah):</span>
+        <span class="font-extrabold text-slate-900 text-xs block">+ Tambah Pengguna Baru (Akun Terisolasi):</span>
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="font-bold text-slate-600 block mb-1">Username:</label>

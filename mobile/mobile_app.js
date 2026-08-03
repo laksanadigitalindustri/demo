@@ -222,9 +222,7 @@
   }
 
   function updateAdminCounters() {
-    if (window.SuperAdminEngine && typeof window.SuperAdminEngine.updateCounters === 'function') {
-      window.SuperAdminEngine.updateCounters(store.invoices, store.proposals);
-    }
+    // Safe no-op for mobile user app (Super Admin suite resides in /admin/)
   }
 
   // SESSION MANAGEMENT: Require login unless previously logged in
@@ -236,16 +234,20 @@
     if (savedSession) {
       try {
         const userData = JSON.parse(savedSession);
-        store.user = userData;
-        store.user.isLoggedIn = true;
+        if (userData.roleType === 'ADMIN' || (userData.userId && userData.userId.toLowerCase() === 'admin')) {
+          localStorage.removeItem('laksanasoft_mobile_session');
+        } else {
+          store.user = userData;
+          store.user.isLoggedIn = true;
 
-        if (loginView) loginView.classList.add('hidden');
-        if (appView) appView.classList.remove('hidden');
+          if (loginView) loginView.classList.add('hidden');
+          if (appView) appView.classList.remove('hidden');
 
-        try { updateUserRoleUI(); } catch (e) {}
-        try { initMobileStore(); } catch (e) {}
-        try { startRealtimeChatSync(); } catch (e) {}
-        return true;
+          try { updateUserRoleUI(); } catch (e) {}
+          try { initMobileStore(); } catch (e) {}
+          try { startRealtimeChatSync(); } catch (e) {}
+          return true;
+        }
       } catch (e) {
         localStorage.removeItem('laksanasoft_mobile_session');
       }
@@ -285,11 +287,19 @@
     const cleanU = uInput.toLowerCase();
     const cleanP = pInput;
 
-    // 1. Instant check against Pre-configured System Roles DB
+    if (cleanU === 'admin') {
+      showMobileToast("Akses Super Admin telah dipindahkan ke Portal Khusus Admin di /admin/index.html", "info");
+      setTimeout(() => {
+        window.location.href = '../admin/index.html';
+      }, 1500);
+      return;
+    }
+
+    // 1. Instant check against Pre-configured System Roles DB for Mobile Users
     for (let i = 0; i < SYSTEM_ROLES_DB.length; i++) {
       const sysU = SYSTEM_ROLES_DB[i].username.toLowerCase();
       const sysP = SYSTEM_ROLES_DB[i].password;
-      if (sysU === cleanU && (sysP === cleanP || cleanP === 'admin' || cleanP === '123456' || cleanP === 'client123' || cleanP === 'vendor123' || cleanP === 'mitra123')) {
+      if (sysU === cleanU && (sysP === cleanP || cleanP === '123456' || cleanP === 'client123' || cleanP === 'vendor123' || cleanP === 'mitra123')) {
         authenticatedUser = JSON.parse(JSON.stringify(SYSTEM_ROLES_DB[i].userData));
         break;
       }
@@ -360,6 +370,7 @@
 
       try {
         localStorage.setItem('laksanasoft_mobile_session', JSON.stringify(authenticatedUser));
+        localStorage.setItem('laksanasoft_global_session', JSON.stringify(authenticatedUser));
       } catch (e) {}
 
       showMobileToast(`Login Berhasil! Selamat datang, ${authenticatedUser.name}`, "success");
@@ -520,49 +531,20 @@
     }
 
     if (!synced) {
-      // Local Dataset Isolation Check
-      if (currentRoleType === 'ADMIN') {
-        store.invoices = getAllSystemInvoicesForAdmin();
-        store.proposals = getAllSystemProposalsForAdmin();
-      } else if (currentUserId === 'client1') {
-        store.invoices = getDefaultClient1Invoices();
-        store.proposals = [];
-      } else if (currentUserId === 'vendor1') {
-        store.invoices = getDefaultVendor1Invoices();
-        store.proposals = getDefaultVendor1Proposals();
-      } else {
-        // Newly created users start with 100% CLEAN EMPTY DATA
-        const userSavedInv = localStorage.getItem(`laksanasoft_user_inv_${currentUserId}`);
-        store.invoices = userSavedInv ? JSON.parse(userSavedInv) : [];
+      // Production User Dataset Isolation Check
+      const userSavedInv = localStorage.getItem(`laksanasoft_user_inv_${currentUserId}`);
+      store.invoices = userSavedInv ? JSON.parse(userSavedInv) : [];
 
-        const userSavedProp = localStorage.getItem(`laksanasoft_user_prop_${currentUserId}`);
-        store.proposals = userSavedProp ? JSON.parse(userSavedProp) : [];
-      }
+      const userSavedProp = localStorage.getItem(`laksanasoft_user_prop_${currentUserId}`);
+      store.proposals = userSavedProp ? JSON.parse(userSavedProp) : [];
     }
 
-    // Service Requests for current user / Admin
-    if (currentRoleType === 'ADMIN') {
-      store.requests = getAllSystemRequestsForAdmin();
+    // Service Requests for current user
+    const savedReq = localStorage.getItem(`laksanasoft_requests_${currentUserId}`);
+    if (savedReq) {
+      try { store.requests = JSON.parse(savedReq); } catch (e) { store.requests = []; }
     } else {
-      const savedReq = localStorage.getItem(`laksanasoft_requests_${currentUserId}`);
-      if (savedReq) {
-        try { store.requests = JSON.parse(savedReq); } catch (e) { store.requests = []; }
-      } else if (currentUserId === 'client1') {
-        store.requests = [
-          {
-            id: 'REQ-2026-0801',
-            title: 'Permintaan Upgrade Kapasitas Dedicated Cloud Server 128GB',
-            category: 'Cloud Infrastructure',
-            priority: 'HIGH',
-            status: 'IN_PROGRESS',
-            date: '02 Agt 2026',
-            description: 'Pengajuan penambahan RAM & NVMe SSD untuk cluster database utama.',
-            userId: 'client1'
-          }
-        ];
-      } else {
-        store.requests = [];
-      }
+      store.requests = [];
     }
 
     store.isLoading = false;
@@ -1943,8 +1925,18 @@
     }
   };
 
-  document.addEventListener('DOMContentLoaded', function () {
-    window.mobileApp.init();
-  });
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    setTimeout(function () {
+      if (window.mobileApp && typeof window.mobileApp.init === 'function') {
+        window.mobileApp.init();
+      }
+    }, 1);
+  } else {
+    document.addEventListener('DOMContentLoaded', function () {
+      if (window.mobileApp && typeof window.mobileApp.init === 'function') {
+        window.mobileApp.init();
+      }
+    });
+  }
 
 })();

@@ -67,29 +67,6 @@
         <span class="material-symbols-outlined text-base">login</span> Masuk Portal Korporat
       </button>
     </form>
-
-    <!-- QUICK ROLE DEMO SELECTOR CARDS -->
-    <div class="bg-slate-800/40 p-3.5 rounded-2xl border border-slate-800 text-[11px] space-y-2">
-      <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block text-center">Pilih Akun Uji Coba Per Peran (Role):</span>
-      <div class="grid grid-cols-2 gap-1.5">
-        <button type="button" onclick="mobileApp.fillDemoLogin('admin', 'admin')" class="p-2 bg-slate-900/80 rounded-xl border border-blue-500/50 text-left hover:border-blue-400 transition-all">
-          <div class="font-extrabold text-blue-400">🛡️ Super Admin</div>
-          <div class="text-[9px] text-slate-400">admin / admin</div>
-        </button>
-        <button type="button" onclick="mobileApp.fillDemoLogin('client1', 'client123')" class="p-2 bg-slate-900/80 rounded-xl border border-slate-700/60 text-left hover:border-emerald-500 transition-all">
-          <div class="font-extrabold text-emerald-400">👤 Klien Korporat</div>
-          <div class="text-[9px] text-slate-400">client1 / client123</div>
-        </button>
-        <button type="button" onclick="mobileApp.fillDemoLogin('vendor1', 'vendor123')" class="p-2 bg-slate-900/80 rounded-xl border border-slate-700/60 text-left hover:border-amber-500 transition-all">
-          <div class="font-extrabold text-amber-400">🏢 Vendor / Supplier</div>
-          <div class="text-[9px] text-slate-400">vendor1 / vendor123</div>
-        </button>
-        <button type="button" onclick="mobileApp.fillDemoLogin('mitra1', 'mitra123')" class="p-2 bg-slate-900/80 rounded-xl border border-slate-700/60 text-left hover:border-purple-400 transition-all">
-          <div class="font-extrabold text-purple-400">🤝 Mitra Strategis</div>
-          <div class="text-[9px] text-slate-400">mitra1 / mitra123</div>
-        </button>
-      </div>
-    </div>
   </div>
 
   <!-- 2. MAIN MOBILE APPLICATION DASHBOARD VIEW (Appears when logged in) -->
@@ -138,36 +115,6 @@
 
     <!-- MAIN MOBILE CONTENT CONTAINER -->
     <main class="p-4 space-y-4">
-
-      <!-- SUPER ADMIN MONITORING & ACC COMMAND BANNER (Appears when logged in as ADMIN) -->
-      <div id="super-admin-banner" class="hidden bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 text-white p-3.5 rounded-2xl shadow-md border border-blue-500/30 space-y-2">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
-            <div class="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
-              <span class="material-symbols-outlined text-sm">admin_panel_settings</span>
-            </div>
-            <span class="font-extrabold text-xs text-blue-300 uppercase tracking-wider">Super Admin Command Center</span>
-          </div>
-          <span class="px-2 py-0.5 rounded-full bg-blue-500/30 text-blue-200 text-[9px] font-bold">FULL ADMIN CONTROL</span>
-        </div>
-
-        <div class="grid grid-cols-3 gap-2 text-center pt-1">
-          <button type="button" onclick="mobileApp.openAdminControlModal()" class="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-all text-left">
-            <span class="text-[9px] text-blue-300 font-semibold block">ACC Pembayaran:</span>
-            <span id="admin-pending-pay-count" class="font-extrabold text-xs text-amber-300">0 Tagihan</span>
-          </button>
-          <button type="button" onclick="mobileApp.openAdminControlModal()" class="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-all text-left">
-            <span class="text-[9px] text-blue-300 font-semibold block">ACC Penawaran:</span>
-            <span id="admin-pending-quo-count" class="font-extrabold text-xs text-emerald-300">0 Vendor</span>
-          </button>
-          <button type="button" onclick="mobileApp.switchTab('chat')" class="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-all text-left">
-            <span class="text-[9px] text-blue-300 font-semibold block">Balas Chat:</span>
-            <span class="font-extrabold text-xs text-blue-300 flex items-center gap-1">
-              <span class="material-symbols-outlined text-xs">forum</span> Live Chat
-            </span>
-          </button>
-        </div>
-      </div>
 
       <!-- 1. HOME TAB CONTENT -->
       <div id="tab-home" class="mobile-tab-content space-y-4">
@@ -982,9 +929,8 @@
     <span id="mobile-toast-msg">Pemberitahuan</span>
   </div>
 
-  <!-- Shared Backend API Bridge, Dedicated Super Admin Engine & Mobile App Engine -->
+  <!-- Shared Backend API Bridge & Mobile App Engine -->
   <script src="../assets/js/backend_service.js"></script>
-  <script src="admin_app.js"></script>
   <script src="mobile_app.js"></script>
 
   <!-- PWA Service Worker Registration -->

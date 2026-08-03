@@ -1,7 +1,7 @@
 /* ==========================================================================
-   Laksanasoft Payment Portal - Hardened Google Backend Service API Client
-   Engine: Google Sheets (Database) & Google Drive (File Storage)
-   CORS Pre-Flight Bypass & Numeric Input Sanitizer
+   Laksanasoft Payment Portal - Hardened Google Backend Service API Client (v4)
+   Full 1-to-1 Google Apps Script Synchronization Engine
+   CORS Pre-Flight Bypass & Cell Formatting Protection
    ========================================================================== */
 
 (function () {
@@ -108,7 +108,60 @@
       }
     },
 
-    // 3. Fetch Users List
+    // 3. Fetch Service Requests filtered by User ID & Role
+    fetchRequests: async function (userId = '', roleType = 'CLIENT') {
+      if (!this.isConfigured()) return null;
+      try {
+        const url = `${GOOGLE_WEB_APP_URL}?action=getRequests&token=${encodeURIComponent(API_SECRET_TOKEN)}&userId=${encodeURIComponent(userId)}&roleType=${encodeURIComponent(roleType)}`;
+        const res = await fetch(url);
+        const json = await res.json();
+        if (json.status === "SUCCESS" && Array.isArray(json.data)) {
+          return json.data.map(item => ({
+            id: String(item.ReqID || item.reqId || item.id || ''),
+            title: String(item.Title || item.title || ''),
+            category: String(item.Category || item.category || ''),
+            priority: String(item.Priority || item.priority || 'NORMAL'),
+            status: String(item.Status || item.status || 'PENDING').toUpperCase(),
+            date: String(item.Date || item.date || ''),
+            description: String(item.Description || item.description || ''),
+            userId: String(item.UserId || item.userId || '')
+          }));
+        }
+        return null;
+      } catch (err) {
+        console.warn("Gagal terhubung ke Google Sheets Requests API:", err);
+        return null;
+      }
+    },
+
+    // 4. Fetch Transactions History
+    fetchTransactions: async function () {
+      if (!this.isConfigured()) return null;
+      try {
+        const url = `${GOOGLE_WEB_APP_URL}?action=getTransactions&token=${encodeURIComponent(API_SECRET_TOKEN)}`;
+        const res = await fetch(url);
+        const json = await res.json();
+        if (json.status === "SUCCESS" && Array.isArray(json.data)) {
+          return json.data.map(item => ({
+            trxId: String(item.TrxID || item.trxId || ''),
+            invoiceId: String(item.InvoiceID || item.invoiceId || ''),
+            vendor: String(item.Vendor || item.vendor || ''),
+            amount: cleanNumber(item.Amount || item.amount),
+            date: String(item.Date || item.date || ''),
+            method: String(item.Method || item.method || ''),
+            status: String(item.Status || item.status || 'SUCCESS').toUpperCase(),
+            refCode: String(item.RefCode || item.refCode || ''),
+            driveReceiptUrl: String(item.DriveReceiptUrl || item.driveReceiptUrl || '')
+          }));
+        }
+        return null;
+      } catch (err) {
+        console.warn("Gagal terhubung ke Google Sheets Transactions API:", err);
+        return null;
+      }
+    },
+
+    // 5. Fetch Users List
     fetchUsers: async function () {
       if (!this.isConfigured()) return null;
       try {
@@ -124,7 +177,7 @@
       }
     },
 
-    // 4. Fetch Real-time Live Chats
+    // 6. Fetch Real-time Live Chats
     fetchChats: async function () {
       if (!this.isConfigured()) return null;
       try {
@@ -148,7 +201,7 @@
       }
     },
 
-    // 5. Send Real-time Chat Message (Uses text/plain to bypass CORS Pre-flight OPTIONS)
+    // 7. Send Real-time Chat Message (Uses text/plain to bypass CORS Pre-flight OPTIONS)
     sendChatMessage: async function (msgData) {
       if (!this.isConfigured()) return null;
       try {
@@ -173,7 +226,7 @@
       }
     },
 
-    // 6. User Registration Endpoint
+    // 8. User Registration Endpoint
     createUser: async function (userData) {
       if (!this.isConfigured()) return null;
       try {
@@ -199,7 +252,7 @@
       }
     },
 
-    // 7. Super Admin Update User
+    // 9. Super Admin Update User
     updateUser: async function (userData) {
       if (!this.isConfigured()) return null;
       try {
@@ -226,7 +279,7 @@
       }
     },
 
-    // 8. Super Admin Delete User
+    // 10. Super Admin Delete User
     deleteUser: async function (username) {
       if (!this.isConfigured()) return null;
       try {
@@ -247,7 +300,7 @@
       }
     },
 
-    // 9. Super Admin Create Invoice
+    // 11. Super Admin Create Invoice
     createInvoice: async function (invData) {
       if (!this.isConfigured()) return null;
       try {
@@ -278,7 +331,7 @@
       }
     },
 
-    // 10. Super Admin Delete Invoice
+    // 12. Super Admin Delete Invoice
     deleteInvoice: async function (invoiceId) {
       if (!this.isConfigured()) return null;
       try {
@@ -299,7 +352,7 @@
       }
     },
 
-    // 11. Create Service Request
+    // 13. Create Service Request
     createServiceRequest: async function (reqData) {
       if (!this.isConfigured()) return null;
       try {
@@ -325,7 +378,7 @@
       }
     },
 
-    // 12. Super Admin Update Request Status
+    // 14. Super Admin Update Request Status
     updateRequestStatus: async function (reqId, status) {
       if (!this.isConfigured()) return null;
       try {
@@ -347,7 +400,7 @@
       }
     },
 
-    // 13. Process Payment
+    // 15. Process Payment
     processPayment: async function (paymentData) {
       if (!this.isConfigured()) return null;
       try {
@@ -371,7 +424,7 @@
       }
     },
 
-    // 14. Update Proposal Status
+    // 16. Update Proposal Status
     updateProposalStatus: async function (proposalData) {
       if (!this.isConfigured()) return null;
       try {
@@ -395,7 +448,7 @@
       }
     },
 
-    // 15. User Login Authentication
+    // 17. User Login Authentication
     loginUser: async function (username, password) {
       if (!this.isConfigured()) return null;
       try {

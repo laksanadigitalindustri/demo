@@ -159,9 +159,12 @@
     const savedNotifs = localStorage.getItem('laksanasoft_notifications');
     store.notifications = savedNotifs ? JSON.parse(savedNotifs) : INITIAL_NOTIFICATIONS;
 
-    const savedUser = localStorage.getItem('laksanasoft_user');
+    const savedUser = localStorage.getItem('laksanasoft_global_session') || localStorage.getItem('laksanasoft_mobile_session') || localStorage.getItem('laksanasoft_user');
     if (savedUser) {
-      store.user = JSON.parse(savedUser);
+      try {
+        store.user = JSON.parse(savedUser);
+        store.user.isLoggedIn = true;
+      } catch (e) {}
     }
   }
 
@@ -171,6 +174,7 @@
     localStorage.setItem('laksanasoft_transactions', JSON.stringify(store.transactions));
     localStorage.setItem('laksanasoft_notifications', JSON.stringify(store.notifications));
     localStorage.setItem('laksanasoft_user', JSON.stringify(store.user));
+    localStorage.setItem('laksanasoft_global_session', JSON.stringify(store.user));
   }
 
   // --- HELPERS ---

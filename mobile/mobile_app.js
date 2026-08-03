@@ -1,6 +1,6 @@
 /* ==========================================================================
    Laksanasoft Mobile App - Dedicated Smartphone Application Engine
-   Includes Single-User Account Roles (Client / Vendor / Mitra / Super Admin)
+   Includes Super Admin Control Center (ACC, Monitoring, Live Chat Reply)
    ========================================================================== */
 
 (function () {
@@ -22,6 +22,10 @@
     requests: [],
     transactions: [],
     notifications: [],
+    chatMessages: [
+      { sender: 'client', name: 'Budi Santoso', text: 'Halo Super Admin, mohon bantuan verifikasi invoice INV-2026-0891.', time: '10:15 WIB' },
+      { sender: 'admin', name: 'Super Admin', text: 'Halo Pak Budi, siap kami verifikasi sekarang.', time: '10:17 WIB' }
+    ],
     currentTab: 'home',
     selectedInvoice: null,
     selectedProposal: null,
@@ -136,6 +140,7 @@
     const rolePill = document.getElementById('mobile-user-role-pill');
     const heroTitle = document.getElementById('mobile-hero-title');
     const pinPromptLabel = document.getElementById('pin-prompt-label');
+    const adminBanner = document.getElementById('super-admin-banner');
 
     if (roleLabel) roleLabel.textContent = store.user.role || 'Client Korporat';
     if (nameEl) nameEl.textContent = store.user.name || 'Pengguna Korporat';
@@ -149,17 +154,33 @@
       if (rType === 'ADMIN') {
         badgeEl.className = 'px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-extrabold flex-shrink-0';
         if (heroTitle) heroTitle.textContent = 'Ringkasan Seluruh Tagihan Korporat';
-      } else if (rType === 'VENDOR') {
-        badgeEl.className = 'px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-extrabold flex-shrink-0';
-        if (heroTitle) heroTitle.textContent = 'Ringkasan Penagihan Vendor';
-      } else if (rType === 'MITRA') {
-        badgeEl.className = 'px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-extrabold flex-shrink-0';
-        if (heroTitle) heroTitle.textContent = 'Ringkasan Layanan Kemitraan';
+        if (adminBanner) adminBanner.classList.remove('hidden');
       } else {
-        badgeEl.className = 'px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold flex-shrink-0';
-        if (heroTitle) heroTitle.textContent = 'Ringkasan Tagihan Korporat Anda';
+        if (adminBanner) adminBanner.classList.add('hidden');
+        if (rType === 'VENDOR') {
+          badgeEl.className = 'px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-extrabold flex-shrink-0';
+          if (heroTitle) heroTitle.textContent = 'Ringkasan Penagihan Vendor';
+        } else if (rType === 'MITRA') {
+          badgeEl.className = 'px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-extrabold flex-shrink-0';
+          if (heroTitle) heroTitle.textContent = 'Ringkasan Layanan Kemitraan';
+        } else {
+          badgeEl.className = 'px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold flex-shrink-0';
+          if (heroTitle) heroTitle.textContent = 'Ringkasan Tagihan Korporat Anda';
+        }
       }
     }
+
+    updateAdminCounters();
+  }
+
+  function updateAdminCounters() {
+    const unpaidCount = store.invoices.filter(i => i.status !== 'PAID').length;
+    const pendingQuoCount = store.proposals.filter(p => p.status === 'PENDING' || p.status === 'NEGOTIATING').length;
+
+    const payCountEl = document.getElementById('admin-pending-pay-count');
+    const quoCountEl = document.getElementById('admin-pending-quo-count');
+    if (payCountEl) payCountEl.textContent = `${unpaidCount} Tagihan`;
+    if (quoCountEl) quoCountEl.textContent = `${pendingQuoCount} Vendor`;
   }
 
   // SESSION MANAGEMENT: Require login unless previously logged in
@@ -221,7 +242,18 @@
       }
     }
 
-    // 2. Try remote Google Apps Script Backend
+    // 2. Check local users database stored in localStorage (laksanasoft_users_db)
+    if (!authenticatedUser) {
+      try {
+        const localUsers = JSON.parse(localStorage.getItem('laksanasoft_users_db') || '[]');
+        const matchedLocal = localUsers.find(u => u.username.toLowerCase() === uInput.toLowerCase() && u.password === pInput);
+        if (matchedLocal) {
+          authenticatedUser = matchedLocal.userData;
+        }
+      } catch (err) {}
+    }
+
+    // 3. Try remote Google Apps Script Backend
     if (!authenticatedUser && window.GoogleBackend && window.GoogleBackend.isConfigured()) {
       authenticatedUser = await window.GoogleBackend.loginUser(uInput, pInput);
 
@@ -254,7 +286,7 @@
       }
     }
 
-    // 3. Fallback Dynamic Account Creator for Custom Spreadsheet Users
+    // 4. Fallback Dynamic Account Creator for Custom Spreadsheet Users
     if (!authenticatedUser) {
       const formattedName = uInput.charAt(0).toUpperCase() + uInput.slice(1);
       let roleType = 'CLIENT';
@@ -268,7 +300,7 @@
         roleName = 'Mitra Strategis';
       } else if (uInput.toLowerCase().includes('admin')) {
         roleType = 'ADMIN';
-        roleName = 'Administrator Korporat';
+        roleName = 'Super Admin Korporat';
       }
 
       authenticatedUser = {
@@ -287,7 +319,7 @@
       store.user.isLoggedIn = true;
 
       localStorage.setItem('laksanasoft_mobile_session', JSON.stringify(authenticatedUser));
-      showMobileToast(`Login Berhasil! Selamat datang, ${authenticatedUser.name} [${authenticatedUser.role}]`, "success");
+      showMobileToast(`Login Berhasil! Selamat datang, ${authenticatedUser.name}`, "success");
 
       const loginView = document.getElementById('view-login');
       const appView = document.getElementById('view-app');
@@ -483,6 +515,7 @@
     }
 
     store.isLoading = false;
+    updateAdminCounters();
     renderCurrentTabContent();
   }
 
@@ -514,7 +547,223 @@
     }, 2000);
   }
 
-  // --- 100% NATIVE VECTOR PDF GENERATOR ---
+  // --- SUPER ADMIN ACTION MODULES (ACC, LIVE CHAT, USER MGMT) ---
+  function openAdminControlModal() {
+    renderAdminControlLists();
+    openSheet('sheet-admin-control');
+  }
+
+  function renderAdminControlLists() {
+    const payListEl = document.getElementById('admin-acc-payment-list');
+    const reqListEl = document.getElementById('admin-acc-requests-list');
+
+    if (payListEl) {
+      const unpaidInvoices = store.invoices.filter(i => i.status !== 'PAID');
+      if (unpaidInvoices.length === 0) {
+        payListEl.innerHTML = `<p class="text-[11px] text-slate-400 italic">Semua tagihan telah LUNAS / terverifikasi.</p>`;
+      } else {
+        payListEl.innerHTML = unpaidInvoices.map(inv => `
+          <div class="flex items-center justify-between p-2.5 bg-white rounded-xl border border-slate-200">
+            <div>
+              <span class="font-mono font-bold text-slate-900 text-[11px]">${inv.id}</span>
+              <p class="text-[10px] text-slate-500">${inv.vendor} • <strong>${formatIDR(inv.amount)}</strong></p>
+            </div>
+            <button type="button" onclick="mobileApp.adminAccPayment('${inv.id}')" class="px-2.5 py-1 bg-emerald-600 text-white font-extrabold text-[10px] rounded-lg shadow-sm active:scale-95 transition-transform">
+              ACC & Verifikasi LUNAS
+            </button>
+          </div>
+        `).join('');
+      }
+    }
+
+    if (reqListEl) {
+      if (store.requests.length === 0) {
+        reqListEl.innerHTML = `<p class="text-[11px] text-slate-400 italic">Belum ada pengajuan permintaan.</p>`;
+      } else {
+        reqListEl.innerHTML = store.requests.map(req => `
+          <div class="p-2.5 bg-white rounded-xl border border-slate-200 space-y-1.5">
+            <div class="flex justify-between items-center">
+              <span class="font-mono font-bold text-purple-700 text-[11px]">${req.id}</span>
+              <span class="px-2 py-0.5 rounded-full text-[9px] font-bold ${req.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${req.status}</span>
+            </div>
+            <p class="font-bold text-[11px] text-slate-900 truncate">${req.title}</p>
+            <div class="flex items-center gap-1.5 pt-1">
+              <button type="button" onclick="mobileApp.adminAccRequest('${req.id}', 'IN_PROGRESS')" class="px-2 py-1 bg-blue-50 text-blue-700 font-bold text-[9px] rounded-lg">Proses</button>
+              <button type="button" onclick="mobileApp.adminAccRequest('${req.id}', 'COMPLETED')" class="px-2 py-1 bg-emerald-50 text-emerald-700 font-bold text-[9px] rounded-lg">ACC & Selesai</button>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+  }
+
+  async function adminAccPayment(invId) {
+    const inv = store.invoices.find(i => String(i.id).trim() === String(invId).trim());
+    if (!inv) return;
+
+    inv.status = 'PAID';
+    const dateStr = new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) + ' WIB';
+    const refCode = `LKS-ADMIN-${Math.floor(1000000000 + Math.random() * 9000000000)}`;
+    const trxId = `TRX-ADMIN-${Math.floor(100000000 + Math.random() * 900000000)}`;
+    const methodStr = 'Manual Verifikasi Super Admin';
+
+    let driveUrl = '';
+    if (window.GoogleBackend && window.GoogleBackend.isConfigured()) {
+      const res = await window.GoogleBackend.processPayment({
+        invoiceId: inv.id,
+        vendor: inv.vendor,
+        amount: inv.amount,
+        method: methodStr
+      });
+      if (res && res.driveReceiptUrl) driveUrl = res.driveReceiptUrl;
+    }
+
+    const trx = {
+      trxId: trxId,
+      invoiceId: inv.id,
+      vendor: inv.vendor,
+      amount: inv.amount,
+      date: dateStr,
+      method: methodStr,
+      status: 'SUCCESS',
+      refCode: refCode,
+      driveReceiptUrl: driveUrl
+    };
+
+    store.transactions.unshift(trx);
+    saveStore();
+
+    const telegramMsg = `<b>🛡️ ACC PEMBAYARAN MANUAL SUPER ADMIN</b>\n\n` +
+      `• <b>Diverifikasi Oleh:</b> ${store.user.name}\n` +
+      `• <b>No. Invoice:</b> ${inv.id}\n` +
+      `• <b>Vendor:</b> ${inv.vendor}\n` +
+      `• <b>Nominal:</b> ${formatIDR(inv.amount)}\n` +
+      `• <b>Status:</b> LUNAS / VERIFIED`;
+    sendTelegramNotificationDirect(telegramMsg);
+
+    showMobileToast(`Pembayaran ${inv.id} telah di-ACC Super Admin!`, 'success');
+    renderAdminControlLists();
+    renderMobileHome();
+    updateAdminCounters();
+  }
+
+  function adminAccRequest(reqId, newStatus) {
+    const req = store.requests.find(r => r.id === reqId);
+    if (!req) return;
+
+    req.status = newStatus;
+    saveStore();
+
+    const statusLabel = newStatus === 'COMPLETED' ? 'SELESAI / ACC' : 'SEDANG DIPROSES';
+    const telegramMsg = `<b>🛡️ STATUS PERMINTAAN DIPERBARUI SUPER ADMIN</b>\n\n` +
+      `• <b>Petugas Admin:</b> ${store.user.name}\n` +
+      `• <b>ID Permintaan:</b> ${req.id}\n` +
+      `• <b>Judul:</b> ${req.title}\n` +
+      `• <b>Status Terbaru:</b> ${statusLabel}`;
+    sendTelegramNotificationDirect(telegramMsg);
+
+    showMobileToast(`Status ${req.id} diubah ke ${statusLabel}`, 'success');
+    renderAdminControlLists();
+    renderMobileRequests();
+  }
+
+  // DIRECT LIVE CHAT REPLY FOR SUPER ADMIN
+  function openAdminChatModal() {
+    renderAdminChatThread();
+    openSheet('sheet-admin-chat');
+  }
+
+  function renderAdminChatThread() {
+    const container = document.getElementById('admin-chat-messages');
+    if (!container) return;
+
+    container.innerHTML = store.chatMessages.map(msg => `
+      <div class="p-2.5 rounded-xl ${msg.sender === 'admin' ? 'bg-blue-600/30 border border-blue-500/40 text-right ml-6' : 'bg-slate-800 border border-slate-700 text-left mr-6'}">
+        <span class="text-[9px] font-bold text-slate-400 block">${msg.name || 'Pengguna'} • ${msg.time}</span>
+        <p class="text-xs text-white mt-0.5">${msg.text}</p>
+      </div>
+    `).join('');
+
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function useChatTemplate(tmplText) {
+    const chatInput = document.getElementById('admin-chat-input');
+    if (chatInput) chatInput.value = tmplText;
+  }
+
+  function sendAdminChatMessage() {
+    const inputEl = document.getElementById('admin-chat-input');
+    const txt = inputEl?.value.trim();
+
+    if (!txt) return;
+
+    const newMsg = {
+      sender: 'admin',
+      name: store.user.name || 'Super Admin',
+      text: txt,
+      time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB'
+    };
+
+    store.chatMessages.push(newMsg);
+    inputEl.value = '';
+
+    renderAdminChatThread();
+    showMobileToast("Balasan chat terkirim!", "success");
+
+    const telegramMsg = `<b>💬 BALASAN PESAN DARI SUPER ADMIN</b>\n\n` +
+      `• <b>Admin:</b> ${store.user.name}\n` +
+      `• <b>Pesan Balasan:</b> ${txt}`;
+    sendTelegramNotificationDirect(telegramMsg);
+  }
+
+  // USER MANAGEMENT MODULE
+  function openAdminUserMgmtModal() {
+    openSheet('sheet-admin-users');
+  }
+
+  function addNewUserAccount(e) {
+    if (e) e.preventDefault();
+    const uInput = document.getElementById('new-user-username')?.value.trim();
+    const pInput = document.getElementById('new-user-password')?.value.trim();
+    const nInput = document.getElementById('new-user-name')?.value.trim();
+    const rInput = document.getElementById('new-user-role')?.value;
+    const cInput = document.getElementById('new-user-company')?.value.trim();
+
+    if (!uInput || !pInput || !nInput) {
+      showMobileToast("Harap lengkapi semua bidang pengguna baru.", "error");
+      return;
+    }
+
+    let roleType = 'CLIENT';
+    if (rInput.includes('Admin')) roleType = 'ADMIN';
+    else if (rInput.includes('Vendor')) roleType = 'VENDOR';
+    else if (rInput.includes('Mitra')) roleType = 'MITRA';
+
+    const newUserObj = {
+      username: uInput,
+      password: pInput,
+      userData: {
+        corpId: uInput,
+        userId: uInput,
+        name: nInput,
+        company: cInput || 'PT Laksana Digital Industri',
+        role: rInput,
+        roleType: roleType,
+        pin: '123456'
+      }
+    };
+
+    let localUsers = [];
+    try { localUsers = JSON.parse(localStorage.getItem('laksanasoft_users_db') || '[]'); } catch (err) {}
+    localUsers.push(newUserObj);
+    localStorage.setItem('laksanasoft_users_db', JSON.stringify(localUsers));
+
+    closeSheet('sheet-admin-users');
+    showMobileToast(`Akun [${uInput}] (${rInput}) berhasil dibuat!`, "success");
+  }
+
+  // 100% Native Vector PDF Generator
   function downloadInvoicePDF(invId) {
     const targetId = invId || (store.selectedInvoice ? store.selectedInvoice.id : null);
     const inv = store.invoices.find(i => String(i.id).trim() === String(targetId).trim()) || store.selectedInvoice;
@@ -579,7 +828,7 @@
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(71, 85, 105);
-    doc.text(`User ID: ${store.user.userId || 'client1'}  •  Role: ${store.user.role || 'Client Korporat'}`, 40, 150);
+    doc.text(`User ID: ${store.user.userId || 'admin'}  •  Role: ${store.user.role || 'Super Admin Korporat'}`, 40, 150);
 
     doc.setTextColor(100, 116, 139);
     doc.text("No. Invoice:", 380, 120);
@@ -860,6 +1109,8 @@
       return;
     }
 
+    const isAdmin = store.user.roleType === 'ADMIN';
+
     container.innerHTML = store.invoices.map(inv => `
       <div class="mobile-card space-y-3">
         <div onclick="window.mobileApp.openInvoiceDetailModal('${inv.id}')" class="flex items-center justify-between border-b border-slate-100 pb-2.5 cursor-pointer">
@@ -886,7 +1137,7 @@
           <span class="font-extrabold text-sm text-slate-900">${formatIDR(inv.amount)}</span>
         </div>
 
-        <!-- 3-Button Row: [ PDF ]  [ Detail ]  [ Bayar Sekarang / Resi ] -->
+        <!-- 3-Button Row with Super Admin ACC Feature -->
         <div class="pt-2 border-t border-slate-100 flex flex-wrap sm:flex-nowrap items-center gap-1.5">
           <button type="button" onclick="window.mobileApp.downloadInvoicePDF('${inv.id}')" class="px-2.5 py-2 bg-emerald-50 text-emerald-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1 flex-shrink-0 active:scale-95 transition-all">
             <span class="material-symbols-outlined text-base">picture_as_pdf</span> PDF
@@ -896,7 +1147,11 @@
             <span class="material-symbols-outlined text-base">info</span> Detail
           </button>
 
-          ${inv.status !== 'PAID' ? `
+          ${isAdmin && inv.status !== 'PAID' ? `
+            <button type="button" onclick="window.mobileApp.adminAccPayment('${inv.id}')" class="flex-1 min-w-[120px] py-2 bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1 active:scale-95 transition-all">
+              <span class="material-symbols-outlined text-base">verified</span> ACC Lunas
+            </button>
+          ` : inv.status !== 'PAID' ? `
             <button type="button" onclick="window.mobileApp.startPay('${inv.id}')" class="flex-1 min-w-[120px] py-2 bg-slate-900 text-white rounded-xl text-xs font-bold shadow-sm flex items-center justify-center gap-1 active:scale-95 transition-all">
               <span class="material-symbols-outlined text-base">payments</span> Bayar Sekarang
             </button>
@@ -946,7 +1201,7 @@
           ${quo.status === 'PENDING' || quo.status === 'NEGOTIATING' ? `
             <button type="button" onclick="window.mobileApp.openRejectModal('${quo.id}')" class="px-2.5 py-2 bg-rose-50 text-rose-700 text-xs font-bold rounded-xl">Tolak</button>
             <button type="button" onclick="window.mobileApp.openNegoModal('${quo.id}')" class="flex-1 py-2 bg-slate-100 text-slate-800 text-xs font-bold rounded-xl">Negosiasi</button>
-            <button type="button" onclick="window.mobileApp.approveQuo('${quo.id}')" class="flex-1 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl shadow-sm">Setujui</button>
+            <button type="button" onclick="window.mobileApp.approveQuo('${quo.id}')" class="flex-1 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl shadow-sm">Setujui / ACC</button>
           ` : `
             <span class="text-xs font-bold ${quo.status === 'APPROVED' ? 'text-emerald-700' : 'text-rose-700'}">Status: ${quo.status}</span>
           `}
@@ -1374,6 +1629,7 @@
 
       openSheet('sheet-payment-status');
       renderMobileHome();
+      updateAdminCounters();
     } else {
       showMobileToast(`PIN Salah! PIN untuk ${store.user.name} adalah: ${userPin}`, 'error');
       store.enteredPin = '';
@@ -1440,6 +1696,14 @@
     openNewRequestModal: openNewRequestModal,
     submitNewRequest: submitNewRequest,
     downloadInvoicePDF: downloadInvoicePDF,
+    openAdminControlModal: openAdminControlModal,
+    adminAccPayment: adminAccPayment,
+    adminAccRequest: adminAccRequest,
+    openAdminChatModal: openAdminChatModal,
+    useChatTemplate: useChatTemplate,
+    sendAdminChatMessage: sendAdminChatMessage,
+    openAdminUserMgmtModal: openAdminUserMgmtModal,
+    addNewUserAccount: addNewUserAccount,
     openTrxModal: function (trxId) {
       const trx = store.transactions.find(t => t.trxId === trxId);
       if (!trx) return;
@@ -1476,7 +1740,7 @@
         await window.GoogleBackend.updateProposalStatus({ proposalId: quo.id, status: 'APPROVED' });
       }
 
-      const telegramMsg = `<b>✅ NOTIFIKASI PENAWARAN DISETUJUI</b>\n\n` +
+      const telegramMsg = `<b>✅ NOTIFIKASI PENAWARAN DISETUJUI / ACC</b>\n\n` +
         `• <b>Disetujui Oleh:</b> ${store.user.name} (${store.user.role})\n` +
         `• <b>ID Penawaran:</b> ${quo.id}\n` +
         `• <b>Vendor:</b> ${quo.vendor}\n` +
@@ -1486,6 +1750,7 @@
       saveStore();
       showMobileToast(`Penawaran ${quo.id} disetujui!`, 'success');
       renderMobileProposals();
+      updateAdminCounters();
     },
     openNegoModal: function(quoId) {
       const quo = store.proposals.find(p => p.id === quoId);

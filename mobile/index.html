@@ -29,7 +29,7 @@
 </head>
 <body class="mobile-body">
 
-  <!-- 1. MOBILE LOGIN SCREEN VIEW (With Specific Single User Account Roles) -->
+  <!-- 1. MOBILE LOGIN SCREEN VIEW (With Single-User Roles) -->
   <div id="view-login" class="mobile-app-wrapper flex flex-col justify-center p-6 space-y-5 bg-slate-900 text-white min-h-screen">
     <div class="text-center space-y-2">
       <div class="w-14 h-14 rounded-2xl bg-white text-slate-900 font-black text-2xl flex items-center justify-center mx-auto shadow-xl">
@@ -37,21 +37,21 @@
       </div>
       <div>
         <h2 class="text-xl font-extrabold tracking-tight">Laksanasoft</h2>
-        <p class="text-xs text-emerald-400 font-bold uppercase tracking-wider mt-0.5">Single-User Multi-Role Portal</p>
+        <p class="text-xs text-emerald-400 font-bold uppercase tracking-wider mt-0.5">Corporate Portal & Admin Suite</p>
       </div>
     </div>
 
     <form id="mobile-login-form" onsubmit="mobileApp.handleLogin(event)" class="bg-slate-800/80 backdrop-blur-md p-5 rounded-3xl border border-slate-700/60 space-y-4 shadow-2xl">
       <div class="text-center pb-1">
-        <h3 class="font-extrabold text-sm text-white">Masuk ke Akun Spesifik Anda</h3>
-        <p class="text-[11px] text-slate-400">Setiap pengguna memiliki akses role terpisah</p>
+        <h3 class="font-extrabold text-sm text-white">Masuk ke Akun Korporat / Admin</h3>
+        <p class="text-[11px] text-slate-400">Pilih atau ketik kredensial login pengguna</p>
       </div>
 
       <div class="space-y-1 text-left">
         <label class="text-xs font-bold text-slate-300 block">Username / ID Pengguna:</label>
         <div class="relative">
           <span class="material-symbols-outlined absolute left-3 top-3 text-slate-400 text-sm">person</span>
-          <input type="text" id="login-username" placeholder="Username (misal: client1, vendor1, mitra1)" required class="w-full pl-9 pr-3 py-2.5 bg-slate-900/90 border border-slate-700 rounded-xl text-xs font-semibold text-white focus:outline-none focus:border-emerald-500" />
+          <input type="text" id="login-username" placeholder="Username (e.g. admin, client1, vendor1)" required class="w-full pl-9 pr-3 py-2.5 bg-slate-900/90 border border-slate-700 rounded-xl text-xs font-semibold text-white focus:outline-none focus:border-emerald-500" />
         </div>
       </div>
 
@@ -59,12 +59,12 @@
         <label class="text-xs font-bold text-slate-300 block">Kata Sandi / Password:</label>
         <div class="relative">
           <span class="material-symbols-outlined absolute left-3 top-3 text-slate-400 text-sm">lock</span>
-          <input type="password" id="login-password" placeholder="Password (misal: client123, vendor123)" required class="w-full pl-9 pr-3 py-2.5 bg-slate-900/90 border border-slate-700 rounded-xl text-xs font-semibold text-white focus:outline-none focus:border-emerald-500" />
+          <input type="password" id="login-password" placeholder="Password (e.g. admin, client123)" required class="w-full pl-9 pr-3 py-2.5 bg-slate-900/90 border border-slate-700 rounded-xl text-xs font-semibold text-white focus:outline-none focus:border-emerald-500" />
         </div>
       </div>
 
       <button type="submit" id="login-submit-btn" class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl text-xs font-extrabold shadow-lg active:scale-95 transition-transform flex items-center justify-center gap-2">
-        <span class="material-symbols-outlined text-base">login</span> Masuk ke Portal Peran
+        <span class="material-symbols-outlined text-base">login</span> Masuk Portal Korporat
       </button>
     </form>
 
@@ -72,6 +72,10 @@
     <div class="bg-slate-800/40 p-3.5 rounded-2xl border border-slate-800 text-[11px] space-y-2">
       <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block text-center">Pilih Akun Uji Coba Per Peran (Role):</span>
       <div class="grid grid-cols-2 gap-1.5">
+        <button type="button" onclick="mobileApp.fillDemoLogin('admin', 'admin')" class="p-2 bg-slate-900/80 rounded-xl border border-blue-500/50 text-left hover:border-blue-400 transition-all">
+          <div class="font-extrabold text-blue-400">🛡️ Super Admin</div>
+          <div class="text-[9px] text-slate-400">admin / admin</div>
+        </button>
         <button type="button" onclick="mobileApp.fillDemoLogin('client1', 'client123')" class="p-2 bg-slate-900/80 rounded-xl border border-slate-700/60 text-left hover:border-emerald-500 transition-all">
           <div class="font-extrabold text-emerald-400">👤 Klien Korporat</div>
           <div class="text-[9px] text-slate-400">client1 / client123</div>
@@ -83,10 +87,6 @@
         <button type="button" onclick="mobileApp.fillDemoLogin('mitra1', 'mitra123')" class="p-2 bg-slate-900/80 rounded-xl border border-slate-700/60 text-left hover:border-purple-400 transition-all">
           <div class="font-extrabold text-purple-400">🤝 Mitra Strategis</div>
           <div class="text-[9px] text-slate-400">mitra1 / mitra123</div>
-        </button>
-        <button type="button" onclick="mobileApp.fillDemoLogin('admin', 'admin')" class="p-2 bg-slate-900/80 rounded-xl border border-slate-700/60 text-left hover:border-blue-400 transition-all">
-          <div class="font-extrabold text-blue-400">🛡️ Super Admin</div>
-          <div class="text-[9px] text-slate-400">admin / admin</div>
         </button>
       </div>
     </div>
@@ -108,11 +108,15 @@
         </div>
         <div class="min-w-0 truncate">
           <h1 class="font-extrabold text-xs text-slate-900 tracking-tight leading-none truncate">Laksanasoft</h1>
-          <span id="mobile-role-label" class="text-[9px] font-bold text-emerald-600 uppercase block truncate">Client Korporat</span>
+          <span id="mobile-role-label" class="text-[9px] font-bold text-emerald-600 uppercase block truncate">Super Admin</span>
         </div>
       </div>
 
       <div class="flex items-center gap-1">
+        <button type="button" onclick="mobileApp.openAdminChatModal()" class="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 relative" title="Pusat Chat Admin">
+          <span class="material-symbols-outlined text-lg">chat</span>
+          <span id="admin-chat-indicator" class="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500"></span>
+        </button>
         <button type="button" onclick="mobileApp.refreshData()" class="p-1.5 rounded-lg text-slate-700 hover:bg-slate-100" title="Refresh Data">
           <span class="material-symbols-outlined text-lg">sync</span>
         </button>
@@ -135,6 +139,36 @@
     <!-- MAIN MOBILE CONTENT CONTAINER -->
     <main class="p-4 space-y-4">
 
+      <!-- SUPER ADMIN MONITORING & ACC COMMAND BANNER (Appears when logged in as ADMIN) -->
+      <div id="super-admin-banner" class="hidden bg-gradient-to-r from-blue-950 via-slate-900 to-indigo-950 text-white p-3.5 rounded-2xl shadow-md border border-blue-500/30 space-y-2">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
+              <span class="material-symbols-outlined text-sm">admin_panel_settings</span>
+            </div>
+            <span class="font-extrabold text-xs text-blue-300 uppercase tracking-wider">Super Admin Monitoring Command Center</span>
+          </div>
+          <span class="px-2 py-0.5 rounded-full bg-blue-500/30 text-blue-200 text-[9px] font-bold">LIVE ACC & CHAT</span>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 text-center pt-1">
+          <button type="button" onclick="mobileApp.openAdminControlModal()" class="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-all text-left">
+            <span class="text-[9px] text-blue-300 font-semibold block">ACC Pembayaran:</span>
+            <span id="admin-pending-pay-count" class="font-extrabold text-xs text-amber-300">0 Tagihan</span>
+          </button>
+          <button type="button" onclick="mobileApp.openAdminControlModal()" class="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-all text-left">
+            <span class="text-[9px] text-blue-300 font-semibold block">ACC Penawaran:</span>
+            <span id="admin-pending-quo-count" class="font-extrabold text-xs text-emerald-300">0 Vendor</span>
+          </button>
+          <button type="button" onclick="mobileApp.openAdminChatModal()" class="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-all text-left">
+            <span class="text-[9px] text-blue-300 font-semibold block">Balas Chat:</span>
+            <span class="font-extrabold text-xs text-blue-300 flex items-center gap-1">
+              <span class="material-symbols-outlined text-xs">forum</span> Live Reply
+            </span>
+          </button>
+        </div>
+      </div>
+
       <!-- 1. HOME TAB CONTENT -->
       <div id="tab-home" class="mobile-tab-content space-y-4">
         <!-- Mobile Hero Summary Card with Single-User Role Customization -->
@@ -142,15 +176,15 @@
           <div class="relative z-10 space-y-2.5">
             <div class="flex justify-between items-center">
               <span id="mobile-hero-title" class="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">Ringkasan Tagihan Korporat</span>
-              <span id="mobile-user-badge" class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold flex-shrink-0">CLIENT</span>
+              <span id="mobile-user-badge" class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold flex-shrink-0">SUPER ADMIN</span>
             </div>
             <h2 id="mobile-unpaid-total" class="text-2xl sm:text-3xl font-black text-white">Rp 0</h2>
             <div class="flex items-center justify-between pt-2 border-t border-slate-700/60 text-xs">
               <div class="truncate pr-2">
-                <span id="mobile-user-fullname" class="text-white font-bold block truncate">Budi Santoso</span>
-                <span id="mobile-user-company" class="text-slate-400 text-[10px] block truncate">PT Laksana Digital Industri</span>
+                <span id="mobile-user-fullname" class="text-white font-bold block truncate">Super Administrator</span>
+                <span id="mobile-user-company" class="text-slate-400 text-[10px] block truncate">PT Laksana Software Solutions</span>
               </div>
-              <span id="mobile-user-role-pill" class="px-2 py-0.5 rounded-full bg-slate-700 text-slate-300 text-[9px] font-bold flex-shrink-0">Client Korporat</span>
+              <span id="mobile-user-role-pill" class="px-2 py-0.5 rounded-full bg-slate-700 text-slate-300 text-[9px] font-bold flex-shrink-0">Super Admin Korporat</span>
             </div>
           </div>
         </div>
@@ -238,6 +272,144 @@
     </nav>
 
   </div> <!-- END MOBILE APP WRAPPER -->
+
+  <!-- SUPER ADMIN BOTTOM SHEET 1: MASTER MONITORING & ACC CONTROL PANEL -->
+  <div id="sheet-admin-control" class="mobile-bottom-sheet">
+    <div class="mobile-sheet-content space-y-4">
+      <div class="sheet-handle"></div>
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+            <span class="material-symbols-outlined text-base">admin_panel_settings</span>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-sm text-slate-900">Pusat ACC & Monitoring Admin</h3>
+            <span class="text-[10px] text-slate-400">Verifikasi manual & persetujuan audit</span>
+          </div>
+        </div>
+        <button type="button" onclick="mobileApp.closeSheet('sheet-admin-control')" class="text-slate-400">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-2">
+          <h4 class="font-extrabold text-slate-900 text-xs flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm text-emerald-600">verified</span> Daftar ACC Konfirmasi Pembayaran Tagihan:
+          </h4>
+          <div id="admin-acc-payment-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+        </div>
+
+        <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-2">
+          <h4 class="font-extrabold text-slate-900 text-xs flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm text-purple-600">assignment_turned_in</span> ACC / Status Permintaan Layanan:
+          </h4>
+          <div id="admin-acc-requests-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+        </div>
+      </div>
+
+      <button type="button" onclick="mobileApp.openAdminUserMgmtModal()" class="w-full py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5">
+        <span class="material-symbols-outlined text-sm">person_add</span> Kelola & Tambah Akun Pengguna Baru
+      </button>
+    </div>
+  </div>
+
+  <!-- SUPER ADMIN BOTTOM SHEET 2: DIRECT LIVE CHAT & REPLY MODULE -->
+  <div id="sheet-admin-chat" class="mobile-bottom-sheet">
+    <div class="mobile-sheet-content space-y-3">
+      <div class="sheet-handle"></div>
+      <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+            <span class="material-symbols-outlined text-base">chat</span>
+          </div>
+          <div>
+            <h3 class="font-extrabold text-sm text-slate-900">Membalas Chat Langsung Klien</h3>
+            <span class="text-[10px] text-slate-400">Live Support & Auto-Telegram Dispatch</span>
+          </div>
+        </div>
+        <button type="button" onclick="mobileApp.closeSheet('sheet-admin-chat')" class="text-slate-400">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <!-- Live Chat Messages Thread Container -->
+      <div id="admin-chat-messages" class="bg-slate-900 text-white p-3 rounded-2xl h-64 overflow-y-auto space-y-2.5 text-xs font-medium"></div>
+
+      <!-- Quick Reply Templates -->
+      <div class="flex gap-1.5 overflow-x-auto pb-1 text-[10px]">
+        <button type="button" onclick="mobileApp.useChatTemplate('Pembayaran tagihan Anda telah diverifikasi oleh Super Admin. Terima kasih!')" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap font-semibold border border-slate-200">
+          + ACC Pembayaran
+        </button>
+        <button type="button" onclick="mobileApp.useChatTemplate('Permintaan layanan Anda sedang diproses oleh tim teknis Laksanasoft.')" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap font-semibold border border-slate-200">
+          + Diproses Teknis
+        </button>
+        <button type="button" onclick="mobileApp.useChatTemplate('Penawaran harga dari vendor telah kami kaji dan disetujui.')" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap font-semibold border border-slate-200">
+          + ACC Penawaran
+        </button>
+      </div>
+
+      <!-- Chat Input Form -->
+      <div class="flex items-center gap-2 pt-1 border-t border-slate-100">
+        <input type="text" id="admin-chat-input" placeholder="Tulis balasan pesan langsung ke Klien..." class="flex-1 p-2.5 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-slate-900 font-medium" />
+        <button type="button" onclick="mobileApp.sendAdminChatMessage()" class="p-2.5 bg-slate-900 text-white rounded-xl active:scale-95 transition-transform">
+          <span class="material-symbols-outlined text-base">send</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUPER ADMIN BOTTOM SHEET 3: KELOLA & TAMBAH PENGGUNA BARU -->
+  <div id="sheet-admin-users" class="mobile-bottom-sheet">
+    <div class="mobile-sheet-content space-y-4">
+      <div class="sheet-handle"></div>
+      <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+        <h3 class="font-extrabold text-sm text-slate-900">Kelola Akun Pengguna Portal</h3>
+        <button type="button" onclick="mobileApp.closeSheet('sheet-admin-users')" class="text-slate-400">
+          <span class="material-symbols-outlined text-lg">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="mobileApp.addNewUserAccount(event)" class="space-y-3 text-xs bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
+        <span class="font-extrabold text-slate-900 text-xs block">Tambah Pengguna Baru:</span>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="font-bold text-slate-600 block mb-1">Username:</label>
+            <input type="text" id="new-user-username" placeholder="misal: client2" required class="w-full p-2 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900" />
+          </div>
+          <div>
+            <label class="font-bold text-slate-600 block mb-1">Password:</label>
+            <input type="password" id="new-user-password" placeholder="misal: pass123" required class="w-full p-2 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="font-bold text-slate-600 block mb-1">Nama Lengkap:</label>
+            <input type="text" id="new-user-name" placeholder="misal: Ahmad Wijaya" required class="w-full p-2 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900" />
+          </div>
+          <div>
+            <label class="font-bold text-slate-600 block mb-1">Peran (Role):</label>
+            <select id="new-user-role" class="w-full p-2 border border-slate-200 rounded-xl bg-white focus:outline-none focus:border-slate-900 font-semibold">
+              <option value="Client Korporat">Client Korporat</option>
+              <option value="Vendor / Supplier">Vendor / Supplier</option>
+              <option value="Mitra Strategis">Mitra Strategis</option>
+              <option value="Super Admin Korporat">Super Admin</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="font-bold text-slate-600 block mb-1">Perusahaan / Organisasi:</label>
+          <input type="text" id="new-user-company" placeholder="misal: PT Nusantara Tech" required class="w-full p-2 border border-slate-200 rounded-xl focus:outline-none focus:border-slate-900" />
+        </div>
+
+        <button type="submit" class="w-full py-2.5 bg-emerald-700 text-white rounded-xl text-xs font-extrabold shadow-sm active:scale-95 transition-transform">
+          Simpan Akun Pengguna Baru
+        </button>
+      </form>
+    </div>
+  </div>
 
   <!-- BOTTOM SHEET: BUAT PERMINTAAN BARU FORM -->
   <div id="sheet-new-request" class="mobile-bottom-sheet">

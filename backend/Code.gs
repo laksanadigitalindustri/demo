@@ -1,7 +1,7 @@
 /**
  * ============================================================================
  * Laksanasoft Corporate Payment Portal - Google Apps Script Backend (Hardened)
- * Includes Flexible Sheet User Authentication & Telegram Bot Integration
+ * Multi-Role Single User Account Engine (Client / Vendor / Mitra / Super Admin)
  * ============================================================================
  */
 
@@ -83,6 +83,62 @@ function findHeaderIdx(headers, aliases) {
   return -1;
 }
 
+// Dedicated Single-User Account Roles System
+const SYSTEM_ROLES_DB = [
+  {
+    username: 'admin',
+    password: 'admin',
+    userData: {
+      corpId: 'admin',
+      userId: 'admin',
+      name: 'Super Administrator',
+      company: 'PT Laksana Software Solutions',
+      role: 'Super Admin Korporat',
+      roleType: 'ADMIN',
+      pin: '123456'
+    }
+  },
+  {
+    username: 'client1',
+    password: 'client123',
+    userData: {
+      corpId: 'client1',
+      userId: 'client1',
+      name: 'Budi Santoso (Klien)',
+      company: 'PT Laksana Digital Industri',
+      role: 'Client Korporat',
+      roleType: 'CLIENT',
+      pin: '123456'
+    }
+  },
+  {
+    username: 'vendor1',
+    password: 'vendor123',
+    userData: {
+      corpId: 'vendor1',
+      userId: 'vendor1',
+      name: 'PT Cloud Hostindo (Vendor)',
+      company: 'PT Cloud Hostindo',
+      role: 'Vendor / Supplier',
+      roleType: 'VENDOR',
+      pin: '654321'
+    }
+  },
+  {
+    username: 'mitra1',
+    password: 'mitra123',
+    userData: {
+      corpId: 'mitra1',
+      userId: 'mitra1',
+      name: 'Mitra Integrasi Enterprise',
+      company: 'PT Mitra Digital Asia',
+      role: 'Mitra Strategis',
+      roleType: 'MITRA',
+      pin: '888888'
+    }
+  }
+];
+
 function validateUserCredentials(usernameInput, passwordInput) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = findSheetFlexible(ss, ['Users', 'User', 'users', 'Data User', 'Pengguna']);
@@ -90,6 +146,7 @@ function validateUserCredentials(usernameInput, passwordInput) {
   const cleanUsername = String(usernameInput || '').trim().toLowerCase();
   const cleanPassword = String(passwordInput || '').trim();
 
+  // 1. Check Google Sheets Users Table
   if (sheet) {
     const data = sheet.getDataRange().getValues();
     if (data.length > 1) {
@@ -108,8 +165,13 @@ function validateUserCredentials(usernameInput, passwordInput) {
         if (uVal.toLowerCase() === cleanUsername && pVal === cleanPassword) {
           const nameVal = nameIdx !== -1 ? String(data[i][nameIdx]).trim() : uVal;
           const companyVal = companyIdx !== -1 ? String(data[i][companyIdx]).trim() : 'PT Laksana Software Solutions';
-          const roleVal = roleIdx !== -1 ? String(data[i][roleIdx]).trim() : 'Super Admin Korporat';
+          let roleVal = roleIdx !== -1 ? String(data[i][roleIdx]).trim() : 'Client Korporat';
           const pinVal = pinIdx !== -1 ? String(data[i][pinIdx]).trim() : '123456';
+
+          let roleType = 'CLIENT';
+          if (roleVal.toLowerCase().includes('admin')) roleType = 'ADMIN';
+          else if (roleVal.toLowerCase().includes('vendor')) roleType = 'VENDOR';
+          else if (roleVal.toLowerCase().includes('mitra')) roleType = 'MITRA';
 
           return {
             success: true,
@@ -118,7 +180,8 @@ function validateUserCredentials(usernameInput, passwordInput) {
               userId: uVal,
               name: nameVal || uVal,
               company: companyVal || 'PT Laksana Software Solutions',
-              role: roleVal || 'Super Admin Korporat',
+              role: roleVal || 'Client Korporat',
+              roleType: roleType,
               pin: pinVal || '123456'
             }
           };
@@ -127,19 +190,14 @@ function validateUserCredentials(usernameInput, passwordInput) {
     }
   }
 
-  // Fallback demo credentials
-  if ((cleanUsername === 'admin' && cleanPassword === 'admin') || (cleanUsername === 'superadmin' && cleanPassword === 'admin123')) {
-    return {
-      success: true,
-      user: {
-        corpId: cleanUsername,
-        userId: cleanUsername,
-        name: 'Administrator',
-        company: 'PT Laksana Software Solutions',
-        role: 'Super Admin Korporat',
-        pin: '123456'
-      }
-    };
+  // 2. Check Dedicated System Roles DB
+  for (let k = 0; k < SYSTEM_ROLES_DB.length; k++) {
+    if (SYSTEM_ROLES_DB[k].username.toLowerCase() === cleanUsername && SYSTEM_ROLES_DB[k].password === cleanPassword) {
+      return {
+        success: true,
+        user: SYSTEM_ROLES_DB[k].userData
+      };
+    }
   }
 
   return { success: false };

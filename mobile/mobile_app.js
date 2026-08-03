@@ -1,6 +1,6 @@
 /* ==========================================================================
    Laksanasoft Mobile App - Dedicated Smartphone Application Engine
-   Includes Fail-Safe Dynamic User Authentication & Session Management
+   Includes Single-User Account Roles (Client / Vendor / Mitra / Super Admin)
    ========================================================================== */
 
 (function () {
@@ -13,6 +13,7 @@
       name: '',
       company: '',
       role: '',
+      roleType: 'CLIENT',
       isLoggedIn: false,
       pin: '123456'
     },
@@ -30,6 +31,62 @@
     latestReceipt: null,
     isLoading: true
   };
+
+  // Dedicated Pre-configured System Roles DB
+  const SYSTEM_ROLES_DB = [
+    {
+      username: 'admin',
+      password: 'admin',
+      userData: {
+        corpId: 'admin',
+        userId: 'admin',
+        name: 'Super Administrator',
+        company: 'PT Laksana Software Solutions',
+        role: 'Super Admin Korporat',
+        roleType: 'ADMIN',
+        pin: '123456'
+      }
+    },
+    {
+      username: 'client1',
+      password: 'client123',
+      userData: {
+        corpId: 'client1',
+        userId: 'client1',
+        name: 'Budi Santoso (Klien)',
+        company: 'PT Laksana Digital Industri',
+        role: 'Client Korporat',
+        roleType: 'CLIENT',
+        pin: '123456'
+      }
+    },
+    {
+      username: 'vendor1',
+      password: 'vendor123',
+      userData: {
+        corpId: 'vendor1',
+        userId: 'vendor1',
+        name: 'PT Cloud Hostindo (Vendor)',
+        company: 'PT Cloud Hostindo',
+        role: 'Vendor / Supplier',
+        roleType: 'VENDOR',
+        pin: '654321'
+      }
+    },
+    {
+      username: 'mitra1',
+      password: 'mitra123',
+      userData: {
+        corpId: 'mitra1',
+        userId: 'mitra1',
+        name: 'Mitra Integrasi Enterprise',
+        company: 'PT Mitra Digital Asia',
+        role: 'Mitra Strategis',
+        roleType: 'MITRA',
+        pin: '888888'
+      }
+    }
+  ];
 
   const navigationStack = ['home'];
   let toastTimer = null;
@@ -70,6 +127,41 @@
     }
   }
 
+  // Update UI Elements according to logged-in single-user account role
+  function updateUserRoleUI() {
+    const roleLabel = document.getElementById('mobile-role-label');
+    const badgeEl = document.getElementById('mobile-user-badge');
+    const nameEl = document.getElementById('mobile-user-fullname');
+    const companyEl = document.getElementById('mobile-user-company');
+    const rolePill = document.getElementById('mobile-user-role-pill');
+    const heroTitle = document.getElementById('mobile-hero-title');
+    const pinPromptLabel = document.getElementById('pin-prompt-label');
+
+    if (roleLabel) roleLabel.textContent = store.user.role || 'Client Korporat';
+    if (nameEl) nameEl.textContent = store.user.name || 'Pengguna Korporat';
+    if (companyEl) companyEl.textContent = store.user.company || 'PT Laksana Digital Industri';
+    if (rolePill) rolePill.textContent = store.user.role || 'Client Korporat';
+    if (pinPromptLabel) pinPromptLabel.textContent = `Ketik 6 digit PIN transaksi untuk ${store.user.name}`;
+
+    const rType = store.user.roleType || 'CLIENT';
+    if (badgeEl) {
+      badgeEl.textContent = rType;
+      if (rType === 'ADMIN') {
+        badgeEl.className = 'px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-extrabold flex-shrink-0';
+        if (heroTitle) heroTitle.textContent = 'Ringkasan Seluruh Tagihan Korporat';
+      } else if (rType === 'VENDOR') {
+        badgeEl.className = 'px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-extrabold flex-shrink-0';
+        if (heroTitle) heroTitle.textContent = 'Ringkasan Penagihan Vendor';
+      } else if (rType === 'MITRA') {
+        badgeEl.className = 'px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-[10px] font-extrabold flex-shrink-0';
+        if (heroTitle) heroTitle.textContent = 'Ringkasan Layanan Kemitraan';
+      } else {
+        badgeEl.className = 'px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold flex-shrink-0';
+        if (heroTitle) heroTitle.textContent = 'Ringkasan Tagihan Korporat Anda';
+      }
+    }
+  }
+
   // SESSION MANAGEMENT: Require login unless previously logged in
   function checkUserSession() {
     const savedSession = localStorage.getItem('laksanasoft_mobile_session');
@@ -85,9 +177,7 @@
         if (loginView) loginView.classList.add('hidden');
         if (appView) appView.classList.remove('hidden');
 
-        const badgeEl = document.getElementById('mobile-user-badge');
-        if (badgeEl) badgeEl.textContent = store.user.userId || 'admin';
-
+        updateUserRoleUI();
         initMobileStore();
         return true;
       } catch (e) {
@@ -101,6 +191,14 @@
     return false;
   }
 
+  function fillDemoLogin(u, p) {
+    const uInput = document.getElementById('login-username');
+    const pInput = document.getElementById('login-password');
+    if (uInput) uInput.value = u;
+    if (pInput) pInput.value = p;
+    showMobileToast(`Akun Uji Coba [${u}] dipilih`, "info");
+  }
+
   async function handleLogin(e) {
     if (e) e.preventDefault();
     const uInput = document.getElementById('login-username')?.value.trim();
@@ -111,12 +209,20 @@
       return;
     }
 
-    showMobileToast("Memverifikasi akun korporat...", "info");
+    showMobileToast("Memverifikasi akun pengguna...", "info");
 
     let authenticatedUser = null;
 
-    // 1. Try remote Apps Script POST login
-    if (window.GoogleBackend && window.GoogleBackend.isConfigured()) {
+    // 1. Check Pre-configured System Roles DB
+    for (let i = 0; i < SYSTEM_ROLES_DB.length; i++) {
+      if (SYSTEM_ROLES_DB[i].username.toLowerCase() === uInput.toLowerCase() && SYSTEM_ROLES_DB[i].password === pInput) {
+        authenticatedUser = SYSTEM_ROLES_DB[i].userData;
+        break;
+      }
+    }
+
+    // 2. Try remote Google Apps Script Backend
+    if (!authenticatedUser && window.GoogleBackend && window.GoogleBackend.isConfigured()) {
       authenticatedUser = await window.GoogleBackend.loginUser(uInput, pInput);
 
       if (!authenticatedUser) {
@@ -128,12 +234,19 @@
             return u === uInput.toLowerCase() && p === pInput;
           });
           if (matched) {
+            let roleVal = String(matched.Role || matched.role || matched.Jabatan || 'Client Korporat');
+            let roleType = 'CLIENT';
+            if (roleVal.toLowerCase().includes('admin')) roleType = 'ADMIN';
+            else if (roleVal.toLowerCase().includes('vendor')) roleType = 'VENDOR';
+            else if (roleVal.toLowerCase().includes('mitra')) roleType = 'MITRA';
+
             authenticatedUser = {
               corpId: String(matched.Username || matched.username || matched.User || uInput),
               userId: String(matched.Username || matched.username || matched.User || uInput),
               name: String(matched.Name || matched.name || matched.Nama || uInput),
               company: String(matched.Company || matched.company || matched.Perusahaan || 'PT Laksana Software Solutions'),
-              role: String(matched.Role || matched.role || matched.Jabatan || 'Super Admin Korporat'),
+              role: roleVal,
+              roleType: roleType,
               pin: String(matched.PIN || matched.pin || matched.Pin || '123456')
             };
           }
@@ -141,47 +254,32 @@
       }
     }
 
-    // 2. Check local users database stored in localStorage (laksanasoft_users_db)
+    // 3. Fallback Dynamic Account Creator for Custom Spreadsheet Users
     if (!authenticatedUser) {
-      try {
-        const localUsers = JSON.parse(localStorage.getItem('laksanasoft_users_db') || '[]');
-        const matchedLocal = localUsers.find(u => u.username.toLowerCase() === uInput.toLowerCase() && u.password === pInput);
-        if (matchedLocal) {
-          authenticatedUser = matchedLocal.userData;
-        }
-      } catch (err) {}
-    }
+      const formattedName = uInput.charAt(0).toUpperCase() + uInput.slice(1);
+      let roleType = 'CLIENT';
+      let roleName = 'Client Korporat';
 
-    // 3. Fail-Safe Auto Acceptance & Registration for Spreadsheet Users
-    if (!authenticatedUser) {
-      if ((uInput.toLowerCase() === 'admin' && pInput === 'admin') || (uInput.toLowerCase() === 'superadmin' && pInput === 'admin123')) {
-        authenticatedUser = {
-          corpId: uInput,
-          userId: uInput,
-          name: 'Administrator Korporat',
-          company: 'PT Laksana Software Solutions',
-          role: 'Super Admin Korporat',
-          pin: '123456'
-        };
-      } else {
-        // Automatically accept and register newly added spreadsheet user
-        const formattedName = uInput.charAt(0).toUpperCase() + uInput.slice(1);
-        authenticatedUser = {
-          corpId: uInput,
-          userId: uInput,
-          name: `${formattedName} (Akun Spreadsheet)`,
-          company: 'PT Laksana Software Solutions',
-          role: 'Pengguna Korporat',
-          pin: '123456'
-        };
-
-        // Save into local users db for instant future logins
-        try {
-          const localUsers = JSON.parse(localStorage.getItem('laksanasoft_users_db') || '[]');
-          localUsers.push({ username: uInput, password: pInput, userData: authenticatedUser });
-          localStorage.setItem('laksanasoft_users_db', JSON.stringify(localUsers));
-        } catch (err) {}
+      if (uInput.toLowerCase().includes('vendor')) {
+        roleType = 'VENDOR';
+        roleName = 'Vendor / Supplier';
+      } else if (uInput.toLowerCase().includes('mitra')) {
+        roleType = 'MITRA';
+        roleName = 'Mitra Strategis';
+      } else if (uInput.toLowerCase().includes('admin')) {
+        roleType = 'ADMIN';
+        roleName = 'Administrator Korporat';
       }
+
+      authenticatedUser = {
+        corpId: uInput,
+        userId: uInput,
+        name: `${formattedName}`,
+        company: 'PT Laksana Digital Industri',
+        role: roleName,
+        roleType: roleType,
+        pin: '123456'
+      };
     }
 
     if (authenticatedUser) {
@@ -189,16 +287,14 @@
       store.user.isLoggedIn = true;
 
       localStorage.setItem('laksanasoft_mobile_session', JSON.stringify(authenticatedUser));
-      showMobileToast(`Login Berhasil! Selamat datang, ${authenticatedUser.name}`, "success");
+      showMobileToast(`Login Berhasil! Selamat datang, ${authenticatedUser.name} [${authenticatedUser.role}]`, "success");
 
       const loginView = document.getElementById('view-login');
       const appView = document.getElementById('view-app');
       if (loginView) loginView.classList.add('hidden');
       if (appView) appView.classList.remove('hidden');
 
-      const badgeEl = document.getElementById('mobile-user-badge');
-      if (badgeEl) badgeEl.textContent = store.user.userId || 'admin';
-
+      updateUserRoleUI();
       initMobileStore();
     } else {
       showMobileToast("Username atau Password Salah!", "error");
@@ -479,11 +575,11 @@
     doc.setTextColor(15, 23, 42);
     doc.setFontSize(13);
     doc.setFont("helvetica", "bold");
-    doc.text("PT Laksana Digital Industri", 40, 136);
+    doc.text(store.user.company || "PT Laksana Digital Industri", 40, 136);
     doc.setFontSize(9);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(71, 85, 105);
-    doc.text(`Corporate ID: ${store.user.userId || 'admin'}  •  ${store.user.role || 'Super Admin Korporat'}`, 40, 150);
+    doc.text(`User ID: ${store.user.userId || 'client1'}  •  Role: ${store.user.role || 'Client Korporat'}`, 40, 150);
 
     doc.setTextColor(100, 116, 139);
     doc.text("No. Invoice:", 380, 120);
@@ -650,7 +746,7 @@
         if (label) label.textContent = 'Memuat data terbaru dari server...';
 
         await initMobileStore();
-        showMobileToast('Data berhasil diperbarui dari Google Sheets!', 'success');
+        showMobileToast('Data berhasil diperbarui!', 'success');
 
         setTimeout(() => {
           indicator.style.height = '0';
@@ -736,7 +832,7 @@
     }
   });
 
-  // 1. Mobile Home View with 3-Button Row: [ PDF ] [ Detail ] [ Bayar Sekarang / Resi ]
+  // 1. Mobile Home View with 3-Button Row & Single-User Role Customization
   function renderMobileHome() {
     let unpaidTotal = 0;
     let unpaidCount = 0;
@@ -749,9 +845,7 @@
     });
 
     const totalEl = document.getElementById('mobile-unpaid-total');
-    const countEl = document.getElementById('mobile-unpaid-count');
     if (totalEl) totalEl.textContent = formatIDR(unpaidTotal);
-    if (countEl) countEl.textContent = `${unpaidCount} Tagihan Belum Dibayar`;
 
     const container = document.getElementById('mobile-invoice-list');
     if (!container) return;
@@ -760,7 +854,7 @@
       container.innerHTML = `
         <div class="p-8 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
           <span class="material-symbols-outlined text-3xl mb-1 text-slate-300">task_alt</span>
-          <p class="font-semibold text-xs">Belum ada tagihan dari database.</p>
+          <p class="font-semibold text-xs">Belum ada tagihan.</p>
         </div>
       `;
       return;
@@ -936,12 +1030,12 @@
     showMobileToast(`Permintaan ${newReq.id} berhasil diajukan!`, "success");
 
     const telegramMsg = `<b>📥 NOTIFIKASI PERMINTAAN LAYANAN BARU</b>\n\n` +
+      `• <b>Pengaju:</b> ${store.user.name} (${store.user.role})\n` +
       `• <b>ID Permintaan:</b> ${newReq.id}\n` +
       `• <b>Judul:</b> ${newReq.title}\n` +
       `• <b>Kategori:</b> ${newReq.category}\n` +
       `• <b>Prioritas:</b> ${newReq.priority}\n` +
-      `• <b>Deskripsi:</b> ${newReq.description}\n\n` +
-      `Mohon segera ditinjau oleh tim teknis.`;
+      `• <b>Deskripsi:</b> ${newReq.description}`;
     sendTelegramNotificationDirect(telegramMsg);
 
     if (window.GoogleBackend) {
@@ -1049,8 +1143,8 @@
     const reason = document.getElementById('mobile-reject-reason-input')?.value || 'Anggaran belum mencukupi.';
 
     const historyNote = {
-      sender: 'PT Laksana Software',
-      text: `Penawaran DITOLAK: ${reason}`,
+      sender: store.user.name || 'PT Laksana Software',
+      text: `Penawaran DITOLAK oleh ${store.user.role}: ${reason}`,
       time: new Date().toLocaleDateString('id-ID')
     };
 
@@ -1062,6 +1156,7 @@
     }
 
     const telegramMsg = `<b>❌ NOTIFIKASI PENAWARAN DITOLAK</b>\n\n` +
+      `• <b>Ditolak Oleh:</b> ${store.user.name} (${store.user.role})\n` +
       `• <b>ID Penawaran:</b> ${quo.id}\n` +
       `• <b>Vendor:</b> ${quo.vendor}\n` +
       `• <b>Alasan Penolakan:</b> ${reason}`;
@@ -1206,7 +1301,8 @@
   }
 
   async function verifyPin() {
-    if (store.enteredPin === store.user.pin || store.enteredPin === '123456') {
+    const userPin = store.user.pin || '123456';
+    if (store.enteredPin === userPin || store.enteredPin === '123456') {
       closeSheet('sheet-pin', true);
       const inv = store.selectedInvoice;
 
@@ -1267,6 +1363,7 @@
       }
 
       const telegramMsg = `<b>🔔 NOTIFIKASI PEMBAYARAN MASUK</b>\n\n` +
+        `• <b>Pembayar:</b> ${store.user.name} (${store.user.role})\n` +
         `• <b>No. Invoice:</b> ${inv.id}\n` +
         `• <b>Vendor:</b> ${inv.vendor}\n` +
         `• <b>Nominal:</b> ${formatIDR(inv.amount)}\n` +
@@ -1278,7 +1375,7 @@
       openSheet('sheet-payment-status');
       renderMobileHome();
     } else {
-      showMobileToast('PIN Salah! (PIN Demo: 123456)', 'error');
+      showMobileToast(`PIN Salah! PIN untuk ${store.user.name} adalah: ${userPin}`, 'error');
       store.enteredPin = '';
       updatePinDots();
     }
@@ -1320,6 +1417,7 @@
       switchMobileTab('home', false);
       checkUserSession();
     },
+    fillDemoLogin: fillDemoLogin,
     handleLogin: handleLogin,
     logout: logout,
     switchTab: switchMobileTab,
@@ -1379,6 +1477,7 @@
       }
 
       const telegramMsg = `<b>✅ NOTIFIKASI PENAWARAN DISETUJUI</b>\n\n` +
+        `• <b>Disetujui Oleh:</b> ${store.user.name} (${store.user.role})\n` +
         `• <b>ID Penawaran:</b> ${quo.id}\n` +
         `• <b>Vendor:</b> ${quo.vendor}\n` +
         `• <b>Status:</b> DISETUJUI / APPROVED`;
@@ -1408,6 +1507,7 @@
       }
 
       const telegramMsg = `<b>🔄 NOTIFIKASI NEGOSIASI PENAWARAN</b>\n\n` +
+        `• <b>Diajukan Oleh:</b> ${store.user.name} (${store.user.role})\n` +
         `• <b>ID Penawaran:</b> ${quo.id}\n` +
         `• <b>Vendor:</b> ${quo.vendor}\n` +
         `• <b>Harga Negosiasi Balik:</b> ${formatIDR(counter)}`;

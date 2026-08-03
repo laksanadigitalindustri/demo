@@ -1,13 +1,12 @@
 /* ==========================================================================
    Laksanasoft Payment Portal - Hardened Google Backend Service API Client
    Engine: Google Sheets (Database) & Google Drive (File Storage)
-   Security: Secured with API Token & Input Sanitization
+   Security: Secured with API Token & Real-Time Chat Synchronization
    ========================================================================== */
 
 (function () {
   'use strict';
 
-  // CONFIGURATION: Live Google Apps Script Web App URL (Deployment Versi 3 - Secure)
   const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzw_neGT6xgtp14s5NNZ7Q1xEJzfdCIA3BJCyQOjkYpBI8OiXF80eoRmcSBRXItVz5wdQ/exec";
   const API_SECRET_TOKEN = "LAKSA_SECURE_TOKEN_2026_98F3A";
 
@@ -16,13 +15,14 @@
       return GOOGLE_WEB_APP_URL && GOOGLE_WEB_APP_URL.trim() !== "";
     },
 
-    // 1. Fetch Invoices with API Security Token
-    fetchInvoices: async function () {
+    // 1. Fetch Invoices filtered by User ID & Role
+    fetchInvoices: async function (userId = '', roleType = 'CLIENT') {
       if (!this.isConfigured()) return null;
       try {
-        const res = await fetch(`${GOOGLE_WEB_APP_URL}?action=getInvoices&token=${encodeURIComponent(API_SECRET_TOKEN)}`);
+        const url = `${GOOGLE_WEB_APP_URL}?action=getInvoices&token=${encodeURIComponent(API_SECRET_TOKEN)}&userId=${encodeURIComponent(userId)}&roleType=${encodeURIComponent(roleType)}`;
+        const res = await fetch(url);
         const json = await res.json();
-        if (json.status === "success" && Array.isArray(json.data)) {
+        if (json.status === "SUCCESS" && Array.isArray(json.data)) {
           return json.data.map(item => {
             let parsedItems = [];
             if (Array.isArray(item.items)) {
@@ -43,24 +43,26 @@
               subtotal: Number(item.subtotal || item.Subtotal || 0),
               status: String(item.status || item.Status || 'UNPAID').toUpperCase(),
               description: String(item.description || item.Description || ''),
+              userId: String(item.userId || item.UserId || item.CorpId || ''),
               items: parsedItems
             };
           });
         }
         return null;
       } catch (err) {
-        console.warn("Gagal terhubung ke Google Sheets API:", err);
+        console.warn("Gagal terhubung ke Google Sheets Invoices API:", err);
         return null;
       }
     },
 
-    // 2. Fetch Proposals with API Security Token
-    fetchProposals: async function () {
+    // 2. Fetch Proposals filtered by User ID & Role
+    fetchProposals: async function (userId = '', roleType = 'CLIENT') {
       if (!this.isConfigured()) return null;
       try {
-        const res = await fetch(`${GOOGLE_WEB_APP_URL}?action=getProposals&token=${encodeURIComponent(API_SECRET_TOKEN)}`);
+        const url = `${GOOGLE_WEB_APP_URL}?action=getProposals&token=${encodeURIComponent(API_SECRET_TOKEN)}&userId=${encodeURIComponent(userId)}&roleType=${encodeURIComponent(roleType)}`;
+        const res = await fetch(url);
         const json = await res.json();
-        if (json.status === "success" && Array.isArray(json.data)) {
+        if (json.status === "SUCCESS" && Array.isArray(json.data)) {
           return json.data.map(item => {
             let parsedItems = [];
             let parsedHistory = [];
@@ -86,6 +88,7 @@
               counterPrice: item.counterPrice || item.CounterPrice ? Number(item.counterPrice || item.CounterPrice) : null,
               status: String(item.status || item.Status || 'PENDING').toUpperCase(),
               notes: String(item.notes || item.Notes || ''),
+              userId: String(item.userId || item.UserId || ''),
               items: parsedItems,
               history: parsedHistory
             };
@@ -98,7 +101,7 @@
       }
     },
 
-    // 3. Fetch Users with API Security Token
+    // 3. Fetch Users List
     fetchUsers: async function () {
       if (!this.isConfigured()) return null;
       try {
@@ -114,33 +117,82 @@
       }
     },
 
-    // 3. Fetch Transactions with API Security Token
-    fetchTransactions: async function () {
+    // 4. Fetch Real-time Live Chats
+    fetchChats: async function () {
       if (!this.isConfigured()) return null;
       try {
-        const res = await fetch(`${GOOGLE_WEB_APP_URL}?action=getTransactions&token=${encodeURIComponent(API_SECRET_TOKEN)}`);
+        const res = await fetch(`${GOOGLE_WEB_APP_URL}?action=getChats&token=${encodeURIComponent(API_SECRET_TOKEN)}`);
         const json = await res.json();
-        if (json.status === "success" && Array.isArray(json.data)) {
+        if (json.status === "SUCCESS" && Array.isArray(json.data)) {
           return json.data.map(item => ({
-            trxId: String(item.trxId || item.TrxID || item.trxID || ''),
-            invoiceId: String(item.invoiceId || item.InvoiceID || ''),
-            vendor: String(item.vendor || item.Vendor || ''),
-            amount: Number(item.amount || item.Amount || 0),
-            date: String(item.date || item.Date || ''),
-            method: String(item.method || item.Method || ''),
-            status: String(item.status || item.Status || 'SUCCESS').toUpperCase(),
-            refCode: String(item.refCode || item.RefCode || ''),
-            driveReceiptUrl: String(item.driveReceiptUrl || item.DriveReceiptUrl || '')
+            id: String(item.ChatID || item.chatId || ''),
+            senderId: String(item.SenderID || item.senderId || ''),
+            senderName: String(item.SenderName || item.senderName || ''),
+            senderRole: String(item.SenderRole || item.senderRole || ''),
+            recipientId: String(item.RecipientID || item.recipientId || ''),
+            text: String(item.MessageText || item.text || ''),
+            timestamp: String(item.Timestamp || item.timestamp || '')
           }));
         }
         return null;
       } catch (err) {
-        console.warn("Gagal terhubung ke Google Sheets API:", err);
+        console.warn("Gagal terhubung ke Google Sheets Chats API:", err);
         return null;
       }
     },
 
-    // 4. Process Payment with API Security Token
+    // 5. Send Real-time Chat Message
+    sendChatMessage: async function (msgData) {
+      if (!this.isConfigured()) return null;
+      try {
+        const res = await fetch(GOOGLE_WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            token: API_SECRET_TOKEN,
+            action: "sendChatMessage",
+            senderId: msgData.senderId,
+            senderName: msgData.senderName,
+            senderRole: msgData.senderRole,
+            recipientId: msgData.recipientId || 'ALL',
+            text: msgData.text
+          })
+        });
+        const json = await res.json();
+        return json.status === "SUCCESS" ? json : null;
+      } catch (err) {
+        console.error("Gagal mengirim pesan chat:", err);
+        return null;
+      }
+    },
+
+    // 6. User Registration Endpoint
+    createUser: async function (userData) {
+      if (!this.isConfigured()) return null;
+      try {
+        const res = await fetch(GOOGLE_WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            token: API_SECRET_TOKEN,
+            action: "createUser",
+            username: userData.username,
+            password: userData.password,
+            name: userData.name,
+            role: userData.role,
+            company: userData.company,
+            pin: userData.pin
+          })
+        });
+        const json = await res.json();
+        return json.status === "SUCCESS" ? json : null;
+      } catch (err) {
+        console.error("Gagal membuat user baru di Google Sheets:", err);
+        return null;
+      }
+    },
+
+    // 7. Process Payment
     processPayment: async function (paymentData) {
       if (!this.isConfigured()) return null;
       try {
@@ -157,14 +209,14 @@
           })
         });
         const json = await res.json();
-        return json.status === "success" ? json.data : null;
+        return json.status === "SUCCESS" ? json.data : null;
       } catch (err) {
         console.error("Gagal menyimpan ke Google Drive & Sheets:", err);
         return null;
       }
     },
 
-    // 5. Update Proposal Status with API Security Token
+    // 8. Update Proposal Status
     updateProposalStatus: async function (proposalData) {
       if (!this.isConfigured()) return null;
       try {
@@ -181,14 +233,14 @@
           })
         });
         const json = await res.json();
-        return json.status === "success" ? json.data : null;
+        return json.status === "SUCCESS" ? json.data : null;
       } catch (err) {
         console.error("Gagal mengupdate Proposal di Google Sheets:", err);
         return null;
       }
     },
 
-    // 6. User Login Authentication with API Security Token
+    // 9. User Login Authentication
     loginUser: async function (username, password) {
       if (!this.isConfigured()) return null;
       try {

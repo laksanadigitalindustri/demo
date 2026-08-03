@@ -113,9 +113,9 @@
       </div>
 
       <div class="flex items-center gap-1">
-        <button type="button" onclick="mobileApp.openAdminChatModal()" class="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 relative" title="Pusat Chat Admin">
+        <button type="button" onclick="mobileApp.switchTab('chat')" class="p-1.5 rounded-lg text-blue-600 hover:bg-blue-50 relative" title="Pusat Chat & Pesan">
           <span class="material-symbols-outlined text-lg">chat</span>
-          <span id="admin-chat-indicator" class="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-500"></span>
+          <span id="header-chat-dot" class="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500"></span>
         </button>
         <button type="button" onclick="mobileApp.refreshData()" class="p-1.5 rounded-lg text-slate-700 hover:bg-slate-100" title="Refresh Data">
           <span class="material-symbols-outlined text-lg">sync</span>
@@ -146,9 +146,9 @@
             <div class="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold">
               <span class="material-symbols-outlined text-sm">admin_panel_settings</span>
             </div>
-            <span class="font-extrabold text-xs text-blue-300 uppercase tracking-wider">Super Admin Monitoring Command Center</span>
+            <span class="font-extrabold text-xs text-blue-300 uppercase tracking-wider">Super Admin Command Center</span>
           </div>
-          <span class="px-2 py-0.5 rounded-full bg-blue-500/30 text-blue-200 text-[9px] font-bold">LIVE ACC & CHAT</span>
+          <span class="px-2 py-0.5 rounded-full bg-blue-500/30 text-blue-200 text-[9px] font-bold">LIVE AUDIT & ACC</span>
         </div>
 
         <div class="grid grid-cols-3 gap-2 text-center pt-1">
@@ -160,10 +160,10 @@
             <span class="text-[9px] text-blue-300 font-semibold block">ACC Penawaran:</span>
             <span id="admin-pending-quo-count" class="font-extrabold text-xs text-emerald-300">0 Vendor</span>
           </button>
-          <button type="button" onclick="mobileApp.openAdminChatModal()" class="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-all text-left">
+          <button type="button" onclick="mobileApp.switchTab('chat')" class="p-2 bg-white/10 rounded-xl hover:bg-white/20 transition-all text-left">
             <span class="text-[9px] text-blue-300 font-semibold block">Balas Chat:</span>
             <span class="font-extrabold text-xs text-blue-300 flex items-center gap-1">
-              <span class="material-symbols-outlined text-xs">forum</span> Live Reply
+              <span class="material-symbols-outlined text-xs">forum</span> Live Chat
             </span>
           </button>
         </div>
@@ -176,15 +176,15 @@
           <div class="relative z-10 space-y-2.5">
             <div class="flex justify-between items-center">
               <span id="mobile-hero-title" class="text-[10px] font-bold text-slate-300 uppercase tracking-wider block">Ringkasan Tagihan Korporat</span>
-              <span id="mobile-user-badge" class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold flex-shrink-0">SUPER ADMIN</span>
+              <span id="mobile-user-badge" class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold flex-shrink-0">CLIENT</span>
             </div>
             <h2 id="mobile-unpaid-total" class="text-2xl sm:text-3xl font-black text-white">Rp 0</h2>
             <div class="flex items-center justify-between pt-2 border-t border-slate-700/60 text-xs">
               <div class="truncate pr-2">
-                <span id="mobile-user-fullname" class="text-white font-bold block truncate">Super Administrator</span>
-                <span id="mobile-user-company" class="text-slate-400 text-[10px] block truncate">PT Laksana Software Solutions</span>
+                <span id="mobile-user-fullname" class="text-white font-bold block truncate">Pengguna</span>
+                <span id="mobile-user-company" class="text-slate-400 text-[10px] block truncate">PT Laksana Digital Industri</span>
               </div>
-              <span id="mobile-user-role-pill" class="px-2 py-0.5 rounded-full bg-slate-700 text-slate-300 text-[9px] font-bold flex-shrink-0">Super Admin Korporat</span>
+              <span id="mobile-user-role-pill" class="px-2 py-0.5 rounded-full bg-slate-700 text-slate-300 text-[9px] font-bold flex-shrink-0">Client Korporat</span>
             </div>
           </div>
         </div>
@@ -241,7 +241,44 @@
         <div id="mobile-requests-list" class="space-y-3"></div>
       </div>
 
-      <!-- 4. HISTORY TAB CONTENT -->
+      <!-- 4. REAL-TIME LIVE CHAT TAB CONTENT (For Super Admin & All Users) -->
+      <div id="tab-chat" class="mobile-tab-content space-y-3 hidden">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+          <div>
+            <h3 class="font-extrabold text-sm text-slate-900">Pusat Layanan Chat Real-Time</h3>
+            <p id="chat-subtitle" class="text-[10px] text-slate-500">Dukungan langsung & Komunikasi Super Admin</p>
+          </div>
+          <button type="button" onclick="mobileApp.syncChatsRealtime()" class="p-1 text-emerald-700 bg-emerald-50 rounded-lg text-xs font-bold flex items-center gap-1">
+            <span class="material-symbols-outlined text-base">sync</span> Sinkronkan
+          </button>
+        </div>
+
+        <!-- Chat Thread Messages Display Box -->
+        <div id="tab-chat-messages" class="bg-slate-900 text-white p-3 rounded-2xl h-[340px] overflow-y-auto space-y-2.5 text-xs font-medium border border-slate-800 shadow-inner"></div>
+
+        <!-- Quick Reply Suggestions -->
+        <div class="flex gap-1.5 overflow-x-auto pb-1 text-[10px]">
+          <button type="button" onclick="mobileApp.useChatTemplate('Halo, terima kasih sudah menghubungi tim Laksanasoft. Ada yang bisa kami bantu?')" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap font-semibold border border-slate-200">
+            + Salam Layanan
+          </button>
+          <button type="button" onclick="mobileApp.useChatTemplate('Mohon kirimkan ID transaksi atau No. Invoice Anda untuk verifikasi.')" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap font-semibold border border-slate-200">
+            + Minta No. Invoice
+          </button>
+          <button type="button" onclick="mobileApp.useChatTemplate('Pembayaran tagihan Anda telah diverifikasi oleh Super Admin. Terima kasih!')" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap font-semibold border border-slate-200">
+            + Verifikasi ACC
+          </button>
+        </div>
+
+        <!-- Chat Input Form -->
+        <div class="flex items-center gap-2 pt-1 border-t border-slate-200">
+          <input type="text" id="tab-chat-input" placeholder="Tulis pesan langsung di sini..." class="flex-1 p-2.5 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-slate-900 font-medium" />
+          <button type="button" onclick="mobileApp.sendTabChatMessage()" class="p-2.5 bg-slate-900 text-white rounded-xl active:scale-95 transition-transform">
+            <span class="material-symbols-outlined text-base">send</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 5. HISTORY TAB CONTENT -->
       <div id="tab-history" class="mobile-tab-content space-y-4 hidden">
         <div class="flex items-center justify-between">
           <h3 class="font-extrabold text-sm text-slate-900">Riwayat Pembayaran Lunas</h3>
@@ -251,7 +288,7 @@
 
     </main>
 
-    <!-- MOBILE BOTTOM NAVIGATION BAR -->
+    <!-- MOBILE BOTTOM NAVIGATION BAR (Include Chat Tab for Super Admin & All Users) -->
     <nav class="mobile-bottom-nav">
       <button type="button" id="nav-btn-home" onclick="mobileApp.switchTab('home')" class="mobile-nav-item active">
         <span class="material-symbols-outlined text-xl">home</span>
@@ -264,6 +301,10 @@
       <button type="button" id="nav-btn-requests" onclick="mobileApp.switchTab('requests')" class="mobile-nav-item">
         <span class="material-symbols-outlined text-xl">assignment_add</span>
         <span>Permintaan</span>
+      </button>
+      <button type="button" id="nav-btn-chat" onclick="mobileApp.switchTab('chat')" class="mobile-nav-item">
+        <span class="material-symbols-outlined text-xl">chat</span>
+        <span>Pesan</span>
       </button>
       <button type="button" id="nav-btn-history" onclick="mobileApp.switchTab('history')" class="mobile-nav-item">
         <span class="material-symbols-outlined text-xl">history</span>
@@ -314,51 +355,6 @@
     </div>
   </div>
 
-  <!-- SUPER ADMIN BOTTOM SHEET 2: DIRECT LIVE CHAT & REPLY MODULE -->
-  <div id="sheet-admin-chat" class="mobile-bottom-sheet">
-    <div class="mobile-sheet-content space-y-3">
-      <div class="sheet-handle"></div>
-      <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
-        <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
-            <span class="material-symbols-outlined text-base">chat</span>
-          </div>
-          <div>
-            <h3 class="font-extrabold text-sm text-slate-900">Membalas Chat Langsung Klien</h3>
-            <span class="text-[10px] text-slate-400">Live Support & Auto-Telegram Dispatch</span>
-          </div>
-        </div>
-        <button type="button" onclick="mobileApp.closeSheet('sheet-admin-chat')" class="text-slate-400">
-          <span class="material-symbols-outlined text-lg">close</span>
-        </button>
-      </div>
-
-      <!-- Live Chat Messages Thread Container -->
-      <div id="admin-chat-messages" class="bg-slate-900 text-white p-3 rounded-2xl h-64 overflow-y-auto space-y-2.5 text-xs font-medium"></div>
-
-      <!-- Quick Reply Templates -->
-      <div class="flex gap-1.5 overflow-x-auto pb-1 text-[10px]">
-        <button type="button" onclick="mobileApp.useChatTemplate('Pembayaran tagihan Anda telah diverifikasi oleh Super Admin. Terima kasih!')" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap font-semibold border border-slate-200">
-          + ACC Pembayaran
-        </button>
-        <button type="button" onclick="mobileApp.useChatTemplate('Permintaan layanan Anda sedang diproses oleh tim teknis Laksanasoft.')" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap font-semibold border border-slate-200">
-          + Diproses Teknis
-        </button>
-        <button type="button" onclick="mobileApp.useChatTemplate('Penawaran harga dari vendor telah kami kaji dan disetujui.')" class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg whitespace-nowrap font-semibold border border-slate-200">
-          + ACC Penawaran
-        </button>
-      </div>
-
-      <!-- Chat Input Form -->
-      <div class="flex items-center gap-2 pt-1 border-t border-slate-100">
-        <input type="text" id="admin-chat-input" placeholder="Tulis balasan pesan langsung ke Klien..." class="flex-1 p-2.5 border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-slate-900 font-medium" />
-        <button type="button" onclick="mobileApp.sendAdminChatMessage()" class="p-2.5 bg-slate-900 text-white rounded-xl active:scale-95 transition-transform">
-          <span class="material-symbols-outlined text-base">send</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
   <!-- SUPER ADMIN BOTTOM SHEET 3: KELOLA & TAMBAH PENGGUNA BARU -->
   <div id="sheet-admin-users" class="mobile-bottom-sheet">
     <div class="mobile-sheet-content space-y-4">
@@ -371,7 +367,7 @@
       </div>
 
       <form onsubmit="mobileApp.addNewUserAccount(event)" class="space-y-3 text-xs bg-slate-50 p-3.5 rounded-2xl border border-slate-200">
-        <span class="font-extrabold text-slate-900 text-xs block">Tambah Pengguna Baru:</span>
+        <span class="font-extrabold text-slate-900 text-xs block">Tambah Pengguna Baru (Data Bersih Terpisah):</span>
         <div class="grid grid-cols-2 gap-2">
           <div>
             <label class="font-bold text-slate-600 block mb-1">Username:</label>

@@ -1,6 +1,6 @@
 /* ==========================================================================
    Laksanasoft Mobile App - Dedicated Smartphone Application Engine
-   Includes Super Admin Control Center (ACC, Monitoring, Live Chat Reply)
+   Includes Real-Time Chat Synchronization & Strict Per-User Data Isolation
    ========================================================================== */
 
 (function () {
@@ -23,8 +23,7 @@
     transactions: [],
     notifications: [],
     chatMessages: [
-      { sender: 'client', name: 'Budi Santoso', text: 'Halo Super Admin, mohon bantuan verifikasi invoice INV-2026-0891.', time: '10:15 WIB' },
-      { sender: 'admin', name: 'Super Admin', text: 'Halo Pak Budi, siap kami verifikasi sekarang.', time: '10:17 WIB' }
+      { senderId: 'admin', senderName: 'Super Admin', senderRole: 'Super Admin', text: 'Halo! Selamat datang di Pusat Layanan Chat Laksanasoft.', timestamp: '09:00 WIB' }
     ],
     currentTab: 'home',
     selectedInvoice: null,
@@ -94,6 +93,7 @@
 
   const navigationStack = ['home'];
   let toastTimer = null;
+  let chatSyncInterval = null;
   const TELEGRAM_BOT_TOKEN = '8814615182:AAF_bAmLXUQrUkmxLfCBrnZEKUoFPeyQ0_w';
 
   // DIRECT TELEGRAM BOT NOTIFIER
@@ -141,6 +141,7 @@
     const heroTitle = document.getElementById('mobile-hero-title');
     const pinPromptLabel = document.getElementById('pin-prompt-label');
     const adminBanner = document.getElementById('super-admin-banner');
+    const chatSubtitle = document.getElementById('chat-subtitle');
 
     if (roleLabel) roleLabel.textContent = store.user.role || 'Client Korporat';
     if (nameEl) nameEl.textContent = store.user.name || 'Pengguna Korporat';
@@ -149,6 +150,11 @@
     if (pinPromptLabel) pinPromptLabel.textContent = `Ketik 6 digit PIN transaksi untuk ${store.user.name}`;
 
     const rType = store.user.roleType || 'CLIENT';
+    if (chatSubtitle) {
+      if (rType === 'ADMIN') chatSubtitle.textContent = 'Pusat Chat Admin • Membalas Seluruh Klien & Vendor';
+      else chatSubtitle.textContent = `Chat Langsung ${store.user.name} dengan Super Admin Laksanasoft`;
+    }
+
     if (badgeEl) {
       badgeEl.textContent = rType;
       if (rType === 'ADMIN') {
@@ -200,6 +206,7 @@
 
         updateUserRoleUI();
         initMobileStore();
+        startRealtimeChatSync();
         return true;
       } catch (e) {
         localStorage.removeItem('laksanasoft_mobile_session');
@@ -286,7 +293,7 @@
       }
     }
 
-    // 4. Fallback Dynamic Account Creator for Custom Spreadsheet Users
+    // 4. Fallback Dynamic Account Creator for Custom Spreadsheet Users (Strict Isolated Account)
     if (!authenticatedUser) {
       const formattedName = uInput.charAt(0).toUpperCase() + uInput.slice(1);
       let roleType = 'CLIENT';
@@ -307,11 +314,19 @@
         corpId: uInput,
         userId: uInput,
         name: `${formattedName}`,
-        company: 'PT Laksana Digital Industri',
+        company: `PT ${formattedName} Indonesia`,
         role: roleName,
         roleType: roleType,
-        pin: '123456'
+        pin: '123456',
+        isNewUser: true
       };
+
+      // Save into local users db so subsequent logins are instant
+      try {
+        const localUsers = JSON.parse(localStorage.getItem('laksanasoft_users_db') || '[]');
+        localUsers.push({ username: uInput, password: pInput, userData: authenticatedUser });
+        localStorage.setItem('laksanasoft_users_db', JSON.stringify(localUsers));
+      } catch (err) {}
     }
 
     if (authenticatedUser) {
@@ -328,12 +343,14 @@
 
       updateUserRoleUI();
       initMobileStore();
+      startRealtimeChatSync();
     } else {
       showMobileToast("Username atau Password Salah!", "error");
     }
   }
 
   function logout() {
+    if (chatSyncInterval) clearInterval(chatSyncInterval);
     localStorage.removeItem('laksanasoft_mobile_session');
     store.user.isLoggedIn = false;
 
@@ -367,6 +384,7 @@
       subtotal: Number(inv.subtotal || inv.Subtotal || 0),
       status: String(inv.status || inv.Status || 'UNPAID').toUpperCase(),
       description: String(inv.description || inv.Description || ''),
+      userId: String(inv.userId || inv.UserId || inv.CorpId || ''),
       items: parsedItems
     };
   }
@@ -397,6 +415,7 @@
       counterPrice: quo.counterPrice || quo.CounterPrice ? Number(quo.counterPrice || quo.CounterPrice) : null,
       status: String(quo.status || quo.Status || 'PENDING').toUpperCase(),
       notes: String(quo.notes || quo.Notes || ''),
+      userId: String(quo.userId || quo.UserId || ''),
       items: parsedItems,
       history: parsedHistory
     };
@@ -451,25 +470,29 @@
     }
   }
 
+  // Initialize Store with STRICT PER-USER DATA ISOLATION
   async function initMobileStore() {
     renderSkeletonLoaders();
     let synced = false;
 
+    const currentUserId = store.user.userId || '';
+    const currentRoleType = store.user.roleType || 'CLIENT';
+
     if (window.GoogleBackend && window.GoogleBackend.isConfigured()) {
       try {
-        const remoteInvoices = await window.GoogleBackend.fetchInvoices();
-        if (remoteInvoices && Array.isArray(remoteInvoices) && remoteInvoices.length > 0) {
+        const remoteInvoices = await window.GoogleBackend.fetchInvoices(currentUserId, currentRoleType);
+        if (remoteInvoices && Array.isArray(remoteInvoices)) {
           store.invoices = remoteInvoices.map(normalizeInvoice).filter(Boolean);
           synced = true;
         }
 
-        const remoteProposals = await window.GoogleBackend.fetchProposals();
-        if (remoteProposals && Array.isArray(remoteProposals) && remoteProposals.length > 0) {
+        const remoteProposals = await window.GoogleBackend.fetchProposals(currentUserId, currentRoleType);
+        if (remoteProposals && Array.isArray(remoteProposals)) {
           store.proposals = remoteProposals.map(normalizeProposal).filter(Boolean);
         }
 
         const remoteTrx = await window.GoogleBackend.fetchTransactions();
-        if (remoteTrx && Array.isArray(remoteTrx) && remoteTrx.length > 0) {
+        if (remoteTrx && Array.isArray(remoteTrx)) {
           store.transactions = remoteTrx.map(normalizeTransaction).filter(Boolean);
         }
       } catch (e) {
@@ -478,40 +501,51 @@
     }
 
     if (!synced) {
-      const savedInv = localStorage.getItem('laksanasoft_invoices');
-      if (savedInv) store.invoices = JSON.parse(savedInv).map(normalizeInvoice).filter(Boolean);
+      // Local Dataset Isolation Check
+      if (currentRoleType === 'ADMIN') {
+        const savedInv = localStorage.getItem('laksanasoft_invoices');
+        if (savedInv) store.invoices = JSON.parse(savedInv).map(normalizeInvoice).filter(Boolean);
+        else store.invoices = getDefaultAdminInvoices();
 
-      const savedProp = localStorage.getItem('laksanasoft_proposals');
-      if (savedProp) store.proposals = JSON.parse(savedProp).map(normalizeProposal).filter(Boolean);
+        const savedProp = localStorage.getItem('laksanasoft_proposals');
+        if (savedProp) store.proposals = JSON.parse(savedProp).map(normalizeProposal).filter(Boolean);
+        else store.proposals = getDefaultAdminProposals();
+      } else if (currentUserId === 'client1') {
+        store.invoices = getDefaultClient1Invoices();
+        store.proposals = [];
+      } else if (currentUserId === 'vendor1') {
+        store.invoices = getDefaultVendor1Invoices();
+        store.proposals = getDefaultVendor1Proposals();
+      } else {
+        // Newly created users start with 100% CLEAN EMPTY DATA
+        const userSavedInv = localStorage.getItem(`laksanasoft_user_inv_${currentUserId}`);
+        store.invoices = userSavedInv ? JSON.parse(userSavedInv) : [];
 
-      const savedTrx = localStorage.getItem('laksanasoft_transactions');
-      if (savedTrx) store.transactions = JSON.parse(savedTrx).map(normalizeTransaction).filter(Boolean);
+        const userSavedProp = localStorage.getItem(`laksanasoft_user_prop_${currentUserId}`);
+        store.proposals = userSavedProp ? JSON.parse(userSavedProp) : [];
+      }
     }
 
-    const savedReq = localStorage.getItem('laksanasoft_requests');
+    // Isolated Service Requests for current user
+    const savedReq = localStorage.getItem(`laksanasoft_requests_${currentUserId}`);
     if (savedReq) {
       try { store.requests = JSON.parse(savedReq); } catch (e) { store.requests = []; }
     } else {
-      store.requests = [
-        {
-          id: 'REQ-2026-0801',
-          title: 'Permintaan Upgrade Kapasitas Dedicated Cloud Server 128GB',
-          category: 'Cloud Infrastructure',
-          priority: 'HIGH',
-          status: 'IN_PROGRESS',
-          date: '02 Agt 2026',
-          description: 'Pengajuan penambahan RAM & NVMe SSD untuk cluster database utama.'
-        },
-        {
-          id: 'REQ-2026-0802',
-          title: 'Permintaan Perpanjangan Lisensi SSL Enterprise Wildcard',
-          category: 'Security & Network',
-          priority: 'NORMAL',
-          status: 'COMPLETED',
-          date: '28 Jul 2026',
-          description: 'Penerbitan sertifikat SSL domain korporat tahunan.'
-        }
-      ];
+      if (currentUserId === 'client1' || currentRoleType === 'ADMIN') {
+        store.requests = [
+          {
+            id: 'REQ-2026-0801',
+            title: 'Permintaan Upgrade Kapasitas Dedicated Cloud Server 128GB',
+            category: 'Cloud Infrastructure',
+            priority: 'HIGH',
+            status: 'IN_PROGRESS',
+            date: '02 Agt 2026',
+            description: 'Pengajuan penambahan RAM & NVMe SSD untuk cluster database utama.'
+          }
+        ];
+      } else {
+        store.requests = [];
+      }
     }
 
     store.isLoading = false;
@@ -519,11 +553,49 @@
     renderCurrentTabContent();
   }
 
+  function getDefaultAdminInvoices() {
+    return [
+      { id: 'INV-2026-0891', vendor: 'PT Cloud Hostindo', vendorLogo: 'dns', category: 'Cloud Infrastructure', issueDate: '01 Agt 2026', dueDate: '15 Agt 2026', amount: 15500000, tax: 1536036, subtotal: 13963964, status: 'UNPAID', description: 'Biaya Sewa Cloud Server Enterprise', userId: 'client1' },
+      { id: 'INV-2026-0892', vendor: 'PT Software Solutions', vendorLogo: 'code', category: 'Software License', issueDate: '25 Jul 2026', dueDate: '10 Agt 2026', amount: 8750000, tax: 867117, subtotal: 7882883, status: 'UNPAID', description: 'Lisensi Tahunan Enterprise ERP Engine', userId: 'client1' }
+    ];
+  }
+
+  function getDefaultClient1Invoices() {
+    return [
+      { id: 'INV-2026-0891', vendor: 'PT Cloud Hostindo', vendorLogo: 'dns', category: 'Cloud Infrastructure', issueDate: '01 Agt 2026', dueDate: '15 Agt 2026', amount: 15500000, tax: 1536036, subtotal: 13963964, status: 'UNPAID', description: 'Biaya Sewa Cloud Server Enterprise', userId: 'client1' },
+      { id: 'INV-2026-0892', vendor: 'PT Software Solutions', vendorLogo: 'code', category: 'Software License', issueDate: '25 Jul 2026', dueDate: '10 Agt 2026', amount: 8750000, tax: 867117, subtotal: 7882883, status: 'UNPAID', description: 'Lisensi Tahunan Enterprise ERP Engine', userId: 'client1' }
+    ];
+  }
+
+  function getDefaultVendor1Invoices() {
+    return [
+      { id: 'INV-2026-0891', vendor: 'PT Cloud Hostindo', vendorLogo: 'dns', category: 'Cloud Infrastructure', issueDate: '01 Agt 2026', dueDate: '15 Agt 2026', amount: 15500000, tax: 1536036, subtotal: 13963964, status: 'UNPAID', description: 'Penagihan Sewa Dedicated Cloud Server', userId: 'client1' }
+    ];
+  }
+
+  function getDefaultAdminProposals() {
+    return [
+      { id: 'QUO-2026-0104', vendor: 'PT Cloud Hostindo', vendorLogo: 'dns', title: 'Penawaran Upgrade Bandwidth Network 10Gbps', issueDate: '28 Jul 2026', validUntil: '20 Agt 2026', originalPrice: 12000000, counterPrice: null, status: 'PENDING', notes: 'Diskon 10% jika kontrak 2 tahun', userId: 'vendor1', items: [], history: [] }
+    ];
+  }
+
+  function getDefaultVendor1Proposals() {
+    return [
+      { id: 'QUO-2026-0104', vendor: 'PT Cloud Hostindo', vendorLogo: 'dns', title: 'Penawaran Upgrade Bandwidth Network 10Gbps', issueDate: '28 Jul 2026', validUntil: '20 Agt 2026', originalPrice: 12000000, counterPrice: null, status: 'PENDING', notes: 'Diskon 10% jika kontrak 2 tahun', userId: 'vendor1', items: [], history: [] }
+    ];
+  }
+
   function saveStore() {
-    localStorage.setItem('laksanasoft_invoices', JSON.stringify(store.invoices));
-    localStorage.setItem('laksanasoft_proposals', JSON.stringify(store.proposals));
-    localStorage.setItem('laksanasoft_transactions', JSON.stringify(store.transactions));
-    localStorage.setItem('laksanasoft_requests', JSON.stringify(store.requests));
+    const currentUserId = store.user.userId || 'admin';
+    if (store.user.roleType === 'ADMIN') {
+      localStorage.setItem('laksanasoft_invoices', JSON.stringify(store.invoices));
+      localStorage.setItem('laksanasoft_proposals', JSON.stringify(store.proposals));
+      localStorage.setItem('laksanasoft_transactions', JSON.stringify(store.transactions));
+    } else {
+      localStorage.setItem(`laksanasoft_user_inv_${currentUserId}`, JSON.stringify(store.invoices));
+      localStorage.setItem(`laksanasoft_user_prop_${currentUserId}`, JSON.stringify(store.proposals));
+    }
+    localStorage.setItem(`laksanasoft_requests_${currentUserId}`, JSON.stringify(store.requests));
   }
 
   function formatIDR(val) {
@@ -547,7 +619,92 @@
     }, 2000);
   }
 
-  // --- SUPER ADMIN ACTION MODULES (ACC, LIVE CHAT, USER MGMT) ---
+  // --- REAL-TIME LIVE CHAT ENGINE & SINKRONISASI ---
+  function startRealtimeChatSync() {
+    syncChatsRealtime();
+    if (chatSyncInterval) clearInterval(chatSyncInterval);
+    chatSyncInterval = setInterval(syncChatsRealtime, 8000); // Auto-sync every 8 seconds
+  }
+
+  async function syncChatsRealtime() {
+    if (window.GoogleBackend && window.GoogleBackend.isConfigured()) {
+      const remoteChats = await window.GoogleBackend.fetchChats();
+      if (remoteChats && Array.isArray(remoteChats) && remoteChats.length > 0) {
+        store.chatMessages = remoteChats;
+      }
+    }
+    renderTabChatThread();
+  }
+
+  function renderTabChatThread() {
+    const container = document.getElementById('tab-chat-messages');
+    if (!container) return;
+
+    if (!store.chatMessages || store.chatMessages.length === 0) {
+      container.innerHTML = `<div class="p-6 text-center text-slate-500 italic text-xs">Belum ada percakapan. Tulis pesan di bawah untuk memulai chat dengan Super Admin.</div>`;
+      return;
+    }
+
+    const currentUserId = store.user.userId || 'admin';
+
+    container.innerHTML = store.chatMessages.map(msg => {
+      const isMine = String(msg.senderId || '').toLowerCase() === currentUserId.toLowerCase();
+      return `
+        <div class="p-2.5 rounded-xl ${isMine ? 'bg-blue-600/30 border border-blue-500/40 text-right ml-6' : 'bg-slate-800 border border-slate-700 text-left mr-6'} space-y-0.5">
+          <div class="flex justify-between items-center text-[9px] font-bold text-slate-400">
+            <span>${msg.senderName || 'Pengguna'} (${msg.senderRole || 'Client'})</span>
+            <span>${msg.timestamp || ''}</span>
+          </div>
+          <p class="text-xs text-white leading-relaxed">${msg.text}</p>
+        </div>
+      `;
+    }).join('');
+
+    container.scrollTop = container.scrollHeight;
+  }
+
+  async function sendTabChatMessage() {
+    const inputEl = document.getElementById('tab-chat-input');
+    const txt = inputEl?.value.trim();
+
+    if (!txt) return;
+
+    const timeStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
+    const newMsg = {
+      senderId: store.user.userId || 'guest',
+      senderName: store.user.name || 'Pengguna',
+      senderRole: store.user.role || 'Client Korporat',
+      recipientId: 'admin',
+      text: txt,
+      timestamp: timeStr
+    };
+
+    store.chatMessages.push(newMsg);
+    if (inputEl) inputEl.value = '';
+
+    renderTabChatThread();
+    showMobileToast("Pesan terkirim!", "success");
+
+    // Sync to Google Sheets Backend
+    if (window.GoogleBackend && window.GoogleBackend.isConfigured()) {
+      window.GoogleBackend.sendChatMessage(newMsg).catch(err => console.warn(err));
+    }
+
+    // Telegram Bot Dispatch Alert
+    const telegramMsg = `<b>💬 PESAN CHAT MASUK DIPORTAL</b>\n\n` +
+      `• <b>Pengirim:</b> ${store.user.name} (${store.user.role})\n` +
+      `• <b>Perusahaan:</b> ${store.user.company}\n` +
+      `• <b>Isi Pesan:</b> ${txt}\n` +
+      `• <b>Waktu:</b> ${timeStr}`;
+    sendTelegramNotificationDirect(telegramMsg);
+  }
+
+  function useChatTemplate(tmplText) {
+    const chatInput = document.getElementById('tab-chat-input');
+    if (chatInput) chatInput.value = tmplText;
+  }
+
+  // --- SUPER ADMIN ACTION MODULES (ACC, USER MANAGEMENT) ---
   function openAdminControlModal() {
     renderAdminControlLists();
     openSheet('sheet-admin-control');
@@ -667,62 +824,12 @@
     renderMobileRequests();
   }
 
-  // DIRECT LIVE CHAT REPLY FOR SUPER ADMIN
-  function openAdminChatModal() {
-    renderAdminChatThread();
-    openSheet('sheet-admin-chat');
-  }
-
-  function renderAdminChatThread() {
-    const container = document.getElementById('admin-chat-messages');
-    if (!container) return;
-
-    container.innerHTML = store.chatMessages.map(msg => `
-      <div class="p-2.5 rounded-xl ${msg.sender === 'admin' ? 'bg-blue-600/30 border border-blue-500/40 text-right ml-6' : 'bg-slate-800 border border-slate-700 text-left mr-6'}">
-        <span class="text-[9px] font-bold text-slate-400 block">${msg.name || 'Pengguna'} • ${msg.time}</span>
-        <p class="text-xs text-white mt-0.5">${msg.text}</p>
-      </div>
-    `).join('');
-
-    container.scrollTop = container.scrollHeight;
-  }
-
-  function useChatTemplate(tmplText) {
-    const chatInput = document.getElementById('admin-chat-input');
-    if (chatInput) chatInput.value = tmplText;
-  }
-
-  function sendAdminChatMessage() {
-    const inputEl = document.getElementById('admin-chat-input');
-    const txt = inputEl?.value.trim();
-
-    if (!txt) return;
-
-    const newMsg = {
-      sender: 'admin',
-      name: store.user.name || 'Super Admin',
-      text: txt,
-      time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB'
-    };
-
-    store.chatMessages.push(newMsg);
-    inputEl.value = '';
-
-    renderAdminChatThread();
-    showMobileToast("Balasan chat terkirim!", "success");
-
-    const telegramMsg = `<b>💬 BALASAN PESAN DARI SUPER ADMIN</b>\n\n` +
-      `• <b>Admin:</b> ${store.user.name}\n` +
-      `• <b>Pesan Balasan:</b> ${txt}`;
-    sendTelegramNotificationDirect(telegramMsg);
-  }
-
-  // USER MANAGEMENT MODULE
+  // USER MANAGEMENT MODULE (ISOLATED DATA ACCOUNT CREATION)
   function openAdminUserMgmtModal() {
     openSheet('sheet-admin-users');
   }
 
-  function addNewUserAccount(e) {
+  async function addNewUserAccount(e) {
     if (e) e.preventDefault();
     const uInput = document.getElementById('new-user-username')?.value.trim();
     const pInput = document.getElementById('new-user-password')?.value.trim();
@@ -747,20 +854,30 @@
         corpId: uInput,
         userId: uInput,
         name: nInput,
-        company: cInput || 'PT Laksana Digital Industri',
+        company: cInput || `PT ${nInput} Indonesia`,
         role: rInput,
         roleType: roleType,
-        pin: '123456'
+        pin: '123456',
+        isNewUser: true
       }
     };
+
+    // Initialize clean empty data storage for newly created user
+    localStorage.setItem(`laksanasoft_user_inv_${uInput}`, JSON.stringify([]));
+    localStorage.setItem(`laksanasoft_user_prop_${uInput}`, JSON.stringify([]));
+    localStorage.setItem(`laksanasoft_requests_${uInput}`, JSON.stringify([]));
 
     let localUsers = [];
     try { localUsers = JSON.parse(localStorage.getItem('laksanasoft_users_db') || '[]'); } catch (err) {}
     localUsers.push(newUserObj);
     localStorage.setItem('laksanasoft_users_db', JSON.stringify(localUsers));
 
+    if (window.GoogleBackend && window.GoogleBackend.isConfigured()) {
+      window.GoogleBackend.createUser(newUserObj.userData).catch(err => console.warn(err));
+    }
+
     closeSheet('sheet-admin-users');
-    showMobileToast(`Akun [${uInput}] (${rInput}) berhasil dibuat!`, "success");
+    showMobileToast(`Akun [${uInput}] (${rInput}) berhasil dibuat dengan data bersih terpisah!`, "success");
   }
 
   // 100% Native Vector PDF Generator
@@ -1048,6 +1165,7 @@
     if (store.currentTab === 'home') renderMobileHome();
     else if (store.currentTab === 'proposals') renderMobileProposals();
     else if (store.currentTab === 'requests') renderMobileRequests();
+    else if (store.currentTab === 'chat') renderTabChatThread();
     else if (store.currentTab === 'history') renderMobileHistory();
   }
 
@@ -1084,12 +1202,10 @@
   // 1. Mobile Home View with 3-Button Row & Single-User Role Customization
   function renderMobileHome() {
     let unpaidTotal = 0;
-    let unpaidCount = 0;
 
     store.invoices.forEach(inv => {
       if (inv.status === 'UNPAID' || inv.status === 'OVERDUE') {
         unpaidTotal += inv.amount;
-        unpaidCount++;
       }
     });
 
@@ -1101,9 +1217,10 @@
 
     if (store.invoices.length === 0) {
       container.innerHTML = `
-        <div class="p-8 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
-          <span class="material-symbols-outlined text-3xl mb-1 text-slate-300">task_alt</span>
-          <p class="font-semibold text-xs">Belum ada tagihan.</p>
+        <div class="p-8 text-center text-slate-400 bg-white rounded-2xl border border-slate-200 space-y-1">
+          <span class="material-symbols-outlined text-3xl text-slate-300">task_alt</span>
+          <p class="font-bold text-xs text-slate-700">Belum Ada Tagihan untuk Akun Ini.</p>
+          <p class="text-[10px] text-slate-400">Data akun Anda terisolasi secara bersih. Tagihan akan tampil jika dibuat oleh Super Admin.</p>
         </div>
       `;
       return;
@@ -1171,7 +1288,13 @@
     if (!container) return;
 
     if (store.proposals.length === 0) {
-      container.innerHTML = `<div class="p-8 text-center text-slate-400">Tidak ada penawaran.</div>`;
+      container.innerHTML = `
+        <div class="p-8 text-center text-slate-400 bg-white rounded-2xl border border-slate-200 space-y-1">
+          <span class="material-symbols-outlined text-3xl text-slate-300">request_quote</span>
+          <p class="font-bold text-xs text-slate-700">Belum Ada Penawaran untuk Akun Ini.</p>
+          <p class="text-[10px] text-slate-400">Data penawaran terisolasi secara bersih per pengguna.</p>
+        </div>
+      `;
       return;
     }
 
@@ -1216,7 +1339,7 @@
     if (!container) return;
 
     if (store.requests.length === 0) {
-      container.innerHTML = `<div class="p-8 text-center text-slate-400">Belum ada pengajuan permintaan layanan.</div>`;
+      container.innerHTML = `<div class="p-8 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">Belum ada pengajuan permintaan layanan dari akun ini.</div>`;
       return;
     }
 
@@ -1276,7 +1399,8 @@
       priority: priority || 'NORMAL',
       status: 'PENDING',
       date: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
-      description: desc || 'Pengajuan kebutuhan layanan korporat.'
+      description: desc || 'Pengajuan kebutuhan layanan korporat.',
+      userId: store.user.userId || 'client1'
     };
 
     store.requests.unshift(newReq);
@@ -1306,7 +1430,7 @@
     if (!container) return;
 
     if (store.transactions.length === 0) {
-      container.innerHTML = `<div class="p-8 text-center text-slate-400">Belum ada riwayat transaksi.</div>`;
+      container.innerHTML = `<div class="p-8 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">Belum ada riwayat transaksi.</div>`;
       return;
     }
 
@@ -1699,9 +1823,9 @@
     openAdminControlModal: openAdminControlModal,
     adminAccPayment: adminAccPayment,
     adminAccRequest: adminAccRequest,
-    openAdminChatModal: openAdminChatModal,
+    syncChatsRealtime: syncChatsRealtime,
     useChatTemplate: useChatTemplate,
-    sendAdminChatMessage: sendAdminChatMessage,
+    sendTabChatMessage: sendTabChatMessage,
     openAdminUserMgmtModal: openAdminUserMgmtModal,
     addNewUserAccount: addNewUserAccount,
     openTrxModal: function (trxId) {

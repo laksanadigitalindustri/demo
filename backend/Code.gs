@@ -1,7 +1,7 @@
 /**
  * ============================================================================
  * Laksanasoft Corporate Payment Portal - Google Apps Script Backend (Hardened)
- * Multi-Role Single User Account Engine (Client / Vendor / Mitra / Super Admin)
+ * Real-Time Chat Engine, Per-User Strict Data Isolation & Admin Management
  * ============================================================================
  */
 
@@ -213,17 +213,54 @@ function doGet(e) {
   }
 
   const action = e.parameter.action;
+  const userId = e.parameter.userId || '';
+  const roleType = e.parameter.roleType || 'CLIENT';
   let responseData = { status: 'SUCCESS' };
 
   try {
-    if (action === 'getInvoices') responseData.data = getTableData('Invoices');
-    else if (action === 'getProposals') responseData.data = getTableData('Proposals');
-    else if (action === 'getTransactions') responseData.data = getTableData('Transactions');
-    else if (action === 'getNotifications') responseData.data = getTableData('Notifications');
-    else if (action === 'getRequests') responseData.data = getTableData('Requests');
-    else if (action === 'getUsers') responseData.data = getTableData('Users');
-    else if (action === 'initTables') responseData.message = initializeDatabaseTables();
-    else responseData = { status: 'ERROR', message: 'Aksi tidak dikenali!' };
+    if (action === 'getInvoices') {
+      const allInvoices = getTableData('Invoices');
+      if (roleType === 'ADMIN' || !userId) {
+        responseData.data = allInvoices;
+      } else {
+        responseData.data = allInvoices.filter(inv => {
+          const u = String(inv.UserId || inv.userId || inv.CorpId || inv.corpId || inv.Client || '').toLowerCase();
+          return u === userId.toLowerCase();
+        });
+      }
+    } else if (action === 'getProposals') {
+      const allProposals = getTableData('Proposals');
+      if (roleType === 'ADMIN' || !userId) {
+        responseData.data = allProposals;
+      } else {
+        responseData.data = allProposals.filter(quo => {
+          const u = String(quo.UserId || quo.userId || quo.Vendor || '').toLowerCase();
+          return u === userId.toLowerCase();
+        });
+      }
+    } else if (action === 'getTransactions') {
+      responseData.data = getTableData('Transactions');
+    } else if (action === 'getNotifications') {
+      responseData.data = getTableData('Notifications');
+    } else if (action === 'getRequests') {
+      const allRequests = getTableData('Requests');
+      if (roleType === 'ADMIN' || !userId) {
+        responseData.data = allRequests;
+      } else {
+        responseData.data = allRequests.filter(req => {
+          const u = String(req.UserId || req.userId || req.SenderId || '').toLowerCase();
+          return u === userId.toLowerCase();
+        });
+      }
+    } else if (action === 'getUsers') {
+      responseData.data = getTableData('Users');
+    } else if (action === 'getChats') {
+      responseData.data = getTableData('Chats');
+    } else if (action === 'initTables') {
+      responseData.message = initializeDatabaseTables();
+    } else {
+      responseData = { status: 'ERROR', message: 'Aksi tidak dikenali!' };
+    }
 
   } catch (error) {
     responseData = { status: 'ERROR', message: error.toString() };
@@ -266,6 +303,41 @@ function doPost(e) {
       } else {
         responseData = { status: 'ERROR', message: 'Username atau Password Salah!' };
       }
+
+    } else if (action === 'sendChatMessage') {
+      const chatRes = recordChatMessage(
+        sanitizeString(requestData.senderId),
+        sanitizeString(requestData.senderName),
+        sanitizeString(requestData.senderRole),
+        sanitizeString(requestData.recipientId),
+        sanitizeString(requestData.text)
+      );
+
+      // Telegram Bot Alert
+      const telegramMsg = "<b>💬 PESAN CHAT BARU DIPORTAL</b>\n\n" +
+        "• <b>Pengirim:</b> " + sanitizeString(requestData.senderName) + " (" + sanitizeString(requestData.senderRole) + ")\n" +
+        "• <b>Pesan:</b> " + sanitizeString(requestData.text) + "\n" +
+        "• <b>Waktu:</b> " + chatRes.timestamp;
+      sendTelegramNotification(telegramMsg);
+
+      responseData.chatId = chatRes.chatId;
+      responseData.message = "Pesan terkirim!";
+
+    } else if (action === 'createUser') {
+      const userRes = recordNewUser(
+        sanitizeString(requestData.username),
+        sanitizeString(requestData.password),
+        sanitizeString(requestData.name),
+        sanitizeString(requestData.role),
+        sanitizeString(requestData.company),
+        sanitizeString(requestData.pin)
+      );
+      responseData.message = "Pengguna berhasil didaftarkan ke spreadsheet!";
+
+    } else if (action === 'createInvoice') {
+      const invRes = recordNewInvoice(requestData);
+      responseData.invoiceId = invRes.invoiceId;
+      responseData.message = "Invoice baru berhasil dibuat!";
 
     } else if (action === 'processPayment') {
       const invId = sanitizeString(requestData.invoiceId);
@@ -320,6 +392,9 @@ function doPost(e) {
       const category = sanitizeString(requestData.category);
       const priority = sanitizeString(requestData.priority);
       const desc = sanitizeString(requestData.description);
+      const userId = sanitizeString(requestData.userId);
+
+      recordServiceRequest(reqId, title, category, priority, desc, userId);
 
       // Telegram Bot Alert for Service Request
       const telegramMsg = "<b>📥 NOTIFIKASI PERMINTAAN LAYANAN BARU</b>\n\n" +
@@ -363,6 +438,72 @@ function getTableData(tableName) {
   });
 }
 
+function recordChatMessage(senderId, senderName, senderRole, recipientId, text) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = findSheetFlexible(ss, ['Chats', 'Chat', 'Data Chats']);
+  if (!sheet) {
+    sheet = ss.insertSheet('Chats');
+    sheet.appendRow(['ChatID', 'SenderID', 'SenderName', 'SenderRole', 'RecipientID', 'MessageText', 'Timestamp', 'IsRead']);
+  }
+
+  const chatId = 'MSG-' + Math.floor(1000000 + Math.random() * 9000000);
+  const timeStr = Utilities.formatDate(new Date(), "Asia/Jakarta", "yyyy-MM-dd HH:mm:ss");
+
+  sheet.appendRow([chatId, senderId, senderName, senderRole, recipientId || 'ALL', text, timeStr, 'FALSE']);
+  return { chatId: chatId, timestamp: timeStr };
+}
+
+function recordNewUser(username, password, name, role, company, pin) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = findSheetFlexible(ss, ['Users', 'User', 'Data Users']);
+  if (!sheet) {
+    sheet = ss.insertSheet('Users');
+    sheet.appendRow(['Username', 'Password', 'Name', 'Role', 'Company', 'PIN']);
+  }
+
+  sheet.appendRow([username, password, name, role, company || 'PT Laksana Digital Industri', pin || '123456']);
+  return true;
+}
+
+function recordNewInvoice(invData) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = findSheetFlexible(ss, ['Invoices', 'Invoice', 'Data Invoices']);
+  if (!sheet) {
+    sheet = ss.insertSheet('Invoices');
+    sheet.appendRow(['InvoiceID', 'Vendor', 'VendorLogo', 'Category', 'IssueDate', 'DueDate', 'Amount', 'Tax', 'Subtotal', 'Status', 'Description', 'UserId']);
+  }
+
+  const invId = invData.id || ('INV-' + Math.floor(1000 + Math.random() * 9000));
+  sheet.appendRow([
+    invId,
+    invData.vendor || 'Laksanasoft',
+    invData.vendorLogo || 'domain',
+    invData.category || 'TI Services',
+    invData.issueDate || '01 Agt 2026',
+    invData.dueDate || '30 Agt 2026',
+    invData.amount || 0,
+    invData.tax || 0,
+    invData.subtotal || 0,
+    'UNPAID',
+    invData.description || 'Layanan TI Korporat',
+    invData.userId || 'client1'
+  ]);
+
+  return { invoiceId: invId };
+}
+
+function recordServiceRequest(reqId, title, category, priority, desc, userId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = findSheetFlexible(ss, ['Requests', 'Request', 'Data Requests']);
+  if (!sheet) {
+    sheet = ss.insertSheet('Requests');
+    sheet.appendRow(['ReqID', 'Title', 'Category', 'Priority', 'Status', 'Date', 'Description', 'UserId']);
+  }
+
+  const dateStr = Utilities.formatDate(new Date(), "Asia/Jakarta", "yyyy-MM-dd");
+  sheet.appendRow([reqId, title, category, priority, 'PENDING', dateStr, desc, userId || 'client1']);
+}
+
 function recordPaymentTransaction(invoiceId, vendor, amount, method) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = findSheetFlexible(ss, ['Transactions', 'Transaction', 'Data Transactions']);
@@ -387,7 +528,7 @@ function updateInvoiceStatus(invoiceId, newStatus) {
   const data = sheet.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
     if (String(data[i][0]) === String(invoiceId)) {
-      sheet.getRange(i + 1, 7).setValue(newStatus);
+      sheet.getRange(i + 1, 10).setValue(newStatus); // Status Column
       break;
     }
   }
@@ -401,14 +542,14 @@ function updateProposalRecord(proposalId, newStatus, counterPrice, historyItem) 
   const data = sheet.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
     if (String(data[i][0]) === String(proposalId)) {
-      sheet.getRange(i + 1, 7).setValue(newStatus);
-      if (counterPrice) sheet.getRange(i + 1, 6).setValue(counterPrice);
+      sheet.getRange(i + 1, 9).setValue(newStatus);
+      if (counterPrice) sheet.getRange(i + 1, 8).setValue(counterPrice);
 
       if (historyItem) {
         let existingHist = [];
-        try { existingHist = JSON.parse(data[i][8]); } catch(e) { existingHist = []; }
+        try { existingHist = JSON.parse(data[i][11]); } catch(e) { existingHist = []; }
         existingHist.push(historyItem);
-        sheet.getRange(i + 1, 9).setValue(JSON.stringify(existingHist));
+        sheet.getRange(i + 1, 12).setValue(JSON.stringify(existingHist));
       }
       break;
     }

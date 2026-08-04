@@ -157,7 +157,7 @@
             ${!isSuperAdmin ? `
               <div class="flex items-center gap-1.5 pt-1 border-t border-slate-100">
                 <button type="button" onclick="window.SuperAdminEngine.resetUserPin('${u.userId}')" class="px-2 py-1 bg-amber-50 text-amber-800 font-bold text-[9px] rounded-lg">
-                  Reset PIN (123456)
+                  Reset PIN
                 </button>
                 <button type="button" onclick="window.SuperAdminEngine.toggleUserStatus('${u.userId}', '${status}')" class="px-2 py-1 ${isSuspended ? 'bg-emerald-50 text-emerald-800' : 'bg-slate-100 text-slate-700'} font-bold text-[9px] rounded-lg">
                   ${isSuspended ? 'Aktifkan Kembali' : 'Tangguhkan (Suspend)'}

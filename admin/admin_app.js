@@ -7,13 +7,8 @@
 (function () {
   'use strict';
 
-  // SYSTEM ROLES & DEFAULT ACCOUNTS
-  const DEFAULT_USERS = [
-    { userId: 'admin', name: 'Super Administrator', role: 'Super Admin Korporat', company: 'PT Laksana Software Solutions', pin: '123456', status: 'ACTIVE' },
-    { userId: 'client1', name: 'Budi Santoso (Klien)', role: 'Client Korporat', company: 'PT Laksana Digital Industri', pin: '123456', status: 'ACTIVE' },
-    { userId: 'vendor1', name: 'PT Cloud Hostindo (Vendor)', role: 'Vendor / Supplier', company: 'PT Cloud Hostindo', pin: '654321', status: 'ACTIVE' },
-    { userId: 'mitra1', name: 'Mitra Integrasi Enterprise', role: 'Mitra Strategis', company: 'PT Mitra Digital Asia', pin: '888888', status: 'ACTIVE' }
-  ];
+  // BUG-018 FIX: DEFAULT_USERS dummy dihapus — tidak ada fallback hardcoded di produksi
+  // Seluruh pengguna harus dibuat oleh Admin secara eksplisit melalui panel Manajemen Pengguna.
 
   const adminStore = {
     user: {
@@ -52,10 +47,11 @@
         const parsed = JSON.parse(savedUsers);
         adminStore.registeredUsers = parsed.map(p => p.userData || p);
       } else {
-        adminStore.registeredUsers = DEFAULT_USERS;
+        // BUG-018 FIX: Mulai dengan daftar kosong — bukan data dummy
+        adminStore.registeredUsers = [];
       }
     } catch (e) {
-      adminStore.registeredUsers = DEFAULT_USERS;
+      adminStore.registeredUsers = [];
     }
   }
 
@@ -88,7 +84,7 @@
                 name: String(ru.name || ru.Name || uId),
                 role: String(ru.role || ru.Role || 'Client Korporat'),
                 company: String(ru.company || ru.Company || 'PT Laksana Digital Industri'),
-                pin: String(ru.pin || ru.PIN || '123456'),
+                pin: String(ru.pin || ru.PIN || ''),
                 status: String(ru.status || ru.Status || 'ACTIVE').toUpperCase()
               });
             }
@@ -215,7 +211,7 @@
         <div>
           <span class="font-mono font-bold text-blue-400 text-xs">${inv.id}</span>
           <h4 class="font-bold text-white text-xs mt-0.5">${inv.vendor} • <span class="text-emerald-400">${formatIDR(inv.amount)}</span></h4>
-          <span class="text-[10px] text-slate-400 block">Klien: <strong>${inv.userId || 'client1'}</strong> • Jatuh Tempo: ${inv.dueDate}</span>
+          <span class="text-[10px] text-slate-400 block">Klien: <strong>${inv.userId || '-'}</strong> • Jatuh Tempo: ${inv.dueDate}</span>
         </div>
         <button type="button" onclick="window.AdminAppSuite.accPayment('${inv.id}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold text-xs rounded-xl shadow-lg active:scale-95 transition-transform flex items-center gap-1">
           <span class="material-symbols-outlined text-sm">check_circle</span> ACC & Verifikasi
@@ -241,7 +237,7 @@
           <td class="px-4 py-3">
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 border border-slate-700 text-slate-300">${u.role}</span>
           </td>
-          <td class="px-4 py-3 font-mono text-xs text-amber-400">${u.pin || '123456'}</td>
+          <td class="px-4 py-3 font-mono text-xs text-amber-400">${u.pin || '-'}</td>
           <td class="px-4 py-3">
             <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold ${isSuspended ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'}">
               ${u.status || 'ACTIVE'}
@@ -283,7 +279,7 @@
             <span class="font-mono font-bold text-xs text-blue-400">${inv.id}</span>
             <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold ${inv.status === 'PAID' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' : 'bg-rose-500/20 text-rose-400 border border-rose-500/40'}">${inv.status}</span>
           </div>
-          <span class="text-xs font-mono font-bold text-slate-400">Target: ${inv.userId || 'client1'}</span>
+          <span class="text-xs font-mono font-bold text-slate-400">Target: ${inv.userId || '-'}</span>
         </div>
         <div class="flex justify-between items-end border-t border-slate-700/40 pt-2">
           <div>
@@ -320,7 +316,7 @@
           <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-amber-500/20 text-amber-400 border border-amber-500/40">${quo.status}</span>
         </div>
         <h4 class="font-extrabold text-sm text-white">${quo.title}</h4>
-        <p class="text-xs text-slate-400">Vendor: ${quo.vendor} • Target: ${quo.userId || 'client1'}</p>
+        <p class="text-xs text-slate-400">Vendor: ${quo.vendor} • Target: ${quo.userId || '-'}</p>
         <div class="flex justify-between items-center border-t border-slate-700/40 pt-2 text-xs">
           <span class="font-bold text-slate-300">Harga: ${formatIDR(quo.originalPrice)}</span>
           <div class="flex items-center gap-1">
@@ -508,7 +504,7 @@
       const name = document.getElementById('nu-name')?.value.trim();
       const role = document.getElementById('nu-role')?.value;
       const company = document.getElementById('nu-company')?.value.trim();
-      const pin = document.getElementById('nu-pin')?.value.trim() || '123456';
+      const pin = document.getElementById('nu-pin')?.value.trim() || '';
 
       if (!username || !password || !name) {
         showToast("Harap isi Username, Password, dan Nama Pengguna.", "error");
@@ -549,11 +545,11 @@
 
     resetPin: async function (username) {
       const u = adminStore.registeredUsers.find(x => x.userId.toLowerCase() === username.toLowerCase());
-      if (u) u.pin = '123456';
+      if (u) u.pin = '';
       if (window.GoogleBackend && window.GoogleBackend.isConfigured()) {
-        await window.GoogleBackend.updateUser({ username, pin: '123456' });
+        await window.GoogleBackend.updateUser({ username, pin: '' });
       }
-      showToast(`PIN pengguna [${username}] di-reset ke 123456!`, "success");
+      showToast(`PIN pengguna [${username}] berhasil di-reset!`, "success");
       renderUsersTab();
     },
 

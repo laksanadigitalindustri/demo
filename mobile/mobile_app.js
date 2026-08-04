@@ -15,16 +15,14 @@
       role: '',
       roleType: 'CLIENT',
       isLoggedIn: false,
-      pin: '123456'
+      pin: ''
     },
     invoices: [],
     proposals: [],
     requests: [],
     transactions: [],
     notifications: [],
-    chatMessages: [
-      { senderId: 'admin', senderName: 'Super Admin', senderRole: 'Super Admin Korporat', recipientId: 'ALL', text: 'Halo! Selamat datang di Pusat Layanan Chat Laksanasoft.', timestamp: '09:00 WIB' }
-    ],
+    chatMessages: [],
     activeChatRecipient: 'ALL',
     currentTab: 'home',
     selectedInvoice: null,
@@ -36,7 +34,9 @@
     isLoading: true
   };
 
-  // Dedicated Pre-configured System Roles DB
+  // PRODUCTION: SYSTEM_ROLES_DB hanya untuk Super Admin.
+  // Pengguna lainnya (client, vendor, mitra) dibuat Admin melalui panel /admin/
+  // dan diverifikasi via Google Sheets atau laksanasoft_users_db.
   const SYSTEM_ROLES_DB = [
     {
       username: 'admin',
@@ -48,46 +48,7 @@
         company: 'PT Laksana Software Solutions',
         role: 'Super Admin Korporat',
         roleType: 'ADMIN',
-        pin: '123456'
-      }
-    },
-    {
-      username: 'client1',
-      password: 'client123',
-      userData: {
-        corpId: 'client1',
-        userId: 'client1',
-        name: 'Budi Santoso (Klien)',
-        company: 'PT Laksana Digital Industri',
-        role: 'Client Korporat',
-        roleType: 'CLIENT',
-        pin: '123456'
-      }
-    },
-    {
-      username: 'vendor1',
-      password: 'vendor123',
-      userData: {
-        corpId: 'vendor1',
-        userId: 'vendor1',
-        name: 'PT Cloud Hostindo (Vendor)',
-        company: 'PT Cloud Hostindo',
-        role: 'Vendor / Supplier',
-        roleType: 'VENDOR',
-        pin: '654321'
-      }
-    },
-    {
-      username: 'mitra1',
-      password: 'mitra123',
-      userData: {
-        corpId: 'mitra1',
-        userId: 'mitra1',
-        name: 'Mitra Integrasi Enterprise',
-        company: 'PT Mitra Digital Asia',
-        role: 'Mitra Strategis',
-        roleType: 'MITRA',
-        pin: '888888'
+        pin: ''
       }
     }
   ];
@@ -95,49 +56,22 @@
   const navigationStack = ['home'];
   let toastTimer = null;
   let chatSyncInterval = null;
-  const TELEGRAM_BOT_TOKEN = '8814615182:AAF_bAmLXUQrUkmxLfCBrnZEKUoFPeyQ0_w';
-
-  // DIRECT TELEGRAM BOT NOTIFIER
+  // BUG-012 FIX: Token Telegram TIDAK lagi disimpan di file frontend (bisa dilihat publik).
+  // Notifikasi Telegram dikirim melalui Google Apps Script backend.
   async function sendTelegramNotificationDirect(messageText) {
-    if (!TELEGRAM_BOT_TOKEN) return;
-
-    try {
-      let chatId = localStorage.getItem('laksanasoft_telegram_chat_id');
-
-      if (!chatId) {
-        const updateRes = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`);
-        const json = await updateRes.json();
-        if (json.ok && json.result && json.result.length > 0) {
-          const lastMsg = json.result[json.result.length - 1];
-          if (lastMsg.message && lastMsg.message.chat) {
-            chatId = String(lastMsg.message.chat.id);
-            localStorage.setItem('laksanasoft_telegram_chat_id', chatId);
-          }
-        }
+    // Kirim melalui backend agar token tidak terekspos di sisi klien
+    if (window.GoogleBackend && window.GoogleBackend.isConfigured()) {
+      try {
+        await window.GoogleBackend.sendTelegramNotification(messageText);
+      } catch (e) {
+        console.warn("Telegram notification via backend error:", e);
       }
-
-      if (chatId) {
-        fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            chat_id: chatId,
-            text: messageText,
-            parse_mode: 'HTML'
-          })
-        }).catch(err => console.warn("Telegram notification fetch warning:", err));
-      }
-    } catch (e) {
-      console.warn("Telegram notification error:", e);
     }
   }
 
   function getAllRegisteredUsers() {
-    let list = [
-      { userId: 'client1', name: 'Budi Santoso (client1)', role: 'Client Korporat' },
-      { userId: 'vendor1', name: 'PT Cloud Hostindo (vendor1)', role: 'Vendor / Supplier' },
-      { userId: 'mitra1', name: 'Mitra Integrasi (mitra1)', role: 'Mitra Strategis' }
-    ];
+    // BUG-013 FIX: Tidak lagi hardcoded dummy users — baca murni dari localStorage & chat history
+    let list = [];
 
     try {
       const localUsers = JSON.parse(localStorage.getItem('laksanasoft_users_db') || '[]');
@@ -152,7 +86,7 @@
       });
     } catch (err) {}
 
-    // Add any unique senders from chat history
+    // Tambahkan pengirim chat yang unik sebagai pengguna dinamis
     if (store.chatMessages && store.chatMessages.length > 0) {
       store.chatMessages.forEach(msg => {
         const sId = String(msg.senderId || '').trim();
@@ -259,14 +193,7 @@
     return false;
   }
 
-  function fillDemoLogin(u, p) {
-    const uInput = document.getElementById('login-username');
-    const pInput = document.getElementById('login-password');
-    if (uInput) uInput.value = u;
-    if (pInput) pInput.value = p;
-    showMobileToast(`Login otomatis dengan akun [${u}]...`, "info");
-    handleLogin(null);
-  }
+  // BUG-015 FIX: fillDemoLogin dihapus sepenuhnya \u2014 dead code, tombol demo sudah tidak ada di HTML
 
   async function handleLogin(e) {
     if (e) {
@@ -295,11 +222,11 @@
       return;
     }
 
-    // 1. Instant check against Pre-configured System Roles DB for Mobile Users
+    // 1. Instant check against Pre-configured System Roles DB for Mobile Users (STRICT match)
     for (let i = 0; i < SYSTEM_ROLES_DB.length; i++) {
       const sysU = SYSTEM_ROLES_DB[i].username.toLowerCase();
       const sysP = SYSTEM_ROLES_DB[i].password;
-      if (sysU === cleanU && (sysP === cleanP || cleanP === '123456' || cleanP === 'client123' || cleanP === 'vendor123' || cleanP === 'mitra123')) {
+      if (sysU === cleanU && sysP === cleanP) {
         authenticatedUser = JSON.parse(JSON.stringify(SYSTEM_ROLES_DB[i].userData));
         break;
       }
@@ -309,7 +236,8 @@
     if (!authenticatedUser) {
       try {
         const localUsers = JSON.parse(localStorage.getItem('laksanasoft_users_db') || '[]');
-        const matchedLocal = localUsers.find(u => u.username.toLowerCase() === cleanU && (u.password === cleanP || cleanP === '123456'));
+        // BUG-003 FIX (Mobile): Hanya cocokkan password yang sebenarnya — tidak ada fallback '123456'
+        const matchedLocal = localUsers.find(u => u.username.toLowerCase() === cleanU && u.password === cleanP);
         if (matchedLocal) {
           authenticatedUser = matchedLocal.userData;
         }
@@ -327,43 +255,7 @@
       }
     }
 
-    // 4. Dynamic Fallback Authenticator (Guarantees user NEVER gets locked out)
-    if (!authenticatedUser) {
-      const formattedName = uInput.charAt(0).toUpperCase() + uInput.slice(1);
-      let roleType = 'CLIENT';
-      let roleName = 'Client Korporat';
-
-      if (cleanU.includes('admin')) {
-        roleType = 'ADMIN';
-        roleName = 'Super Admin Korporat';
-      } else if (cleanU.includes('vendor')) {
-        roleType = 'VENDOR';
-        roleName = 'Vendor / Supplier';
-      } else if (cleanU.includes('mitra')) {
-        roleType = 'MITRA';
-        roleName = 'Mitra Strategis';
-      }
-
-      authenticatedUser = {
-        corpId: uInput,
-        userId: uInput,
-        name: `${formattedName}`,
-        company: `PT ${formattedName} Indonesia`,
-        role: roleName,
-        roleType: roleType,
-        pin: '123456',
-        status: 'ACTIVE',
-        isNewUser: true
-      };
-
-      try {
-        const localUsers = JSON.parse(localStorage.getItem('laksanasoft_users_db') || '[]');
-        localUsers.push({ username: uInput, password: pInput, userData: authenticatedUser });
-        localStorage.setItem('laksanasoft_users_db', JSON.stringify(localUsers));
-      } catch (err) {}
-    }
-
-    // 5. Execute Login Transition Safely
+    // 4. Execute Login Transition Safely
     if (authenticatedUser) {
       store.user = authenticatedUser;
       store.user.isLoggedIn = true;
@@ -384,14 +276,17 @@
       try { initMobileStore(); } catch (e) { console.warn(e); }
       try { startRealtimeChatSync(); } catch (e) { console.warn(e); }
     } else {
-      showMobileToast("Username atau Password Salah!", "error");
+      showMobileToast("Akun tidak terdaftar atau Kata Sandi Salah! Silakan hubungi Super Admin.", "error");
     }
   }
 
   function logout() {
     if (chatSyncInterval) clearInterval(chatSyncInterval);
+    // BUG-005 FIX: Hapus SEMUA key session agar tidak tersisa di Desktop
     localStorage.removeItem('laksanasoft_mobile_session');
-    store.user.isLoggedIn = false;
+    localStorage.removeItem('laksanasoft_global_session');
+    localStorage.removeItem('laksanasoft_user');
+    store.user = { corpId: '', userId: '', name: '', company: '', role: '', roleType: 'CLIENT', isLoggedIn: false, pin: '' };
 
     showMobileToast("Anda telah keluar dari akun korporat.", "info");
 
@@ -525,6 +420,12 @@
         if (remoteTrx && Array.isArray(remoteTrx)) {
           store.transactions = remoteTrx.map(normalizeTransaction).filter(Boolean);
         }
+
+        // BUG-006 FIX: fetchRequests sebelumnya tidak pernah dipanggil
+        const remoteRequests = await window.GoogleBackend.fetchRequests(currentUserId, currentRoleType);
+        if (remoteRequests && Array.isArray(remoteRequests)) {
+          store.requests = remoteRequests;
+        }
       } catch (e) {
         console.warn("Mobile API error:", e);
       }
@@ -552,12 +453,13 @@
     renderCurrentTabContent();
   }
 
+  // BUG-008 FIX: Semua fungsi data dummy dihapus — getDefaultAdminInvoices, getDefaultClient1Invoices,
+  // getDefaultVendor1Invoices, getDefaultAdminProposals, getDefaultVendor1Proposals
+  // Fungsi agregator di bawah ini tidak lagi menyuntikkan data dummy
+
   function getAllSystemInvoicesForAdmin() {
     const listMap = new Map();
-    // Default admin invoices
-    getDefaultAdminInvoices().forEach(i => listMap.set(i.id, i));
-
-    // Scan all local storage keys for invoices
+    // Hanya dari localStorage user nyata — tidak ada dummy
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key && (key.startsWith('laksanasoft_user_inv_') || key === 'laksanasoft_invoices')) {
@@ -577,8 +479,6 @@
 
   function getAllSystemProposalsForAdmin() {
     const listMap = new Map();
-    getDefaultAdminProposals().forEach(p => listMap.set(p.id, p));
-
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key && (key.startsWith('laksanasoft_user_prop_') || key === 'laksanasoft_proposals')) {
@@ -598,17 +498,7 @@
 
   function getAllSystemRequestsForAdmin() {
     const listMap = new Map();
-    listMap.set('REQ-2026-0801', {
-      id: 'REQ-2026-0801',
-      title: 'Permintaan Upgrade Kapasitas Dedicated Cloud Server 128GB',
-      category: 'Cloud Infrastructure',
-      priority: 'HIGH',
-      status: 'IN_PROGRESS',
-      date: '02 Agt 2026',
-      description: 'Pengajuan penambahan RAM & NVMe SSD untuk cluster database utama.',
-      userId: 'client1'
-    });
-
+    // Hanya dari localStorage user nyata — tidak ada dummy REQ hardcoded
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key && key.startsWith('laksanasoft_requests_')) {
@@ -625,40 +515,10 @@
     return Array.from(listMap.values());
   }
 
-  function getDefaultAdminInvoices() {
-    return [
-      { id: 'INV-2026-0891', vendor: 'PT Cloud Hostindo', vendorLogo: 'dns', category: 'Cloud Infrastructure', issueDate: '01 Agt 2026', dueDate: '15 Agt 2026', amount: 15500000, tax: 1536036, subtotal: 13963964, status: 'UNPAID', description: 'Biaya Sewa Cloud Server Enterprise', userId: 'client1' },
-      { id: 'INV-2026-0892', vendor: 'PT Software Solutions', vendorLogo: 'code', category: 'Software License', issueDate: '25 Jul 2026', dueDate: '10 Agt 2026', amount: 8750000, tax: 867117, subtotal: 7882883, status: 'UNPAID', description: 'Lisensi Tahunan Enterprise ERP Engine', userId: 'client1' }
-    ];
-  }
-
-  function getDefaultClient1Invoices() {
-    return [
-      { id: 'INV-2026-0891', vendor: 'PT Cloud Hostindo', vendorLogo: 'dns', category: 'Cloud Infrastructure', issueDate: '01 Agt 2026', dueDate: '15 Agt 2026', amount: 15500000, tax: 1536036, subtotal: 13963964, status: 'UNPAID', description: 'Biaya Sewa Cloud Server Enterprise', userId: 'client1' },
-      { id: 'INV-2026-0892', vendor: 'PT Software Solutions', vendorLogo: 'code', category: 'Software License', issueDate: '25 Jul 2026', dueDate: '10 Agt 2026', amount: 8750000, tax: 867117, subtotal: 7882883, status: 'UNPAID', description: 'Lisensi Tahunan Enterprise ERP Engine', userId: 'client1' }
-    ];
-  }
-
-  function getDefaultVendor1Invoices() {
-    return [
-      { id: 'INV-2026-0891', vendor: 'PT Cloud Hostindo', vendorLogo: 'dns', category: 'Cloud Infrastructure', issueDate: '01 Agt 2026', dueDate: '15 Agt 2026', amount: 15500000, tax: 1536036, subtotal: 13963964, status: 'UNPAID', description: 'Penagihan Sewa Dedicated Cloud Server', userId: 'client1' }
-    ];
-  }
-
-  function getDefaultAdminProposals() {
-    return [
-      { id: 'QUO-2026-0104', vendor: 'PT Cloud Hostindo', vendorLogo: 'dns', title: 'Penawaran Upgrade Bandwidth Network 10Gbps', issueDate: '28 Jul 2026', validUntil: '20 Agt 2026', originalPrice: 12000000, counterPrice: null, status: 'PENDING', notes: 'Diskon 10% jika kontrak 2 tahun', userId: 'vendor1', items: [], history: [] }
-    ];
-  }
-
-  function getDefaultVendor1Proposals() {
-    return [
-      { id: 'QUO-2026-0104', vendor: 'PT Cloud Hostindo', vendorLogo: 'dns', title: 'Penawaran Upgrade Bandwidth Network 10Gbps', issueDate: '28 Jul 2026', validUntil: '20 Agt 2026', originalPrice: 12000000, counterPrice: null, status: 'PENDING', notes: 'Diskon 10% jika kontrak 2 tahun', userId: 'vendor1', items: [], history: [] }
-    ];
-  }
-
   function saveStore() {
-    const currentUserId = store.user.userId || 'admin';
+    // BUG-011 FIX: Jangan fallback ke 'admin' — jika userId kosong jangan simpan
+    const currentUserId = store.user.userId || '';
+    if (!currentUserId) return;
     if (store.user.roleType === 'ADMIN') {
       localStorage.setItem('laksanasoft_invoices', JSON.stringify(store.invoices));
       localStorage.setItem('laksanasoft_proposals', JSON.stringify(store.proposals));
@@ -681,8 +541,9 @@
     const toast = document.getElementById('mobile-toast');
     if (!toast) return;
     if (toastTimer) clearTimeout(toastTimer);
-
-    document.getElementById('mobile-toast-msg').textContent = msg;
+    // BUG-007 FIX: Null check sebelum mengakses .textContent
+    const msgEl = document.getElementById('mobile-toast-msg');
+    if (msgEl) msgEl.textContent = msg;
     toast.className = `fixed top-4 left-4 right-4 z-50 p-3.5 rounded-2xl shadow-xl text-xs font-bold text-white flex items-center gap-2.5 transition-all duration-300 transform translate-y-0 opacity-100 ${type === 'success' ? 'bg-emerald-700' : type === 'error' ? 'bg-rose-700' : 'bg-slate-900'}`;
 
     toastTimer = setTimeout(() => {
@@ -730,6 +591,7 @@
     renderTabChatThread();
   }
 
+  // BUG-001 FIX: Fungsi duplikat dihapus — hanya 1 definisi yang benar
   function renderAdminUserChatButtons() {
     const container = document.getElementById('admin-user-chat-buttons');
     if (!container || store.user.roleType !== 'ADMIN') return;
@@ -739,11 +601,12 @@
       <button type="button" onclick="mobileApp.selectAdminChatUser('ALL', 'Semua Pengguna')" class="px-2.5 py-1 rounded-xl text-[10px] font-bold whitespace-nowrap border transition-all ${store.activeChatRecipient === 'ALL' ? 'bg-slate-900 text-white border-slate-900 shadow-sm' : 'bg-white text-slate-700 border-slate-200'}">
         👥 Semua Chat
       </button>
-  function renderAdminUserChatButtons() {
-    if (store.user.roleType !== 'ADMIN') return;
-    if (window.SuperAdminEngine && typeof window.SuperAdminEngine.renderChatUserSelector === 'function') {
-      window.SuperAdminEngine.renderChatUserSelector(store.activeChatRecipient, getAllRegisteredUsers());
-    }
+    `;
+    users.forEach(u => {
+      const isActive = store.activeChatRecipient === u.userId;
+      buttonsHTML += `<button type="button" onclick="mobileApp.selectAdminChatUser('${u.userId}', '${u.name}')" class="px-2.5 py-1 rounded-xl text-[10px] font-bold whitespace-nowrap border transition-all ${isActive ? 'bg-emerald-700 text-white border-emerald-700 shadow-sm' : 'bg-white text-slate-700 border-slate-200'}">${u.name}</button>`;
+    });
+    container.innerHTML = buttonsHTML;
   }
 
   function renderAdminControlLists() {
@@ -761,9 +624,9 @@
   async function adminResetUserPin(username) {
     if (!username) return;
     if (window.GoogleBackend && window.GoogleBackend.isConfigured()) {
-      await window.GoogleBackend.updateUser({ username: username, pin: '123456' });
+      await window.GoogleBackend.updateUser({ username: username, pin: '' });
     }
-    showMobileToast(`PIN pengguna [${username}] di-reset ke default 123456!`, 'success');
+    showMobileToast(`PIN pengguna [${username}] berhasil di-reset!`, 'success');
   }
 
   async function adminToggleUserStatus(username, currentStatus) {
@@ -821,7 +684,7 @@
         company: cInput || `PT ${nInput} Indonesia`,
         role: rInput,
         roleType: roleType,
-        pin: '123456',
+        pin: '',
         status: 'ACTIVE',
         isNewUser: true
       }
@@ -1343,7 +1206,7 @@
           <div class="text-xs text-slate-600 space-y-1">
             <div class="flex justify-between text-slate-500 text-[11px]">
               <span>Kategori: <strong>${req.category}</strong></span>
-              <span>Pengaju: <strong>${req.userId || 'client1'}</strong></span>
+              <span>Pengaju: <strong>${req.userId || '-'}</strong></span>
             </div>
             <p class="bg-slate-50 p-2.5 rounded-xl text-slate-700 text-[11px] leading-relaxed">${req.description}</p>
           </div>
@@ -1388,7 +1251,7 @@
       status: 'PENDING',
       date: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }),
       description: desc || 'Pengajuan kebutuhan layanan korporat.',
-      userId: store.user.userId || 'client1'
+      userId: store.user.userId || ''
     };
 
     store.requests.unshift(newReq);
@@ -1668,10 +1531,14 @@
   }
 
   async function verifyPin() {
-    const userPin = store.user.pin || '123456';
-    if (store.enteredPin === userPin || store.enteredPin === '123456') {
+    const userPin = store.user.pin || '';
+    if (!userPin || store.enteredPin === userPin) {
       closeSheet('sheet-pin', true);
       const inv = store.selectedInvoice;
+      if (!inv) {
+        showMobileToast("Tagihan tidak dipilih.", "error");
+        return;
+      }
 
       inv.status = 'PAID';
       const dateStr = new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }) + ' WIB';
@@ -1800,7 +1667,7 @@
       switchMobileTab('home', false);
       checkUserSession();
     },
-    fillDemoLogin: fillDemoLogin,
+    // fillDemoLogin dihapus dari export — BUG-015 FIX (dead code, tombol sudah dihapus dari HTML)
     handleLogin: handleLogin,
     logout: logout,
     switchTab: switchMobileTab,

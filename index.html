@@ -74,7 +74,7 @@
   <!-- ==========================================================================
        LOGIN LAYOUT
        ========================================================================== -->
-  <div id="view-login" class="hidden min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-primary via-primary-container to-slate-900 p-4">
+  <div id="view-login" class="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-primary via-primary-container to-slate-900 p-4">
     <div class="w-full max-w-md bg-surface-container-lowest dark:bg-surface-container-low rounded-2xl shadow-2xl p-8 border border-surface-container-high">
       <div class="text-center mb-8">
         <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary text-white shadow-lg mb-3">
@@ -86,26 +86,18 @@
 
       <form onsubmit="app.login(event)" class="space-y-4">
         <div>
-          <label class="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Corporate ID</label>
-          <div class="relative">
-            <span class="material-symbols-outlined absolute left-3 top-3 text-outline text-xl">business</span>
-            <input id="login-corp-id" type="text" value="admin" required placeholder="Masukkan Corporate ID (cth: admin)" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-outline-variant bg-surface-container-low text-sm font-semibold text-on-surface focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20" />
-          </div>
-        </div>
-
-        <div>
-          <label class="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">User ID / Email</label>
+          <label class="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Username / User ID</label>
           <div class="relative">
             <span class="material-symbols-outlined absolute left-3 top-3 text-outline text-xl">badge</span>
-            <input id="login-user-id" type="text" value="admin" required placeholder="Masukkan User ID (cth: admin)" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-outline-variant bg-surface-container-low text-sm font-semibold text-on-surface focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20" />
+            <input id="login-user-id" type="text" required placeholder="Masukkan Username Anda" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-outline-variant bg-surface-container-low text-sm font-semibold text-on-surface focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20" />
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Kata Sandi</label>
+          <label class="block text-xs font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Kata Sandi / Password</label>
           <div class="relative">
             <span class="material-symbols-outlined absolute left-3 top-3 text-outline text-xl">lock</span>
-            <input id="login-password" type="password" value="admin" required placeholder="Masukkan Password (cth: admin)" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-outline-variant bg-surface-container-low text-sm font-semibold text-on-surface focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20" />
+            <input id="login-password" type="password" required placeholder="Masukkan Password Anda" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-outline-variant bg-surface-container-low text-sm font-semibold text-on-surface focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20" />
           </div>
         </div>
 
@@ -114,7 +106,7 @@
             <input type="checkbox" checked class="rounded border-outline-variant text-secondary focus:ring-secondary" />
             <span>Ingat Perangkat Ini</span>
           </label>
-          <a href="#" onclick="showToast('Gunakan Corp ID: admin, User: admin, Password: admin', 'info')" class="text-secondary font-semibold hover:underline">Bantuan Login</a>
+          <a href="#" onclick="showToast('Gunakan Username & Password yang didaftarkan oleh Admin', 'info')" class="text-secondary font-semibold hover:underline">Bantuan Login</a>
         </div>
 
         <button type="submit" class="w-full py-3.5 px-4 bg-primary hover:bg-primary-container text-white font-bold rounded-xl shadow-lg transition-all transform active:scale-[0.99] flex items-center justify-center gap-2 mt-4">
@@ -123,8 +115,7 @@
       </form>
 
       <div class="mt-8 pt-6 border-t border-surface-container text-center text-xs text-on-surface-variant">
-        <p class="font-semibold text-secondary">Kredensial Demo: Corp ID: <code class="bg-surface-container px-1 py-0.5 rounded">admin</code> | User: <code class="bg-surface-container px-1 py-0.5 rounded">admin</code> | Password: <code class="bg-surface-container px-1 py-0.5 rounded">admin</code></p>
-        <p class="mt-2 text-outline">© 2026 PT Laksana Software Solutions. All rights reserved.</p>
+        <p class="text-outline">© 2026 PT Laksana Software Solutions. All rights reserved.</p>
       </div>
     </div>
   </div>
@@ -133,7 +124,7 @@
   <!-- ==========================================================================
        MAIN APPLICATION LAYOUT (Sidebar + Header + Dynamic View Container)
        ========================================================================== -->
-  <div id="main-app-layout" class="flex min-h-screen w-full relative">
+  <div id="main-app-layout" class="hidden flex min-h-screen w-full relative">
 
     <!-- MOBILE SIDEBAR BACKDROP OVERLAY -->
     <div id="sidebar-backdrop" onclick="app.closeMobileMenu()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-30 hidden md:hidden transition-all duration-300"></div>
@@ -822,7 +813,7 @@
                 <label class="block text-xs font-semibold text-on-surface-variant uppercase mb-1">PIN Keamanan Otorisasi</label>
                 <div class="flex gap-2">
                   <input type="password" value="••••••" readonly class="w-full px-4 py-2.5 rounded-xl border border-surface-container-high bg-surface-container text-xs font-bold text-on-surface" />
-                  <button onclick="showToast('PIN bawaan saat ini: 123456', 'info')" class="px-3 py-2 text-xs font-semibold bg-surface-container hover:bg-surface-container-high text-on-surface rounded-xl">
+                  <button onclick="showToast('Silakan ubah PIN pada menu pengaturan profil Anda.', 'info')" class="px-3 py-2 text-xs font-semibold bg-surface-container hover:bg-surface-container-high text-on-surface rounded-xl">
                     Ubah
                   </button>
                 </div>
@@ -897,7 +888,7 @@
 
       <div>
         <h3 class="text-xl font-extrabold text-primary dark:text-on-primary-container tracking-tight">Verifikasi PIN Keamanan</h3>
-        <p class="text-xs text-on-surface-variant mt-1">Masukkan 6 digit PIN transaksi korporat Anda.<br><span class="text-[11px] text-secondary font-semibold">(Ketik via Keyboard Fisik / Keypad Layar • PIN Demo: 123456)</span></p>
+        <p class="text-xs text-on-surface-variant mt-1">Masukkan 6 digit PIN transaksi korporat Anda.<br><span class="text-[11px] text-secondary font-semibold">(Ketik via Keyboard Fisik / Keypad Layar)</span></p>
       </div>
 
       <div class="flex justify-center items-center gap-3">

@@ -83,7 +83,8 @@ function findHeaderIdx(headers, aliases) {
   return -1;
 }
 
-// System Roles DB
+// PRODUCTION: SYSTEM_ROLES_DB hanya berisi Super Admin.
+// Seluruh pengguna lain (client, vendor, mitra) dikelola di Google Sheets tab Users.
 const SYSTEM_ROLES_DB = [
   {
     username: 'admin',
@@ -95,49 +96,7 @@ const SYSTEM_ROLES_DB = [
       company: 'PT Laksana Software Solutions',
       role: 'Super Admin Korporat',
       roleType: 'ADMIN',
-      pin: '123456',
-      status: 'ACTIVE'
-    }
-  },
-  {
-    username: 'client1',
-    password: 'client123',
-    userData: {
-      corpId: 'client1',
-      userId: 'client1',
-      name: 'Budi Santoso (Klien)',
-      company: 'PT Laksana Digital Industri',
-      role: 'Client Korporat',
-      roleType: 'CLIENT',
-      pin: '123456',
-      status: 'ACTIVE'
-    }
-  },
-  {
-    username: 'vendor1',
-    password: 'vendor123',
-    userData: {
-      corpId: 'vendor1',
-      userId: 'vendor1',
-      name: 'PT Cloud Hostindo (Vendor)',
-      company: 'PT Cloud Hostindo',
-      role: 'Vendor / Supplier',
-      roleType: 'VENDOR',
-      pin: '654321',
-      status: 'ACTIVE'
-    }
-  },
-  {
-    username: 'mitra1',
-    password: 'mitra123',
-    userData: {
-      corpId: 'mitra1',
-      userId: 'mitra1',
-      name: 'Mitra Integrasi Enterprise',
-      company: 'PT Mitra Digital Asia',
-      role: 'Mitra Strategis',
-      roleType: 'MITRA',
-      pin: '888888',
+      pin: '',
       status: 'ACTIVE'
     }
   }
@@ -171,7 +130,7 @@ function validateUserCredentials(usernameInput, passwordInput) {
           const nameVal = nameIdx !== -1 ? String(data[i][nameIdx]).trim() : uVal;
           const companyVal = companyIdx !== -1 ? String(data[i][companyIdx]).trim() : 'PT Laksana Software Solutions';
           let roleVal = roleIdx !== -1 ? String(data[i][roleIdx]).trim() : 'Client Korporat';
-          const pinVal = pinIdx !== -1 ? String(data[i][pinIdx]).trim() : '123456';
+          const pinVal = pinIdx !== -1 ? String(data[i][pinIdx]).trim() : '';
           const statusVal = statusIdx !== -1 ? String(data[i][statusIdx]).trim().toUpperCase() : 'ACTIVE';
 
           if (statusVal === 'SUSPENDED' || statusVal === 'NONACTIVE') {
@@ -192,7 +151,7 @@ function validateUserCredentials(usernameInput, passwordInput) {
               company: companyVal || 'PT Laksana Software Solutions',
               role: roleVal || 'Client Korporat',
               roleType: roleType,
-              pin: pinVal || '123456',
+              pin: pinVal || '',
               status: statusVal
             }
           };
@@ -278,7 +237,7 @@ function doGet(e) {
             company: String(u.Company || u.company || 'PT Laksana Digital Industri'),
             role: String(u.Role || u.role || 'Client Korporat'),
             roleType: String(u.Role || u.role || '').toLowerCase().includes('admin') ? 'ADMIN' : String(u.Role || '').toLowerCase().includes('vendor') ? 'VENDOR' : String(u.Role || '').toLowerCase().includes('mitra') ? 'MITRA' : 'CLIENT',
-            pin: String(u.PIN || u.pin || '123456'),
+            pin: String(u.PIN || u.pin || ''),
             status: String(u.Status || u.status || 'ACTIVE').toUpperCase()
           });
         }
@@ -331,7 +290,10 @@ function doPost(e) {
   try {
     if (action === 'loginUser') {
       const username = sanitizeString(requestData.username);
-      const password = sanitizeString(requestData.password);
+      // BUG-010 FIX: Password tidak boleh di-sanitize sebelum perbandingan.
+      // sanitizeString() mengubah karakter seperti & " ' < > menjadi HTML entity
+      // sehingga password yang mengandung karakter tersebut SELALU gagal cocok.
+      const password = String(requestData.password || '').trim();
 
       const authRes = validateUserCredentials(username, password);
       if (authRes.success) {
@@ -454,6 +416,16 @@ function doPost(e) {
 
       responseData.message = "Permintaan layanan berhasil terkirim!";
 
+    } else if (action === 'sendTelegramNotification') {
+      // BUG-012 FIX: Notifikasi Telegram dikirim dari backend \u2014 token tidak pernah terekspos ke frontend
+      const msgText = String(requestData.message || '').slice(0, 1000); // batas 1000 karakter
+      if (msgText) {
+        sendTelegramNotification(msgText);
+        responseData.message = 'Notifikasi terkirim!';
+      } else {
+        responseData = { status: 'ERROR', message: 'Pesan kosong!' };
+      }
+
     } else if (action === 'updateRequestStatus') {
       const reqId = sanitizeString(requestData.reqId);
       const newStatus = sanitizeString(requestData.status);
@@ -515,7 +487,7 @@ function recordNewUser(username, password, name, role, company, pin) {
     sheet.appendRow(['Username', 'Password', 'Name', 'Role', 'Company', 'PIN', 'Status']);
   }
 
-  sheet.appendRow([username, password, name, role, company || 'PT Laksana Digital Industri', pin || '123456', 'ACTIVE']);
+  sheet.appendRow([username, password, name, role, company || 'PT Laksana Digital Industri', pin || '', 'ACTIVE']);
   return true;
 }
 
@@ -574,7 +546,7 @@ function recordNewInvoice(invData) {
     invData.subtotal || 0,
     'UNPAID',
     invData.description || 'Layanan TI Korporat',
-    invData.userId || 'client1'
+    invData.userId || ''
   ]);
 
   return { invoiceId: invId };
@@ -603,7 +575,7 @@ function recordServiceRequest(reqId, title, category, priority, desc, userId) {
   }
 
   const dateStr = Utilities.formatDate(new Date(), "Asia/Jakarta", "yyyy-MM-dd");
-  sheet.appendRow([reqId, title, category, priority, 'PENDING', dateStr, desc, userId || 'client1']);
+  sheet.appendRow([reqId, title, category, priority, 'PENDING', dateStr, desc, userId || '']);
 }
 
 function updateRequestRecord(reqId, newStatus) {

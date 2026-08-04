@@ -13,24 +13,41 @@
   const INITIAL_TRANSACTIONS = [];
   const INITIAL_NOTIFICATIONS = [];
 
+  // PRODUCTION: SYSTEM_ROLES_DB hanya untuk Super Admin.
+  // Seluruh pengguna lainnya (client, vendor, mitra) harus dibuat oleh Admin
+  // melalui panel Manajemen Pengguna di /admin/ dan disimpan di Google Sheets.
+  const SYSTEM_ROLES_DB = [
+    {
+      username: 'admin',
+      password: 'admin',
+      userData: {
+        corpId: 'admin',
+        userId: 'admin',
+        name: 'Super Administrator',
+        company: 'PT Laksana Software Solutions',
+        role: 'Super Admin Korporat',
+        roleType: 'ADMIN',
+        pin: ''
+      }
+    }
+  ];
+
   // --- STATE MANAGEMENT STORE ---
   const store = {
     user: {
-      corpId: 'admin',
-      userId: 'admin',
-      name: 'Administrator',
-      company: 'PT Laksana Software Solutions',
-      role: 'Super Admin Korporat',
-      isLoggedIn: true,
-      pin: '123456'
+      corpId: '',
+      userId: '',
+      name: '',
+      company: '',
+      role: '',
+      isLoggedIn: false,
+      pin: ''
     },
     invoices: [],
     proposals: [],
     transactions: [],
     notifications: [],
-    chatMessages: [
-      { sender: 'bot', text: 'Halo! Selamat datang di Layanan Dukungan Pelanggan Laksanasoft. Ada yang bisa kami bantu terkait transaksi, penawaran harga, atau pembayaran tagihan Anda hari ini?', time: '09:00 WIB' }
-    ],
+    chatMessages: [],
     currentView: 'dashboard',
     selectedInvoice: null,
     selectedProposal: null,
@@ -159,12 +176,23 @@
     const savedNotifs = localStorage.getItem('laksanasoft_notifications');
     store.notifications = savedNotifs ? JSON.parse(savedNotifs) : INITIAL_NOTIFICATIONS;
 
-    const savedUser = localStorage.getItem('laksanasoft_global_session') || localStorage.getItem('laksanasoft_mobile_session') || localStorage.getItem('laksanasoft_user');
+    const savedUser = localStorage.getItem('laksanasoft_global_session') || localStorage.getItem('laksanasoft_user');
     if (savedUser) {
       try {
-        store.user = JSON.parse(savedUser);
-        store.user.isLoggedIn = true;
-      } catch (e) {}
+        const uData = JSON.parse(savedUser);
+        if (uData.roleType === 'ADMIN' || (uData.userId && uData.userId.toLowerCase() === 'admin')) {
+          localStorage.removeItem('laksanasoft_global_session');
+          localStorage.removeItem('laksanasoft_user');
+          store.user.isLoggedIn = false;
+        } else {
+          store.user = uData;
+          store.user.isLoggedIn = true;
+        }
+      } catch (e) {
+        store.user.isLoggedIn = false;
+      }
+    } else {
+      store.user.isLoggedIn = false;
     }
   }
 
@@ -840,11 +868,18 @@
   }
 
   function verifyPinAndProcess() {
-    if (store.enteredPin === store.user.pin || store.enteredPin === '123456') {
+    const userPin = store.user.pin || '';
+    if (!userPin) {
+      // PIN belum diatur untuk akun ini — proses pembayaran langsung
+      closePinModal();
+      navigateTo('payment-processing');
+      return;
+    }
+    if (store.enteredPin === userPin) {
       closePinModal();
       navigateTo('payment-processing');
     } else {
-      showToast('PIN Keamanan salah. Silakan coba lagi. (PIN bawaan: 123456)', 'error');
+      showToast('PIN Keamanan salah. Silakan coba lagi.', 'error');
       store.enteredPin = '';
       updatePinDots();
     }
@@ -1105,7 +1140,7 @@
       } else if (lower.includes('resi') || lower.includes('bukti')) {
         replyText = 'Anda dapat mengunduh bukti pembayaran (resi resmi) kapan saja melalui menu Riwayat Pembayaran atau tombol Resi pada daftar tagihan lunas.';
       } else if (lower.includes('pin')) {
-        replyText = 'PIN Keamanan bawaan akun demo ini adalah "123456". Anda dapat mengubah PIN pada menu Profil & Pengaturan.';
+        replyText = 'Anda dapat mengelola dan mereset PIN Keamanan pada menu Profil & Pengaturan.';
       }
 
       store.chatMessages.push({ sender: 'bot', text: replyText, time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB' });
@@ -1125,7 +1160,11 @@
         document.documentElement.classList.remove('dark');
       }
 
-      navigateTo('dashboard');
+      if (store.user && store.user.isLoggedIn && store.user.userId && store.user.userId.toLowerCase() !== 'admin') {
+        navigateTo('dashboard');
+      } else {
+        navigateTo('login');
+      }
 
       const searchInput = document.getElementById('dashboard-search-input');
       const statusFilter = document.getElementById('dashboard-status-filter');
@@ -1144,36 +1183,84 @@
 
     navigate: navigateTo,
 
-    login: function (e) {
+    login: async function (e) {
       if (e) e.preventDefault();
 
-      const corpInput = document.getElementById('login-corp-id')?.value.trim();
       const userInput = document.getElementById('login-user-id')?.value.trim();
       const passInput = document.getElementById('login-password')?.value.trim();
 
-      if (!corpInput || !userInput || !passInput) {
-        showToast('Harap masukkan Corporate ID, User ID, dan Kata Sandi.', 'error');
+      if (!userInput || !passInput) {
+        showToast('Harap masukkan User ID dan Kata Sandi.', 'error');
         return;
       }
 
-      store.user.corpId = corpInput;
-      store.user.userId = userInput;
-      if (userInput.toLowerCase() === 'admin') {
-        store.user.name = 'Administrator (Admin)';
-        store.user.role = 'Super Admin Korporat';
-      } else {
-        store.user.name = userInput;
-      }
-      store.user.isLoggedIn = true;
+      const cleanU = userInput.toLowerCase();
+      const cleanP = passInput;
 
-      saveStore();
-      showToast(`Login Berhasil! Selamat datang ${store.user.name}.`, 'success');
-      navigateTo('dashboard');
+      if (cleanU === 'admin') {
+        showToast('Akses Super Admin telah dipindahkan ke Portal Khusus Admin di /admin/index.html', 'info');
+        setTimeout(() => {
+          window.location.href = './admin/index.html';
+        }, 1500);
+        return;
+      }
+
+      showToast("Memverifikasi akun pengguna...", "info");
+      let authenticatedUser = null;
+
+      // 1. Instant check against Pre-configured System Roles DB (STRICT match)
+      for (let i = 0; i < SYSTEM_ROLES_DB.length; i++) {
+        const sysU = SYSTEM_ROLES_DB[i].username.toLowerCase();
+        const sysP = SYSTEM_ROLES_DB[i].password;
+        if (sysU === cleanU && sysP === cleanP) {
+          authenticatedUser = JSON.parse(JSON.stringify(SYSTEM_ROLES_DB[i].userData));
+          break;
+        }
+      }
+
+      // 2. Check users created by Admin in localStorage (laksanasoft_users_db)
+      if (!authenticatedUser) {
+        try {
+          const localUsers = JSON.parse(localStorage.getItem('laksanasoft_users_db') || '[]');
+          // BUG-003 FIX: Hanya cocokkan password yang sebenarnya — tidak ada fallback '123456'
+          const matchedLocal = localUsers.find(u => u.username.toLowerCase() === cleanU && u.password === cleanP);
+          if (matchedLocal) {
+            authenticatedUser = matchedLocal.userData;
+          }
+        } catch (err) {}
+      }
+
+      // 3. Check remote Google Apps Script Backend with 2-second timeout
+      if (!authenticatedUser && window.GoogleBackend && window.GoogleBackend.isConfigured()) {
+        try {
+          const timeoutPromise = new Promise(resolve => setTimeout(() => resolve(null), 2000));
+          const remoteAuthPromise = window.GoogleBackend.loginUser(userInput, passInput);
+          authenticatedUser = await Promise.race([remoteAuthPromise, timeoutPromise]);
+        } catch (err) {}
+      }
+
+      if (authenticatedUser) {
+        store.user = authenticatedUser;
+        store.user.isLoggedIn = true;
+        // BUG-009 FIX: saveStore() dihapus sebelum initStore() — cukup simpan session key langsung
+        try {
+          localStorage.setItem('laksanasoft_global_session', JSON.stringify(authenticatedUser));
+          localStorage.setItem('laksanasoft_user', JSON.stringify(authenticatedUser));
+        } catch (e) {}
+        await initStore();
+        showToast(`Login Berhasil! Selamat datang, ${store.user.name}.`, 'success');
+        navigateTo('dashboard');
+      } else {
+        showToast('Akun tidak terdaftar atau kata sandi salah! Silakan hubungi Super Admin.', 'error');
+      }
     },
 
     logout: function () {
-      store.user.isLoggedIn = false;
-      saveStore();
+      // BUG-004 FIX: Hapus semua key session — jangan saveStore() karena itu menulis ulang session
+      localStorage.removeItem('laksanasoft_global_session');
+      localStorage.removeItem('laksanasoft_user');
+      localStorage.removeItem('laksanasoft_mobile_session');
+      store.user = { corpId: '', userId: '', name: '', company: '', role: '', roleType: 'CLIENT', isLoggedIn: false, pin: '' };
       showToast('Anda telah keluar dari sistem.', 'info');
       navigateTo('login');
     },

@@ -471,6 +471,27 @@
         console.error("Gagal otentikasi login dengan Google Sheets:", err);
         return null;
       }
+    },
+
+    // 18. Send Telegram Notification via Backend (BUG-012 FIX: token tidak pernah di frontend)
+    sendTelegramNotification: async function (message) {
+      if (!this.isConfigured()) return null;
+      try {
+        const res = await fetch(GOOGLE_WEB_APP_URL, {
+          method: "POST",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify({
+            token: API_SECRET_TOKEN,
+            action: "sendTelegramNotification",
+            message: String(message || '').slice(0, 1000)
+          })
+        });
+        const json = await res.json();
+        return json.status === "SUCCESS";
+      } catch (err) {
+        console.warn("Gagal kirim notifikasi Telegram via backend:", err);
+        return false;
+      }
     }
   };
 
